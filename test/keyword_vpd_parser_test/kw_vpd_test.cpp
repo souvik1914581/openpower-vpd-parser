@@ -1,4 +1,5 @@
 #include "keyword_vpd_parser.hpp"
+#include "keyword_vpd_types.hpp"
 
 #include <exception>
 #include <fstream>
