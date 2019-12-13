@@ -18,18 +18,6 @@ PKG_CHECK_MODULES([SDBUSPLUS], [sdbusplus])
 PKG_CHECK_MODULES([PHOSPHOR_LOGGING], [phosphor-logging])
 
 
-# Check necessary header files
-AC_CHECK_HEADER(
-    [CLI/CLI.hpp],
-    [],
-    [AC_MSG_ERROR([Could not find CLI11 CLI.hpp])]
-)
-AC_CHECK_HEADER(
-    [nlohmann/json.hpp],
-    [],
-    [AC_MSG_ERROR([Could not find nlohmann/json.hpp. Require nlohmann/json package])]
-)
-
 # Suppress the --with-libtool-sysroot error
 LT_INIT
 
@@ -71,6 +59,17 @@ AC_ARG_ENABLE([ibm-parser],
 
 AM_CONDITIONAL([IBM_PARSER], [test "x$enable_ibm_parser" = "xyes"])
 AS_IF([test "x$enable_ibm_parser" == "xyes"], [
+    # Check necessary header files
+    AC_CHECK_HEADER(
+        [CLI/CLI.hpp],
+        [],
+        [AC_MSG_ERROR([Could not find CLI11 CLI.hpp])]
+    )
+    AC_CHECK_HEADER(
+        [nlohmann/json.hpp],
+        [],
+        [AC_MSG_ERROR([Could not find nlohmann/json.hpp. Require nlohmann/json package])]
+    )
     AX_APPEND_COMPILE_FLAGS([-DIPZ_PARSER], [CXXFLAGS])
     AC_DEFINE(INVENTORY_JSON, "/usr/share/vpd/vpd_inventory.json", [JSON file that defines inventory blueprint])
             ])
