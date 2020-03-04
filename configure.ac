@@ -17,6 +17,17 @@ AM_PATH_PYTHON([2.7],
 PKG_CHECK_MODULES([SDBUSPLUS], [sdbusplus])
 PKG_CHECK_MODULES([PHOSPHOR_LOGGING], [phosphor-logging])
 
+# Check necessary header files
+AC_CHECK_HEADER(
+    [CLI/CLI.hpp],
+    [],
+    [AC_MSG_ERROR([Could not find CLI11 CLI.hpp])]
+)
+AC_CHECK_HEADER(
+    [nlohmann/json.hpp],
+    [],
+    [AC_MSG_ERROR([Could not find nlohmann/json.hpp. Require nlohmann/json package])]
+)
 
 # Suppress the --with-libtool-sysroot error
 LT_INIT
@@ -43,6 +54,19 @@ AS_IF([test "x$enable_oe_sdk" == "xyes"],
     ]
     AC_SUBST([OESDK_TESTCASE_FLAGS], [$testcase_flags])
 )
+
+# Setup option for IBM VPD formats.
+AC_ARG_ENABLE([vpd-tool],
+              AS_HELP_STRING([--enable-vpd-tool ],
+                             [Enable VPD inventory CLI tool support.
+            ]))
+
+AM_CONDITIONAL([VPD_TOOL], [test "x$enable_vpd_tool" = "xyes"])
+AS_IF([test "x$enable_vpd_tool" == "xyes"], [
+    AX_APPEND_COMPILE_FLAGS([-DIPZ_PARSER], [CXXFLAGS])
+    AC_DEFINE(INVENTORY_JSON, "/usr/share/vpd/vpd_inventory.json", [JSON file that defines inventory blueprint])
+    AC_DEFINE(INVENTORY_PATH, "/xyz/openbmc_project/inventory", [Hardcoded Path of the inventory])
+            ])
 
 AS_IF([test "x$FRU_YAML" == "x"], [FRU_YAML="writefru.yaml"])
 FRUGEN="$PYTHON $srcdir/writefru.py -i $FRU_YAML"
@@ -77,6 +101,19 @@ AS_IF([test "x$enable_ibm_parser" == "xyes"], [
 # Check/set gtest specific functions.
 AX_PTHREAD([GTEST_CPPFLAGS="-DGTEST_HAS_PTHREAD=1"],[GTEST_CPPFLAGS="-DGTEST_HAS_PTHREAD=0"])
 AC_SUBST(GTEST_CPPFLAGS)
+
+# Configure option to enable debug information for keyword VPD parser
+AC_ARG_ENABLE([debug-kw-vpd],
+              AS_HELP_STRING([--enable-debug-kw-vpd ],
+              [Debug statements for Keyword VPD Parser .
+            ]))
+AS_IF([ test "$enable_debug_kw_vpd" = "yes"],
+      [
+       AC_MSG_NOTICE([Enabling debug information for keyword vpd parser application])
+       kw_vpd_debug_flags=-DDEBUG_KW_VPD
+       AC_SUBST([KW_VPD_DEBUG_FLAGS], [$kw_vpd_debug_flags])
+      ]
+      )
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile test/Makefile])
