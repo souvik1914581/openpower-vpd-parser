@@ -1,5 +1,6 @@
 #pragma once
 
+#include "const.hpp"
 #include "store.hpp"
 
 #include <cstddef>
@@ -12,7 +13,6 @@ namespace parser
 {
 namespace keyword
 {
-
 /** @brief Encoding scheme of a VPD keyword's data */
 enum class Encoding
 {
@@ -34,22 +34,6 @@ using OffsetList = std::vector<uint32_t>;
 using KeywordMap = Parsed::mapped_type;
 
 } // namespace internal
-
-namespace
-{
-
-using RecordId = uint8_t;
-using RecordOffset = uint16_t;
-using RecordSize = uint16_t;
-using RecordType = uint16_t;
-using RecordLength = uint16_t;
-using KwSize = uint8_t;
-using PoundKwSize = uint16_t;
-using ECCOffset = uint16_t;
-using ECCLength = uint16_t;
-using LE2ByteData = uint16_t;
-
-} // namespace
 
 /** @class Impl
  *  @brief Implements parser for VPD
@@ -94,12 +78,17 @@ class Impl
      */
     Store run();
 
-  private:
-    /** @brief Process the table of contents record, VHDR
-     *
-     *  @returns List of offsets to records in VPD
+    /** @brief check if VPD header is valid
      */
-    internal::OffsetList readTOC() const;
+    void checkVPDHeader();
+
+  private:
+    /** @brief Process the table of contents record
+     *
+     *  @param[in] iterator - iterator to buffer containing VPD
+     *  @returns Size of the PT keyword in VTOC
+     */
+    std::size_t readTOC(Binary::const_iterator& iterator) const;
 
     /** @brief Read the PT keyword contained in the VHDR record,
      *         to obtain offsets to other records in the VPD.
@@ -165,7 +154,7 @@ class Impl
     /** @brief This interface collects Offset of VTOC
      *  @returns VTOC Offset
      */
-    RecordOffset getVtocOffset() const;
+    openpower::vpd::constants::RecordOffset getVtocOffset() const;
 
     /** @brief VPD in binary format */
     Binary vpd;

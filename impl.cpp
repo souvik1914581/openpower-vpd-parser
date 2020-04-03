@@ -1,5 +1,6 @@
 #include "impl.hpp"
 
+#include "const.hpp"
 #include "defines.hpp"
 #include "utils.hpp"
 
@@ -20,26 +21,10 @@ namespace vpd
 {
 namespace parser
 {
+using namespace openpower::vpd::constants;
 
 static const std::unordered_map<std::string, Record> supportedRecords = {
     {"VINI", Record::VINI}, {"OPFR", Record::OPFR}, {"OSYS", Record::OSYS}};
-
-static constexpr auto MAC_ADDRESS_LEN_BYTES = 6;
-static constexpr auto LAST_KW = "PF";
-static constexpr auto POUND_KW = '#';
-static constexpr auto UUID_LEN_BYTES = 16;
-static constexpr auto UUID_TIME_LOW_END = 8;
-static constexpr auto UUID_TIME_MID_END = 13;
-static constexpr auto UUID_TIME_HIGH_END = 18;
-static constexpr auto UUID_CLK_SEQ_END = 23;
-
-static constexpr auto MB_RESULT_LEN = 19;
-static constexpr auto MB_LEN_BYTES = 8;
-static constexpr auto MB_YEAR_END = 4;
-static constexpr auto MB_MONTH_END = 7;
-static constexpr auto MB_DAY_END = 10;
-static constexpr auto MB_HOUR_END = 13;
-static constexpr auto MB_MIN_END = 16;
 
 static const std::unordered_map<std::string, internal::KeywordInfo>
     supportedKeywords = {
@@ -56,43 +41,6 @@ static const std::unordered_map<std::string, internal::KeywordInfo>
         {"VP", std::make_tuple(record::Keyword::VP, keyword::Encoding::ASCII)},
         {"VS", std::make_tuple(record::Keyword::VS, keyword::Encoding::ASCII)},
 };
-
-namespace offsets
-{
-
-enum Offsets
-{
-    VHDR = 17,
-    VHDR_TOC_ENTRY = 29,
-    VTOC_PTR = 35,
-    VTOC_DATA = 13,
-    VHDR_ECC = 0,
-    VHDR_RECORD = 11
-};
-}
-
-namespace lengths
-{
-
-enum Lengths
-{
-    RECORD_NAME = 4,
-    KW_NAME = 2,
-    RECORD_MIN = 44,
-    VTOC_RECORD_LENGTH = 14,
-    VHDR_ECC_LENGTH = 11,
-    VHDR_RECORD_LENGTH = 44,
-};
-}
-
-namespace eccStatus
-{
-enum Status
-{
-    SUCCESS = 0,
-    FAILED = -1,
-};
-}
 
 namespace
 {
@@ -244,16 +192,13 @@ void Impl::checkHeader() const
     }
 }
 
-internal::OffsetList Impl::readTOC() const
+std::size_t Impl::readTOC(Binary::const_iterator& iterator) const
 {
-    internal::OffsetList offsets{};
-
     // The offset to VTOC could be 1 or 2 bytes long
     RecordOffset vtocOffset = getVtocOffset();
 
     // Got the offset to VTOC, skip past record header and keyword header
     // to get to the record name.
-    auto iterator = vpd.cbegin();
     std::advance(iterator, vtocOffset + sizeof(RecordId) + sizeof(RecordSize) +
                                // Skip past the RT keyword, which contains
                                // the record name.
@@ -285,8 +230,8 @@ internal::OffsetList Impl::readTOC() const
     // Skip past PT size
     std::advance(iterator, sizeof(KwSize));
 
-    // vpdBuffer is now pointing to PT data
-    return readPT(iterator, ptLen);
+    // length of PT keyword
+    return ptLen;
 }
 
 internal::OffsetList Impl::readPT(Binary::const_iterator iterator,
@@ -528,9 +473,14 @@ Store Impl::run()
     // Check if the VHDR record is present
     checkHeader();
 
+    auto iterator = vpd.cbegin();
+
+    // Read the table of contents record
+    std::size_t ptLen = readTOC(iterator);
+
     // Read the table of contents record, to get offsets
     // to other records.
-    auto offsets = readTOC();
+    auto offsets = readPT(iterator, ptLen);
     for (const auto& offset : offsets)
     {
         processRecord(offset);
@@ -538,6 +488,12 @@ Store Impl::run()
     // Return a Store object, which has interfaces to
     // access parsed VPD by record:keyword
     return Store(std::move(out));
+}
+
+void Impl::checkVPDHeader()
+{
+    // Check if the VHDR record is present and is valid
+    checkHeader();
 }
 
 } // namespace parser
