@@ -14,7 +14,7 @@ sdbusplus = dependency('sdbusplus')
 phosphor_logging = dependency('phosphor-logging')
 
 compiler = meson.get_compiler('cpp')
-python = find_program('python', required:true)
+python = find_program('python3', required:true)
 
 if get_option('ibm-parser').enabled()
 compiler.has_header('CLI/CLI.hpp')
