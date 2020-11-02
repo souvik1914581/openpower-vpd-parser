@@ -19,6 +19,7 @@ python = find_program('python3', required:true)
 
 compiler.has_header('CLI/CLI.hpp')
 compiler.has_header('nlohmann/json.hpp')
+add_global_arguments('-Wno-psabi', language : ['c', 'cpp'])
 configure_file(output: 'config.h',
                        configuration :{
                        'INVENTORY_JSON': '"'+get_option('INVENTORY_JSON')+'"',
@@ -31,19 +32,23 @@ configure_file(output: 'config.h',
                        'OBJECT_MAPPER_SERVICE' : '"'+get_option('OBJECT_MAPPER_SERVICE')+'"',
                        'OBJECT_MAPPER_OBJECT' : '"'+get_option('OBJECT_MAPPER_OBJECT')+'"',
                        'POWER_SUPPLY_TYPE_INTERFACE' : '"'+get_option('POWER_SUPPLY_TYPE_INTERFACE')+'"',
-                       'INVENTORY_MANAGER_CACHE' : '"'+get_option('INVENTORY_MANAGER_CACHE')+'"'
+                       'INVENTORY_MANAGER_CACHE' : '"'+get_option('INVENTORY_MANAGER_CACHE')+'"',
+		       'INVENTORY_JSON_SYM_LINK': '"'+get_option('INVENTORY_JSON_SYM_LINK')+'"',
+		       'INVENTORY_JSON_2U': '"'+get_option('INVENTORY_JSON_2U')+'"',
+		       'INVENTORY_JSON_4U': '"'+get_option('INVENTORY_JSON_4U')+'"'
                        }
   )
 
 if get_option('ibm-parser').enabled()
         ibm_read_vpd_SOURCES = ['ibm_vpd_app.cpp',
-                                'ibm_vpd_type_check.cpp',
-                                'parser.cpp',
+                                'vpd-parser/ipz_parser.cpp',
                                 'impl.cpp',
                                 'utils.cpp',
-                                'keyword_vpd_parser.cpp',
+                                'vpd-parser/keyword_vpd_parser.cpp',
                                 'vpdecc/vpdecc.c',
-                                'vpdecc/vpdecc_support.c'
+                                'vpdecc/vpdecc_support.c',
+                                'vpd-parser/memory_vpd_parser.cpp',
+                                'vpd-parser/parser_factory.cpp'
                                ]
 
         ibm_vpd_exe = executable(
@@ -53,6 +58,7 @@ if get_option('ibm-parser').enabled()
                                         sdbusplus,
                                         phosphor_logging,
                                 ],
+                                include_directories : 'vpd-parser/',
                                 install: true,
                                 cpp_args : '-DIPZ_PARSER'
                             )
@@ -115,7 +121,7 @@ else
         openpower_read_vpd_SOURCES = ['app.cpp',
                                       'args.cpp',
                                       'impl.cpp',
-                                      'parser.cpp',
+                                      'vpd-parser/ipz_parser.cpp',
                                       'write.cpp',
                                       'utils.cpp',
                                       writefru_hpp,
@@ -129,6 +135,7 @@ else
                         sdbusplus,
                         phosphor_logging,
                 ],
+                include_directories : 'vpd-parser/',
                 install: true,
         )
 endif

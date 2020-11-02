@@ -34,8 +34,7 @@ using ObjectMap = std::map<Object, InterfaceMap>;
 
 using VPDfilepath = std::string;
 using FruIsMotherboard = bool;
-using FrusMap =
-    std::unordered_map<Path, std::pair<VPDfilepath, FruIsMotherboard>>;
+using FrusMap = std::multimap<Path, std::pair<VPDfilepath, FruIsMotherboard>>;
 using LocationCode = std::string;
 using LocationCodeMap = std::unordered_multimap<LocationCode, Path>;
 using ListOfPaths = std::vector<sdbusplus::message::object_path>;
@@ -43,6 +42,7 @@ using NodeNumber = uint16_t;
 using namespace std::string_literals;
 constexpr auto pimPath = "/xyz/openbmc_project/inventory";
 constexpr auto pimIntf = "xyz.openbmc_project.Inventory.Manager";
+using KeywordVpdMap = std::unordered_map<std::string, Binary>;
 
 } // namespace inventory
 

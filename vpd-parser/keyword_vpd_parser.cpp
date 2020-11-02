@@ -1,8 +1,15 @@
 #include "keyword_vpd_parser.hpp"
 
+#include "const.hpp"
+
 #include <iostream>
 #include <numeric>
 #include <string>
+
+using namespace openpower::vpd::constants;
+using namespace openpower::vpd::inventory;
+using namespace std;
+using namespace openpower::vpd;
 
 namespace vpd
 {
@@ -10,7 +17,8 @@ namespace keyword
 {
 namespace parser
 {
-KeywordVpdMap KeywordVpdParser::parseKwVpd()
+
+variant<KeywordVpdMap, store> KeywordVpdParser::parse()
 {
     int kwVpdType;
     if (keywordVpdVector.empty())
@@ -202,6 +210,12 @@ void KeywordVpdParser::itrOutOfBoundCheck(uint8_t incVar)
         throw std::runtime_error("Badly formed VPD data");
     }
 }
+
+std::string KeywordVpdParser::getInterfaceName() const
+{
+    return kwdVpdInf;
+}
+
 } // namespace parser
 } // namespace keyword
 } // namespace vpd
