@@ -33,7 +33,7 @@ using namespace openpower::vpd::memory::parser;
 using namespace openpower::vpd::parser::interface;
 
 static const deviceTreeMap deviceTreeSystemTypeMap = {
-    {RAINIER_2U, "conf@aspeed-bmc-ibm-rainier-2u.dtb"},
+    {RAINIER_2U, "conf@aspeed-bmc-ibm-rainier.dtb"},
     {RAINIER_4U, "conf@aspeed-bmc-ibm-rainier-4u.dtb"}};
 
 /**
