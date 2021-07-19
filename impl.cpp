@@ -19,7 +19,7 @@ namespace parser
 {
 
 static const std::unordered_map<std::string, Record> supportedRecords = {
-    {"VINI", Record::VINI}, {"OPFR", Record::OPFR}, {"OSYS", Record::OSYS}};
+    {"VINI", Record::VINI}, {"OPFR", Record::OPFR}, {"VNDR", Record::VNDR}, {"OSYS", Record::OSYS}};
 
 static constexpr auto MAC_ADDRESS_LEN_BYTES = 6;
 static constexpr auto LAST_KW = "PF";
@@ -51,6 +51,7 @@ static const std::unordered_map<std::string, internal::KeywordInfo>
         {"UD", std::make_tuple(record::Keyword::UD, keyword::Encoding::UD)},
         {"VP", std::make_tuple(record::Keyword::VP, keyword::Encoding::ASCII)},
         {"VS", std::make_tuple(record::Keyword::VS, keyword::Encoding::ASCII)},
+        {"IN", std::make_tuple(record::Keyword::IN, keyword::Encoding::ASCII)},
 };
 
 namespace

@@ -8,6 +8,7 @@ namespace vpd
 /** @brief OpenPOWER VPD records we're interested in */
 enum class Record
 {
+    VNDR, /**< Vendor-specific data information */
     VINI, /**< Initial information, common to all OpenPOWER FRUs */
     OPFR, /**< OpenPOWER FRU information, common to all OpenPOWER FRUs */
     OSYS  /**< Information specific to a system board */
@@ -19,6 +20,12 @@ enum class Record
  */
 template <Record R>
 constexpr const char* getRecord() = delete;
+
+template <>
+constexpr const char* getRecord<Record::VNDR>()
+{
+    return "VNDR";
+}
 
 template <>
 constexpr const char* getRecord<Record::VINI>()
@@ -55,6 +62,7 @@ enum class Keyword
     MM, /**< FRU model */
     UD, /**< System UUID */
     VS, /**< OpenPower serial number */
+    IN, /**< Vendor defines the data */
     VP  /**< OpenPower part number */
 };
 
@@ -129,6 +137,12 @@ template <>
 constexpr const char* getKeyword<Keyword::VS>()
 {
     return "VS";
+}
+
+template <>
+constexpr const char* getKeyword<Keyword::IN>()
+{
+    return "IN";
 }
 
 template <>
