@@ -63,6 +63,7 @@ enum class Keyword
     UD, /**< System UUID */
     VS, /**< OpenPower serial number */
     IN, /**< Vendor defines the data */
+    B3, /**< Hardware characteristics description */
     VP  /**< OpenPower part number */
 };
 
@@ -143,6 +144,12 @@ template <>
 constexpr const char* getKeyword<Keyword::IN>()
 {
     return "IN";
+}
+
+template <>
+constexpr const char* getKeyword<Keyword::B3>()
+{
+    return "B3";
 }
 
 template <>

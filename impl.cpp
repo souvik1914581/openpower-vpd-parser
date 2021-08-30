@@ -52,6 +52,7 @@ static const std::unordered_map<std::string, internal::KeywordInfo>
         {"VP", std::make_tuple(record::Keyword::VP, keyword::Encoding::ASCII)},
         {"VS", std::make_tuple(record::Keyword::VS, keyword::Encoding::ASCII)},
         {"IN", std::make_tuple(record::Keyword::IN, keyword::Encoding::ASCII)},
+        {"B3", std::make_tuple(record::Keyword::B3, keyword::Encoding::ASCII)},
 };
 
 namespace
