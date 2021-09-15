@@ -209,5 +209,37 @@ string getBadVpdName(const string& file);
  * @param[in] vpdVector - bad vpd vector
  */
 void dumpBadVpd(const std::string& file, const Binary& vpdVector);
+
+/*
+ * @brief This function fetches the value for given keyword in the given record
+ *        from vpd data and returns this value.
+ *
+ * @param[in] vpdMap - vpd to find out the data
+ * @param[in] rec - Record under which desired keyword exists
+ * @param[in] kwd - keyword to read the data from
+ *
+ * @returns keyword value if record/keyword combination found
+ *          empty string if record or keyword is not found.
+ */
+const string getKwVal(const Parsed& vpdMap, const string& rec,
+                      const string& kwd);
+
+/** @brief This creates a complete command using all it's input parameters,
+ *         to bind or unbind the driver.
+ *  @param[in] devNameAddr - device address on that bus
+ *  @param[in] busType - i2c, spi
+ *  @param[in] driverType - type of driver like at24
+ *  @param[in] bindOrUnbind - either bind or unbind
+ *  @returns  Command to bind or unbind the driver.
+ */
+inline string createBindUnbindDriverCmnd(const string& devNameAddr,
+                                         const string& busType,
+                                         const string& driverType,
+                                         const string& bindOrUnbind)
+{
+    return ("echo " + devNameAddr + " > /sys/bus/" + busType + "/drivers/" +
+            driverType + "/" + bindOrUnbind);
+}
+
 } // namespace vpd
 } // namespace openpower
