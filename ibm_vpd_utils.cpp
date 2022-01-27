@@ -758,5 +758,20 @@ void executePostFailAction(const nlohmann::json& json, const string& file)
         cerr << "Failed to set post-action GPIO" << endl;
     }
 }
+
+void insertOrMerge(inventory::InterfaceMap& map,
+                   const inventory::Interface& interface,
+                   inventory::PropertyMap&& property)
+{
+    if (map.find(interface) != map.end())
+    {
+        auto& prop = map.at(interface);
+        prop.insert(property.begin(), property.end());
+    }
+    else
+    {
+        map.emplace(interface, property);
+    }
+}
 } // namespace vpd
 } // namespace openpower
