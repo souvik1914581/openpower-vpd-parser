@@ -124,15 +124,23 @@ void Manager::processJSON()
         for (const auto& itemEEPROM : groupEEPROM)
         {
             bool isMotherboard = false;
+            std::string redundantPath;
+
             if (itemEEPROM["extraInterfaces"].find(
                     "xyz.openbmc_project.Inventory.Item.Board.Motherboard") !=
                 itemEEPROM["extraInterfaces"].end())
             {
                 isMotherboard = true;
             }
-            frus.emplace(itemEEPROM["inventoryPath"]
-                             .get_ref<const nlohmann::json::string_t&>(),
-                         std::make_pair(itemFRUS.key(), isMotherboard));
+            if (itemEEPROM.find("redundantEeprom") != itemEEPROM.end())
+            {
+                redundantPath = itemEEPROM["redundantEeprom"]
+                                    .get_ref<const nlohmann::json::string_t&>();
+            }
+            frus.emplace(
+                itemEEPROM["inventoryPath"]
+                    .get_ref<const nlohmann::json::string_t&>(),
+                std::make_tuple(itemFRUS.key(), redundantPath, isMotherboard));
 
             if (itemEEPROM["extraInterfaces"].find(IBM_LOCATION_CODE_INF) !=
                 itemEEPROM["extraInterfaces"].end())
@@ -171,14 +179,35 @@ void Manager::writeKeyword(const sdbusplus::message::object_path path,
             throw std::runtime_error("Inventory path not found");
         }
 
-        inventory::Path vpdFilePath = frus.find(objPath)->second.first;
+        inventory::Path vpdFilePath = std::get<0>(frus.find(objPath)->second);
 
         // instantiate editor class to update the data
         EditorImpl edit(vpdFilePath, jsonFile, recordName, keyword, objPath);
-        edit.updateKeyword(value, true);
+
+        uint32_t offset = 0;
+        // Setup offset, if any
+        for (const auto& item : jsonFile["frus"][vpdFilePath])
+        {
+            if (item.find("offset") != item.end())
+            {
+                offset = item["offset"];
+                break;
+            }
+        }
+
+        edit.updateKeyword(value, offset, true);
+
+        // If we have a redundant EEPROM to update, then update just the EEPROM,
+        // not the cache since that is already done when we updated the primary
+        if (!std::get<1>(frus.find(objPath)->second).empty())
+        {
+            EditorImpl edit(std::get<1>(frus.find(objPath)->second), jsonFile,
+                            recordName, keyword);
+            edit.updateKeyword(value, offset, false);
+        }
 
         // if it is a motehrboard FRU need to check for location expansion
-        if (frus.find(objPath)->second.second)
+        if (std::get<2>(frus.find(objPath)->second))
         {
             if (recordName == "VCEN" && (keyword == "FC" || keyword == "SE"))
             {
@@ -259,7 +288,7 @@ void Manager::collectFRUVPD(const sdbusplus::message::object_path path)
                               Argument::ARGUMENT_VALUE(objPath.c_str()));
     }
 
-    inventory::Path vpdFilePath = frus.find(objPath)->second.first;
+    inventory::Path vpdFilePath = std::get<0>(frus.find(objPath)->second);
 
     const std::vector<nlohmann::json>& groupEEPROM =
         jsonFile["frus"][vpdFilePath].get_ref<const nlohmann::json::array_t&>();
