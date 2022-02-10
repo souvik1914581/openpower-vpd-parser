@@ -288,7 +288,7 @@ void Manager::collectFRUVPD(const sdbusplus::message::object_path path)
                               Argument::ARGUMENT_VALUE(objPath.c_str()));
     }
 
-    inventory::Path vpdFilePath = frus.find(objPath)->second.first;
+    inventory::Path vpdFilePath = std::get<0>(frus.find(objPath)->second);
 
     const std::vector<nlohmann::json>& groupEEPROM =
         jsonFile["frus"][vpdFilePath].get_ref<const nlohmann::json::array_t&>();
