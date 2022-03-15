@@ -43,7 +43,7 @@ using namespace phosphor::logging;
 // The list of keywords for VSYS record is as per the S0 system. Should
 // be updated for another type of systems
 static const std::unordered_map<std::string, std::vector<std::string>>
-    svpdKwdMap{{"VSYS", {"BR", "TM", "SE", "SU", "RB"}},
+    svpdKwdMap{{"VSYS", {"BR", "TM", "SE", "SU", "RB", "WN"}},
                {"VCEN", {"FC", "SE"}},
                {"LXR0", {"LX"}}};
 
@@ -73,6 +73,109 @@ static auto getPowerState()
     }
     cout << "Power state is: " << powerState << endl;
     return powerState;
+}
+
+/**
+ * @brief Returns the BMC state
+ */
+static auto getBMCState()
+{
+    std::string bmcState;
+    try
+    {
+        auto bus = sdbusplus::bus::new_default();
+        auto properties = bus.new_method_call(
+            "xyz.openbmc_project.State.BMC", "/xyz/openbmc_project/state/bmc0",
+            "org.freedesktop.DBus.Properties", "Get");
+        properties.append("xyz.openbmc_project.State.BMC");
+        properties.append("CurrentBMCState");
+        auto result = bus.call(properties);
+        std::variant<std::string> val;
+        result.read(val);
+        if (auto pVal = std::get_if<std::string>(&val))
+        {
+            bmcState = *pVal;
+        }
+    }
+    catch (const sdbusplus::exception::SdBusError& e)
+    {
+        // Ignore any error
+        std::cerr << "Failed to get BMC state: " << e.what() << "\n";
+    }
+    return bmcState;
+}
+
+/**
+ * @brief Check if the FRU is in the cache
+ *
+ * Checks if the FRU associated with the supplied D-Bus object path is already
+ * on D-Bus. This can be used to test if a VPD collection is required for this
+ * FRU. It uses the "xyz.openbmc_project.Inventory.Item, Present" property to
+ * determine the presence of a FRU in the cache.
+ *
+ * @param objectPath - The D-Bus object path without the PIM prefix.
+ * @return true if the object exists on D-Bus, false otherwise.
+ */
+static auto isFruInVpdCache(const std::string& objectPath)
+{
+    try
+    {
+        auto bus = sdbusplus::bus::new_default();
+        auto invPath = std::string{pimPath} + objectPath;
+        auto props = bus.new_method_call(
+            "xyz.openbmc_project.Inventory.Manager", invPath.c_str(),
+            "org.freedesktop.DBus.Properties", "Get");
+        props.append("xyz.openbmc_project.Inventory.Item");
+        props.append("Present");
+        auto result = bus.call(props);
+        std::variant<bool> present;
+        result.read(present);
+        if (auto pVal = std::get_if<bool>(&present))
+        {
+            return *pVal;
+        }
+        return false;
+    }
+    catch (const sdbusplus::exception::SdBusError& e)
+    {
+        std::cout << "FRU: " << objectPath << " not in D-Bus\n";
+        // Assume not present in case of an error
+        return false;
+    }
+}
+
+/**
+ * @brief Check if VPD recollection is needed for the given EEPROM
+ *
+ * Not all FRUs can be swapped at BMC ready state. This function does the
+ * following:
+ * -- Check if the FRU is marked as "pluggableAtStandby" OR
+ *    "concurrentlyMaintainable". If so, return true.
+ * -- Check if we are at BMC NotReady state. If we are, then return true.
+ * -- Else check if the FRU is not present in the VPD cache (to cover for VPD
+ *    force collection). If not found in the cache, return true.
+ * -- Else return false.
+ *
+ * @param js - JSON Object.
+ * @param filePath - The EEPROM file.
+ * @return true if collection should be attempted, false otherwise.
+ */
+static auto needsRecollection(const nlohmann::json& js, const string& filePath)
+{
+    if (js["frus"][filePath].at(0).value("pluggableAtStandby", false) ||
+        js["frus"][filePath].at(0).value("concurrentlyMaintainable", false))
+    {
+        return true;
+    }
+    if (getBMCState() == "xyz.openbmc_project.State.BMC.BMCState.NotReady")
+    {
+        return true;
+    }
+    if (!isFruInVpdCache(js["frus"][filePath].at(0).value("inventoryPath", "")))
+    {
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -320,7 +423,7 @@ static void populateInterfaces(const nlohmann::json& js,
                 props.emplace(busProp, itr.value().get<size_t>());
             }
         }
-        interfaces.emplace(inf, move(props));
+        insertOrMerge(interfaces, inf, move(props));
     }
 }
 
@@ -347,6 +450,56 @@ static void resetEEPROMPointer(const nlohmann::json& js, const string& file,
             return;
         }
     }
+}
+
+/**
+ * @brief This API checks if this FRU is pcie_devices. If yes then it further
+ *        checks whether it is PASS1 planar.
+ */
+static bool isThisPcieOnPass1planar(const nlohmann::json& js,
+                                    const string& file)
+{
+    auto isThisPCIeDev = false;
+    auto isPASS1 = false;
+
+    // Check if it is a PCIE device
+    if (js["frus"].find(file) != js["frus"].end())
+    {
+        if ((js["frus"][file].find("extraInterfaces") !=
+             js["frus"][file].end()))
+        {
+            if (js["frus"][file]["extraInterfaces"].find(
+                    "xyz.openbmc_project.Inventory.Item.PCIeDevice") !=
+                js["frus"][file]["extraInterfaces"].end())
+            {
+                isThisPCIeDev = true;
+            }
+        }
+    }
+
+    if (isThisPCIeDev)
+    {
+        // Collect SystemType to know if it is PASS1 planar.
+        auto bus = sdbusplus::bus::new_default();
+        auto properties = bus.new_method_call(
+            INVENTORY_MANAGER_SERVICE,
+            "/xyz/openbmc_project/inventory/system/chassis/motherboard",
+            "org.freedesktop.DBus.Properties", "Get");
+        properties.append("com.ibm.ipzvpd.VINI");
+        properties.append("HW");
+        auto result = bus.call(properties);
+
+        inventory::Value val;
+        result.read(val);
+        if (auto pVal = get_if<Binary>(&val))
+        {
+            auto hwVersion = *pVal;
+            if (hwVersion[1] < 2)
+                isPASS1 = true;
+        }
+    }
+
+    return (isThisPCIeDev && isPASS1);
 }
 
 static Binary getVpdDataInVector(const nlohmann::json& js, const string& file)
@@ -394,13 +547,17 @@ static void preAction(const nlohmann::json& json, const string& file)
 
     if (executePreAction(json, file))
     {
-        // Now bind the device
-        string bind = json["frus"][file].at(0).value("devAddress", "");
-        cout << "Binding device " << bind << endl;
-        string bindCmd = string("echo \"") + bind +
-                         string("\" > /sys/bus/i2c/drivers/at24/bind");
-        cout << bindCmd << endl;
-        executeCmd(bindCmd);
+        if (json["frus"][file].at(0).find("devAddress") !=
+            json["frus"][file].at(0).end())
+        {
+            // Now bind the device
+            string bind = json["frus"][file].at(0).value("devAddress", "");
+            cout << "Binding device " << bind << endl;
+            string bindCmd = string("echo \"") + bind +
+                             string("\" > /sys/bus/i2c/drivers/at24/bind");
+            cout << bindCmd << endl;
+            executeCmd(bindCmd);
+        }
 
         // Check if device showed up (test for file)
         if (!fs::exists(file))
@@ -486,10 +643,14 @@ inventory::ObjectMap primeInventory(const nlohmann::json& jsObject,
 
     for (auto& itemFRUS : jsObject["frus"].items())
     {
-        // Take pre actions
-        preAction(jsObject, itemFRUS.key());
         for (auto& itemEEPROM : itemFRUS.value())
         {
+            // Take pre actions if needed
+            if (itemEEPROM.find("preAction") != itemEEPROM.end())
+            {
+                preAction(jsObject, itemFRUS.key());
+            }
+
             inventory::InterfaceMap interfaces;
             inventory::Object object(itemEEPROM.at("inventoryPath"));
 
@@ -1109,6 +1270,10 @@ static void populateDbus(T& vpdMap, nlohmann::json& js, const string& filePath)
             populateInterfaces(item["extraInterfaces"], interfaces, vpdMap,
                                isSystemVpd);
         }
+        inventory::PropertyMap presProp;
+        presProp.emplace("Present", true);
+        insertOrMerge(interfaces, invItemIntf, move(presProp));
+
         objects.emplace(move(object), move(interfaces));
     }
 
@@ -1291,6 +1456,13 @@ int main(int argc, char** argv)
             }
         }
 
+        // Check if this VPD should be recollected at all
+        if (!needsRecollection(js, file))
+        {
+            cout << "Skip VPD recollection for: " << file << endl;
+            return 0;
+        }
+
         try
         {
             vpdVector = getVpdDataInVector(js, file);
@@ -1337,13 +1509,26 @@ int main(int argc, char** argv)
     }
     catch (const VpdDataException& ex)
     {
-        additionalData.emplace("DESCRIPTION", "Invalid VPD data");
-        additionalData.emplace("CALLOUT_INVENTORY_PATH",
-                               INVENTORY_PATH + baseFruInventoryPath);
-        createPEL(additionalData, pelSeverity, errIntfForInvalidVPD);
-        dumpBadVpd(file, vpdVector);
-        cerr << ex.what() << "\n";
-        rc = -1;
+        if (isThisPcieOnPass1planar(js, file))
+        {
+            cout << "Pcie_device  [" << file
+                 << "]'s VPD is not valid on PASS1 planar.Ignoring.\n";
+            rc = 0;
+        }
+        else
+        {
+            string errorMsg =
+                "VPD file is either empty or invalid. Parser failed for [";
+            errorMsg += file;
+            errorMsg += "], with error = " + std::string(ex.what());
+
+            additionalData.emplace("DESCRIPTION", errorMsg);
+            additionalData.emplace("CALLOUT_INVENTORY_PATH",
+                                   INVENTORY_PATH + baseFruInventoryPath);
+            createPEL(additionalData, pelSeverity, errIntfForInvalidVPD);
+
+            rc = -1;
+        }
     }
     catch (const exception& e)
     {
