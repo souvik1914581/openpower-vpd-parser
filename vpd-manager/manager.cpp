@@ -274,7 +274,7 @@ void Manager::performVPDRecollection()
                 // pass to ensure bind/unbind of data.
                 // preAction execution failed. should not call bind/unbind.
                 log<level::ERR>("Pre-Action execution failed for the FRU");
-                return;
+                continue;
             }
             prePostActionRequired = true;
         }
@@ -293,7 +293,6 @@ void Manager::performVPDRecollection()
                 executePostFailAction(jsonFile, item);
             }
         }
-        return;
     }
 }
 
