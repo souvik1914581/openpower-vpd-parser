@@ -263,7 +263,37 @@ void Manager::performVPDRecollection()
             singleFru["inventoryPath"]
                 .get_ref<const nlohmann::json::string_t&>();
 
+        bool prePostActionRequired = false;
+
+        if ((jsonFile["frus"][item].at(0)).find("preAction") !=
+            jsonFile["frus"][item].at(0).end())
+        {
+            if (!executePreAction(jsonFile, item))
+            {
+                // if the FRU has preAction defined then its execution should
+                // pass to ensure bind/unbind of data.
+                // preAction execution failed. should not call bind/unbind.
+                log<level::ERR>("Pre-Action execution failed for the FRU");
+                return;
+            }
+            prePostActionRequired = true;
+        }
+
+        // unbind, bind the driver to trigger parser.
         triggerVpdCollection(singleFru, inventoryPath);
+
+        // this check is added to avoid file system expensive call in case not
+        // required.
+        if (prePostActionRequired)
+        {
+            // Check if device showed up (test for file)
+            if (!filesystem::exists(item))
+            {
+                // If not, then take failure postAction
+                executePostFailAction(jsonFile, item);
+            }
+        }
+        return;
     }
 }
 
