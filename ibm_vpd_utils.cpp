@@ -625,7 +625,7 @@ string getPrintableValue(const Binary& vec)
     return str;
 }
 
-bool executePreAction(const nlohmann::json& json, const string& file)
+std::optional<bool> isPresent(const nlohmann::json& json, const string& file)
 {
     if ((json["frus"][file].at(0)).find("presence") !=
         json["frus"][file].at(0).end())
@@ -646,7 +646,6 @@ bool executePreAction(const nlohmann::json& json, const string& file)
                 {
                     cerr << "couldn't find presence line:" << presPinName
                          << "\n";
-                    executePostFailAction(json, file);
                     return false;
                 }
 
@@ -655,20 +654,26 @@ bool executePreAction(const nlohmann::json& json, const string& file)
 
                 Byte gpioData = presenceLine.get_value();
 
-                if (gpioData != presPinValue)
-                {
-                    executePostFailAction(json, file);
-                    return false;
-                }
+                return (gpioData == presPinValue);
             }
             catch (system_error&)
             {
                 cerr << "Failed to get the presence GPIO for - " << presPinName
                      << endl;
-                executePostFailAction(json, file);
                 return false;
             }
         }
+    }
+    return std::optional<bool>{};
+}
+
+bool executePreAction(const nlohmann::json& json, const string& file)
+{
+    auto present = isPresent(json, file);
+    if (present && !present.value())
+    {
+        executePostFailAction(json, file);
+        return false;
     }
 
     if ((json["frus"][file].at(0)).find("preAction") !=
