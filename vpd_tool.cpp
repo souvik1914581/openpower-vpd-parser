@@ -104,7 +104,7 @@ int main(int argc, char** argv)
             vpdToolObj.dumpInventory(jsObject);
         }
 
-        else if (*readFlag)
+        else if (*readFlag && !*Hardware)
         {
             VpdTool vpdToolObj(move(objectPath), move(recordName),
                                move(keyword));
@@ -120,8 +120,19 @@ int main(int argc, char** argv)
 
         else if (*forceResetFlag)
         {
-            VpdTool vpdToolObj;
-            vpdToolObj.forceReset(jsObject);
+            // Force reset the BMC only if the CEC is powered OFF.
+            if (getPowerState() ==
+                "xyz.openbmc_project.State.Chassis.PowerState.Off")
+            {
+                VpdTool vpdToolObj;
+                vpdToolObj.forceReset(jsObject);
+            }
+            else
+            {
+                std::cerr << "The chassis power state is not Off. Force reset "
+                             "operation is not allowed.";
+                return -1;
+            }
         }
 
         else if (*writeFlag && *Hardware)
@@ -130,7 +141,12 @@ int main(int argc, char** argv)
                                move(keyword), move(val));
             rc = vpdToolObj.updateHardware();
         }
-
+        else if (*readFlag && *Hardware)
+        {
+            VpdTool vpdToolObj(move(objectPath), move(recordName),
+                               move(keyword));
+            vpdToolObj.readKwFromHw();
+        }
         else
         {
             throw runtime_error("One of the valid options is required. Refer "
