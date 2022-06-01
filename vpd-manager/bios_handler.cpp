@@ -662,7 +662,7 @@ void BiosHandler::restoreBIOSAttribs()
 
     auto clearNVRAMInVPD =
         readBusProperty(SYSTEM_OBJECT, "com.ibm.ipzvpd.UTIL", "D1");
-    saveCreateDefaultLparToBIOS(clearNVRAMInVPD, clearNVRAMInBIOS);
+    saveClearNVRAMToBIOS(clearNVRAMInVPD, clearNVRAMInBIOS);
 
     // Start listener now that we have done the restore
     listenBiosAttribs();
