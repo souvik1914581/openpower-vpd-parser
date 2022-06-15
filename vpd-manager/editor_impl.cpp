@@ -511,7 +511,6 @@ static void enableRebootGuard()
             "org.freedesktop.systemd1.Manager", "StartUnit");
         method.append("reboot-guard-enable.service", "replace");
         bus.call_noreply(method);
-        std::cout << "Disabled reboot" << std::endl;
     }
     catch (const sdbusplus::exception::exception& e)
     {
@@ -533,7 +532,6 @@ static void disableRebootGuard()
             "org.freedesktop.systemd1.Manager", "StartUnit");
         method.append("reboot-guard-disable.service", "replace");
         bus.call_noreply(method);
-        std::cout << "Enabled reboot" << std::endl;
     }
     catch (const sdbusplus::exception::exception& e)
     {
@@ -579,18 +577,8 @@ void EditorImpl::updateKeyword(const Binary& kwdData, uint32_t offset,
 
         if (objPath.empty())
         {
-            // this should not fail as we have already read the vpdFilePath
-            // above.
-            if (jsonFile.contains(vpdFilePath))
-            {
-                objPath = jsonFile[vpdFilePath][0]["inventoryPath"]
-                              .get_ref<const nlohmann::json::string_t&>();
-            }
-            else
-            {
-                throw std::runtime_error(
-                    "Json does not contain given vpd file path");
-            }
+            objPath = jsonFile["frus"][vpdFilePath][0]["inventoryPath"]
+                          .get_ref<const nlohmann::json::string_t&>();
         }
 
 #else
@@ -644,7 +632,6 @@ void EditorImpl::updateKeyword(const Binary& kwdData, uint32_t offset,
                     updateCache();
 #endif
                 }
-                std::cout << "Sleep started" << std::endl;
             }
             catch (const std::exception& e)
             {
