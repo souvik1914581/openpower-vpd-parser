@@ -633,9 +633,6 @@ void EditorImpl::updateKeyword(const Binary& kwdData, uint32_t offset,
 
                 // update the data to the file
                 updateData(kwdData);
-                std::cout << "Sleep started, try to reboot" << std::endl;
-                sleep(5);
-                std::cout << "Sleep end" << std::endl;
 
                 // update the ECC data for the record once data has been updated
                 updateRecordECC();
