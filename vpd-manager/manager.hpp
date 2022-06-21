@@ -180,6 +180,17 @@ class Manager : public ServerObject<ManagerIface>
      */
     void restoreSystemVpd();
 
+    /**
+     * @brief API to create async PEL entry
+     * @param[in] additionalData - Map holding the additional data
+     * @param[in] sev - Severity
+     * @param[in] errIntf - error interface
+     */
+    void
+        createAsyncPel(const std::map<std::string, std::string>& additionalData,
+                       const constants::PelSeverity& sev,
+                       const std::string& errIntf);
+
     /** @brief Persistent sdbusplus DBus bus connection. */
     sdbusplus::bus::bus _bus;
 

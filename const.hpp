@@ -81,6 +81,7 @@ constexpr auto offsetJsonDirectory = "/var/lib/vpd/";
 constexpr auto mapperObjectPath = "/xyz/openbmc_project/object_mapper";
 constexpr auto mapperInterface = "xyz.openbmc_project.ObjectMapper";
 constexpr auto mapperDestination = "xyz.openbmc_project.ObjectMapper";
+constexpr auto loggerService = "xyz.openbmc_project.Logging";
 constexpr auto loggerObjectPath = "/xyz/openbmc_project/logging";
 constexpr auto loggerCreateInterface = "xyz.openbmc_project.Logging.Create";
 constexpr auto errIntfForBlankSystemVPD = "com.ibm.VPD.Error.BlankSystemVPD";
