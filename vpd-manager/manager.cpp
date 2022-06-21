@@ -203,7 +203,6 @@ void Manager::hostStateCallBack(sdbusplus::message::message& msg)
                 return;
             }
         }
-        std::cerr << "Failed to read Host state" << std::endl;
     }
 }
 
@@ -654,6 +653,38 @@ void Manager::deleteFRUVPD(const sdbusplus::message::object_path path)
              {{"xyz.openbmc_project.Inventory.Item", {{"Present", false}}}}}};
 
         common::utility::callPIM(move(objectMap));
+    }
+}
+
+void Manager::createAsyncPel(
+    const std::map<std::string, std::string>& additionalData,
+    const constants::PelSeverity& sev, const std::string& errIntf)
+{
+    std::string pelSeverity = "xyz.openbmc_project.Logging.Entry.Level.Error";
+    auto itr = sevMap.find(sev);
+    if (itr != sevMap.end())
+    {
+        pelSeverity = itr->second;
+    }
+
+    sd_bus* bus = nullptr;
+    sd_bus_default(&bus);
+
+    auto rc = sd_bus_call_method_async(
+        bus, NULL, loggerService, loggerObjectPath, loggerCreateInterface,
+        "Create",
+        [](sd_bus_message* msg, void* data, sd_bus_error*) {
+            (void)msg; // ignoring unused variable
+            (void)data;
+            std::cout << "Call back received for async bus call" << std::endl;
+            return 0;
+        },
+        this, "ssa{ss}", errIntf, pelSeverity, additionalData);
+
+    if (rc < 0)
+    {
+        log<level::ERR>("Error calling sd_bus_call_method_async",
+                        entry("RC=%d", rc), entry("MSG=%s", strerror(-rc)));
     }
 }
 
