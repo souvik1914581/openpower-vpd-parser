@@ -387,7 +387,7 @@ void Manager::writeKeyword(const sdbusplus::message::object_path path,
         if (!std::get<1>(frus.find(objPath)->second).empty())
         {
             EditorImpl edit(std::get<1>(frus.find(objPath)->second), jsonFile,
-                            recordName, keyword);
+                            recordName, keyword, objPath);
             edit.updateKeyword(value, offset, false);
         }
 

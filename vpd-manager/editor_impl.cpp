@@ -575,7 +575,8 @@ void EditorImpl::updateKeyword(const Binary& kwdData, uint32_t offset,
 
         vpdFile = completeVPDFile;
 
-        if (objPath.empty())
+        if (objPath.empty() &&
+            jsonFile["frus"].find(vpdFilePath) != jsonFile["frus"].end())
         {
             objPath = jsonFile["frus"][vpdFilePath][0]["inventoryPath"]
                           .get_ref<const nlohmann::json::string_t&>();
