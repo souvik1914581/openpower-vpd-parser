@@ -766,7 +766,8 @@ void setDevTreeEnv(const string& systemType)
         {RAINIER_4U_V2, "conf-aspeed-bmc-ibm-rainier-4u.dtb"},
         {RAINIER_1S4U, "conf-aspeed-bmc-ibm-rainier-1s4u.dtb"},
         {EVEREST, "conf-aspeed-bmc-ibm-everest.dtb"},
-        {EVEREST_V2, "conf-aspeed-bmc-ibm-everest.dtb"}};
+        {EVEREST_V2, "conf-aspeed-bmc-ibm-everest.dtb"},
+        {BONNELL, "conf-aspeed-bmc-ibm-bonnell.dtb"}};
 
     if (deviceTreeSystemTypeMap.find(systemType) !=
         deviceTreeSystemTypeMap.end())
