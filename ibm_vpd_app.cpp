@@ -24,6 +24,7 @@
 #include <iterator>
 #include <phosphor-logging/log.hpp>
 #include <regex>
+#include <thread>
 
 using namespace std;
 using namespace openpower::vpd;
@@ -1139,6 +1140,9 @@ static void populateDbus(T& vpdMap, nlohmann::json& js, const string& filePath)
                 if (chipVersion >= 2)
                 {
                     doEnableAllDimms(js);
+                    // Sleep for a few seconds to let the DIMM parses start
+                    using namespace std::chrono_literals;
+                    std::this_thread::sleep_for(5s);
                 }
             }
         }
