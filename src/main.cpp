@@ -1,5 +1,6 @@
 #include "config.h"
 
+#include "logger.hpp"
 #include "manager.hpp"
 
 #include <iostream>
@@ -26,6 +27,8 @@ int main(int, char**)
         auto vpdManager =
             std::make_shared<vpd::Manager>(io_con, interface, connection);
         interface->initialize();
+
+        vpd::logging::logMessage("Start VPD-Manager event loop");
 
         // Start event loop.
         io_con->run();

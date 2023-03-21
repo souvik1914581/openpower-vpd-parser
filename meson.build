@@ -1,5 +1,5 @@
 project(
-     'openpower-vpd-parser',
+     'vpd-manager',
      'c',
      'cpp',
      default_options: [
@@ -9,7 +9,7 @@ project(
        'buildtype=debugoptimized'
      ],
      version: '1.0',
-     meson_version: '>=0.57.0',
+     meson_version: '>=0.58.1',
 )
 
 add_global_arguments('-Wno-psabi', language : ['c', 'cpp'])
@@ -67,7 +67,8 @@ configure_file(output: 'config.h',
             configuration : conf_data)
 
 vpd_manager_SOURCES = ['src/main.cpp',
-                       'src/manager.cpp']
+                       'src/manager.cpp',
+                       'src/logger.cpp']
 
 vpd_manager_dependencies = [sdbusplus]
 
