@@ -51,7 +51,6 @@ if not build_tests.disabled()
 endif
 
 sdbusplus = dependency('sdbusplus', fallback: [ 'sdbusplus', 'sdbusplus_dep' ])
-configuration_inc = include_directories('../include')
 
 if not build_tests.disabled()
     #subdir('test')
@@ -68,14 +67,15 @@ configure_file(output: 'config.h',
 
 vpd_manager_SOURCES = ['src/main.cpp',
                        'src/manager.cpp',
-                       'src/logger.cpp']
+                       'src/logger.cpp',
+                       'src/utils.cpp']
 
 vpd_manager_dependencies = [sdbusplus]
 
 vpd_manager_exe = executable(
                 'vpd-manager',
                 vpd_manager_SOURCES,
-                include_directories : configuration_inc,
+                include_directories : 'include/',
                 dependencies : [
                                 vpd_manager_dependencies,
                                 ],
