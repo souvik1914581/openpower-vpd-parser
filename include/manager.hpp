@@ -6,6 +6,7 @@ namespace vpd
 {
 /**
  * @brief Class to manage VPD processing.
+ *
  * The class is responsible to implement methods to manage VPD on the system.
  * It also implements methods to be exposed over D-Bus required to access/edit
  * VPD data.
@@ -22,6 +23,7 @@ class Manager
 
     /**
      * @brief Constructor.
+     *
      * @param[in] ioCon - IO context.
      * @param[in] iFace - interface to implement.
      * @param[in] connection - Dbus Connection.
@@ -37,13 +39,13 @@ class Manager
 
   private:
     // Shared pointer to asio context object.
-    const std::shared_ptr<boost::asio::io_context>& ioContext;
+    const std::shared_ptr<boost::asio::io_context>& m_ioContext;
 
     // Shared pointer to Dbus interface class.
-    const std::shared_ptr<sdbusplus::asio::dbus_interface>& interface;
+    const std::shared_ptr<sdbusplus::asio::dbus_interface>& m_interface;
 
     // Shared pointer to bus connection.
-    const std::shared_ptr<sdbusplus::asio::connection>& conn;
+    const std::shared_ptr<sdbusplus::asio::connection>& m_conn;
 };
 
 } // namespace vpd
