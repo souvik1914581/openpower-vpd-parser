@@ -16,7 +16,7 @@ types::MapperGetObject getObjectMap(const std::string& objectPath,
     if (objectPath.empty())
     {
         logging::logMessage("Path value is empty, invalid call to GetObject");
-        return;
+        return getObjectMap;
     }
 
     try
