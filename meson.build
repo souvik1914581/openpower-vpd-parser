@@ -68,7 +68,8 @@ configure_file(output: 'config.h',
 vpd_manager_SOURCES = ['src/main.cpp',
                        'src/manager.cpp',
                        'src/logger.cpp',
-                       'src/utils.cpp']
+                       'src/utils.cpp',
+                       'src/parser_factory.cpp']
 
 vpd_manager_dependencies = [sdbusplus]
 
