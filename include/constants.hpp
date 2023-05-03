@@ -23,6 +23,21 @@ static constexpr auto SPD_BYTE_MASK = 0xFF;
 static constexpr auto SPD_MODULE_TYPE_DDIMM = 0x0A;
 static constexpr auto SPD_DRAM_TYPE_DDR5 = 0x12;
 static constexpr auto SPD_DRAM_TYPE_DDR4 = 0x0C;
+static constexpr auto LAST_KW = "PF";
+static constexpr auto POUND_KW = '#';
+static constexpr auto MB_YEAR_END = 4;
+static constexpr auto MB_MONTH_END = 7;
+static constexpr auto MB_DAY_END = 10;
+static constexpr auto MB_HOUR_END = 13;
+static constexpr auto MB_MIN_END = 16;
+static constexpr auto MB_RESULT_LEN = 19;
+static constexpr auto MB_LEN_BYTES = 8;
+static constexpr auto UUID_LEN_BYTES = 16;
+static constexpr auto UUID_TIME_LOW_END = 8;
+static constexpr auto UUID_TIME_MID_END = 13;
+static constexpr auto UUID_TIME_HIGH_END = 18;
+static constexpr auto UUID_CLK_SEQ_END = 23;
+static constexpr auto MAC_ADDRESS_LEN_BYTES = 6;
 
 } // namespace constants
 } // namespace vpd

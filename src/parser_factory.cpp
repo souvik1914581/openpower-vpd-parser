@@ -2,6 +2,7 @@
 
 #include "constants.hpp"
 #include "exceptions.hpp"
+#include "ipz_parser.hpp"
 
 namespace vpd
 {
@@ -97,11 +98,10 @@ std::shared_ptr<ParserInterface> ParserFactory::getParser(
 
     switch (type)
     {
-        // TODO: Uncomment as and when the class is implemented.
         case vpdType::IPZ_VPD:
         {
-            // TODO:
-            // return shared pointer to class object.
+            return std::make_shared<IpzVpdParser>(vpdVector, inventoryPath,
+                                                  vpdFilePath, vpdStartOffset);
         }
 
         case vpdType::KEYWORD_VPD:

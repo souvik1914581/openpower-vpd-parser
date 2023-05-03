@@ -43,5 +43,19 @@ using BinaryVector = std::vector<uint8_t>;
 using kwdVpdValueTypes = std::variant<size_t, BinaryVector, std::string>;
 using KeywordVpdMap = std::unordered_map<std::string, kwdVpdValueTypes>;
 
+using KwSize = uint8_t;
+using RecordId = uint8_t;
+using RecordSize = uint16_t;
+using RecordType = uint16_t;
+using RecordOffset = uint16_t;
+using RecordLength = uint16_t;
+using ECCOffset = uint16_t;
+using ECCLength = uint16_t;
+using PoundKwSize = uint16_t;
+
+using RecordOffsetList = std::vector<uint32_t>;
+
+    
+
 } // namespace types
 } // namespace vpd

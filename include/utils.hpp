@@ -77,5 +77,31 @@ void writeDbusProperty(const std::string& serviceName,
                        const std::string& property,
                        const types::DbusVariantType& propertyValue);
 
+/**
+ * @brief API to generate file name for bad VPD.
+ *
+ * For i2c eeproms - the pattern of the vpd-name will be
+ * i2c-<bus-number>-<eeprom-address>.
+ * For spi eeproms - the pattern of the vpd-name will be spi-<spi-number>.
+ *
+ * @param[in] vpdFilePath - file path of the vpd.
+ * @return Generated file name.
+ */
+std::string generateBadVPDFileName(const std::string& vpdFilePath);
+
+/**
+ * @brief API which dumps the broken/bad vpd in a directory.
+ * When the vpd is bad, this api places  the bad vpd file inside
+ * "/tmp/bad-vpd" in BMC, in order to collect bad VPD data as a part of user
+ * initiated BMC dump.
+ *
+ * Note: Throws exception in case of any failure.
+ *
+ * @param[in] vpdFilePath - vpd file path
+ * @param[in] vpdVector - vpd vector
+ */
+void dumpBadVpd(const std::string& vpdFilePath,
+                const types::BinaryVector& vpdVector);
+
 } // namespace utils
 } // namespace vpd

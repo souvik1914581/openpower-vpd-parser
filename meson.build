@@ -62,14 +62,28 @@ conf_data = configuration_data()
 conf_data.set_quoted('BUSNAME', get_option('BUSNAME'))
 conf_data.set_quoted('OBJPATH', get_option('OBJPATH'))
 conf_data.set_quoted('IFACE', get_option('IFACE'))
+conf_data.set_quoted('BAD_VPD_DIR', get_option('BAD_VPD_DIR'))
 configure_file(output: 'config.h',
             configuration : conf_data)
+
+libvpdecc_src = files(
+    'vpdecc/vpdecc.c',
+    'vpdecc/vpdecc_support.c'
+)
+
+libvpdecc = shared_library(
+    'vpdecc',
+    libvpdecc_src,
+    version: meson.project_version(),
+    install: true,
+)
 
 vpd_manager_SOURCES = ['src/main.cpp',
                        'src/manager.cpp',
                        'src/logger.cpp',
                        'src/utils.cpp',
-                       'src/parser_factory.cpp']
+                       'src/parser_factory.cpp',
+                       'src/ipz_parser.cpp']
 
 vpd_manager_dependencies = [sdbusplus]
 
@@ -77,8 +91,10 @@ vpd_manager_exe = executable(
                 'vpd-manager',
                 vpd_manager_SOURCES,
                 include_directories : 'include/',
+                link_with : libvpdecc,
                 dependencies : [
                                 vpd_manager_dependencies,
                                 ],
                 install : true,
+                cpp_args : '-DECC_CHECK'
                 )
