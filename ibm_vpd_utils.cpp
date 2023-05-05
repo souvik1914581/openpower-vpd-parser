@@ -662,15 +662,15 @@ std::string hexString(const std::variant<Binary, std::string>& kw)
     std::string hexString;
     std::visit(
         [&hexString](auto&& kw) {
+            std::stringstream ss;
+            std::string hexRep = "0x";
+            ss << hexRep;
             for (auto& kwVal : kw)
             {
-                std::stringstream ss;
-                std::string hexRep = "0x";
-                ss << hexRep;
                 ss << std::setfill('0') << std::setw(2) << std::hex
                    << static_cast<int>(kwVal);
-                hexString = ss.str();
             }
+            hexString = ss.str();
         },
         kw);
     return hexString;
@@ -686,20 +686,7 @@ std::string getPrintableValue(const std::variant<Binary, std::string>& kwVal)
                              [](const auto& kw) { return !isprint(kw); });
             if (it != kwVal.end())
             {
-                bool printable = true;
-                for (auto itr = it; itr != kwVal.end(); itr++)
-                {
-                    if (*itr != 0x00)
-                    {
-                        kwString = hexString(kwVal);
-                        printable = false;
-                        break;
-                    }
-                }
-                if (printable)
-                {
-                    kwString = std::string(kwVal.begin(), it);
-                }
+                kwString = hexString(kwVal);
             }
             else
             {

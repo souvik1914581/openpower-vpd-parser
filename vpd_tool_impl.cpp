@@ -550,7 +550,7 @@ void VpdTool::readKwFromHw(const uint32_t& startOffset)
     {
         json output = json::object({});
         json kwVal = json::object({});
-        kwVal.emplace(keyword, keywordVal);
+        kwVal.emplace(keyword, getPrintableValue(keywordVal));
 
         output.emplace(fruPath, kwVal);
 
@@ -563,14 +563,6 @@ void VpdTool::readKwFromHw(const uint32_t& startOffset)
                   << " or both are not present in the given FRU path "
                   << fruPath << std::endl;
     }
-
-    json output = json::object({});
-    json kwVal = json::object({});
-    kwVal.emplace(keyword, getPrintableValue(keywordVal));
-
-    output.emplace(fruPath, kwVal);
-
-    debugger(output);
 }
 
 void VpdTool::printFixSystemVPDOption(UserOption option)
