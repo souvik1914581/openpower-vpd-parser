@@ -22,75 +22,69 @@ using namespace openpower::vpd::parser;
 using namespace openpower::vpd::parser::factory;
 using namespace openpower::vpd::parser::interface;
 
-std::string VpdTool::getKwName()
+bool VpdTool::fileToVector(Binary& data)
 {
-    if (keyword[0] == '#')
+    try
     {
-        return (string("PD_") + keyword[1]);
+        std::ifstream file(value, std::ifstream::in);
+
+        if (file)
+        {
+            std::string line;
+            while (std::getline(file, line))
+            {
+                std::istringstream iss(line);
+                std::string byteStr;
+                while (iss >> std::setw(2) >> std::hex >> byteStr)
+                {
+                    uint8_t byte = strtoul(byteStr.c_str(), nullptr, 16);
+                    data.emplace(data.end(), byte);
+                }
+            }
+            return true;
+        }
+        else
+        {
+            std::cerr << "Unable to open the given file " << value << std::endl;
+        }
     }
-    else if (isdigit(keyword[0]))
+    catch (std::exception& e)
     {
-        return (string("N_") + keyword[1]);
+        std::cerr << e.what();
     }
-    return keyword;
+    return false;
 }
 
-int VpdTool::dataFileToBinary(Binary& data)
+bool VpdTool::copyStringToFile(const std::string& input)
 {
-    std::cout << "Size of vector before: " << data.size() << std::endl;
-    std::ifstream file(value, std::ios::binary);
-    std::cout << "\n opened file in bin mode" << std::endl;
-    const int bufferSize = 1024;
-    uint8_t buffer[bufferSize];
-    while (file.read(reinterpret_cast<char*>(buffer), bufferSize))
+    try
     {
-        std::cout << "\n reading from file and storing it into vector "
-                  << std::endl;
-        data.insert(data.end(), buffer, buffer + file.gcount());
-    }
-    std::cout << "\n storing remaining bytes " << std::endl;
+        std::ofstream outFile(value, std::ofstream::out);
 
-    data.insert(data.end(), buffer, buffer + file.gcount());
-    std::cout << "\n closing file " << std::endl;
-    file.close();
-    std::cout << "\nfile sloced" << std::endl;
-    std::cout << "Size of vector after: " << data.size() << std::endl;
-    std::cout << "\ncontents " << std::endl;
-    for (size_t i = 0; i < data.size(); i++)
-    {
-        std::cout << data[i] << " ";
-    }
+        if (outFile.is_open())
+        {
+            std::string hexString = input;
+            if (input.substr(0, 2) == "0x")
+            {
+                // truncating prefix 0x
+                hexString = input.substr(2);
+            }
+            outFile.write(hexString.c_str(), hexString.length());
+        }
+        else
+        {
+            std::cerr << "Error opening output file " << value << std::endl;
+            return false;
+        }
 
-#if 0
-data.resize(65504);
-std::filestream file;
-file.open(value, std::ios::in | std::ios::binary);
-file.seekg(startOffset, std::ios_base::cur);
-file.read(reinterpret_cast<char*>(&data[0]), 65504));
-data.resize(file.gcount());
-file.clear(std::ios_base::eofbit);
-#endif
-    return 0;
-}
-
-int VpdTool::byteStringToFile(const std::string& inputStr)
-{
-    std::string filePath = "/tmp/output.bin";
-    std::ofstream outFile(filePath, std::ios::out | std::ios::binary);
-
-    if (outFile.is_open())
-    {
-        outFile.write(inputStr.c_str(), inputStr.length());
         outFile.close();
-        std::cout << keyword << " value written to file " << filePath
-                  << " successfully." << std::endl;
     }
-    else
+    catch (std::exception& e)
     {
-        std::cerr << "Error opening file " << filePath << std::endl;
-        return 1;
+        std::cerr << e.what();
+        return false;
     }
-    return 0;
+    return true;
 }
 
 static void
@@ -391,8 +385,9 @@ json VpdTool::getPresentPropJson(const std::string& invPath)
     }
     catch (const sdbusplus::exception::SdBusError& e)
     {
-        // not required to handle the exception. Present will be set to Unknown
+        presence = "Unknown";
     }
+
     json js;
     js.emplace("Present", presence);
     return js;
@@ -479,14 +474,14 @@ void VpdTool::dumpObject(const nlohmann::basic_json<>& jsObject)
 
 void VpdTool::readKeyword()
 {
+    const std::string& kw = getDbusNameForThisKw(keyword);
+
     string interface = "com.ibm.ipzvpd.";
     variant<Binary> response;
 
     try
     {
-        json output = json::object({});
-        json kwVal = json::object({});
-        makeDBusCall(INVENTORY_PATH + fruPath, interface + recordName, keyword)
+        makeDBusCall(INVENTORY_PATH + fruPath, interface + recordName, kw)
             .read(response);
 
         string printableVal{};
@@ -494,6 +489,25 @@ void VpdTool::readKeyword()
         {
             printableVal = getPrintableValue(*vec);
         }
+
+        if (!value.empty())
+        {
+            if (copyStringToFile(printableVal))
+            {
+                std::cout << "Value read is saved in the file " << value
+                          << std::endl;
+                return;
+            }
+            else
+            {
+                std::cerr << "Error while saving the read value in file. "
+                             "Displaying the read value on console"
+                          << std::endl;
+            }
+        }
+
+        json output = json::object({});
+        json kwVal = json::object({});
         kwVal.emplace(keyword, printableVal);
 
         output.emplace(fruPath, kwVal);
@@ -509,15 +523,13 @@ void VpdTool::readKeyword()
 
 int VpdTool::updateKeyword()
 {
-    std::cout << "\nCalling updateKeyword api " << std::endl;
-
     Binary val;
+
     if (std::filesystem::exists(value))
     {
-        std::cout << "\n file exisit" << std::endl;
-        if (dataFileToBinary(val) != 0)
+        if (!fileToVector(val))
         {
-            std::cout << "\nKeyword " << keyword << " update failed."
+            std::cout << "Keyword " << keyword << " update failed."
                       << std::endl;
             return 1;
         }
@@ -527,21 +539,25 @@ int VpdTool::updateKeyword()
         val = toBinary(value);
     }
 
-    std::string kw = getKwName();
-
     auto bus = sdbusplus::bus::new_default();
     auto properties =
         bus.new_method_call(BUSNAME, OBJPATH, IFACE, "WriteKeyword");
     properties.append(static_cast<sdbusplus::message::object_path>(fruPath));
     properties.append(recordName);
-    properties.append(kw);
+    properties.append(keyword);
     properties.append(val);
-    auto result = bus.call(properties);
+
+    // When there is a request to write 10K bytes, there occurs a delay in dbus
+    // call which leads to dbus timeout exception. To avoid such exceptions
+    // increase the timeout period from default 25 seconds to 60 seconds.
+    auto timeoutInMicroSeconds = 60 * 1000000L;
+    auto result = bus.call(properties, timeoutInMicroSeconds);
 
     if (result.is_method_error())
     {
         throw runtime_error("Get api failed");
     }
+    std::cout << "Data updated successfully " << std::endl;
     return 0;
 }
 
@@ -598,18 +614,15 @@ int VpdTool::updateHardware(const uint32_t offset)
     Binary val;
     if (std::filesystem::exists(value))
     {
-        std::cout << "\n input file exisit" << std::endl;
-        if (dataFileToBinary(val) != 0)
+        if (!fileToVector(val))
         {
-            std::cout << "\n returned back from dataFiletOBIN API" << std::endl;
-            std::cout << "\nKeyword " << keyword << " update failed."
+            std::cout << "Keyword " << keyword << " update failed."
                       << std::endl;
             return 1;
         }
     }
     else
     {
-        std::cout << "\n Given value is not a filepath." << std::endl;
         val = toBinary(value);
     }
 
@@ -618,14 +631,14 @@ int VpdTool::updateHardware(const uint32_t offset)
     {
         auto json = nlohmann::json::parse(inventoryJson);
         EditorImpl edit(fruPath, json, recordName, keyword);
-        std::cout << "\n calling updateKeyword editor api with the val"
-                  << std::endl;
+
         edit.updateKeyword(val, offset, false);
     }
     catch (const json::parse_error& ex)
     {
         throw(VpdJsonException("Json Parsing failed", INVENTORY_JSON_SYM_LINK));
     }
+    std::cout << "Data updated successfully " << std::endl;
     return rc;
 }
 
@@ -666,18 +679,8 @@ void VpdTool::readKwFromHw(const uint32_t& startOffset)
              vpdStartOffset);
     std::string keywordVal = obj.readKwFromHw(recordName, keyword);
 
-    if ((keyword[0] == '#') && (!keywordVal.empty()))
-    {
-        if (byteStringToFile(keywordVal) != 0)
-        {
-            std::cout << "\nError writing the keyword value to file. So "
-                         "printing the value on console.";
-        }
-        else
-        {
-            return;
-        }
-    }
+    keywordVal = getPrintableValue(keywordVal);
+
     if (keywordVal.empty())
     {
         std::cerr << "The given keyword " << keyword << " or record "
@@ -687,12 +690,27 @@ void VpdTool::readKwFromHw(const uint32_t& startOffset)
         return;
     }
 
+    if (!value.empty())
+    {
+        if (copyStringToFile(keywordVal))
+        {
+            std::cout << "Value read is saved in the file " << value
+                      << std::endl;
+            return;
+        }
+        else
+        {
+            std::cerr
+                << "Error while saving the read value in file. Displaying "
+                   "the read value on console"
+                << std::endl;
+        }
+    }
+
     json output = json::object({});
     json kwVal = json::object({});
-    kwVal.emplace(keyword, getPrintableValue(keywordVal));
-
+    kwVal.emplace(keyword, keywordVal);
     output.emplace(fruPath, kwVal);
-
     debugger(output);
 }
 
@@ -1117,10 +1135,9 @@ int VpdTool::cleanSystemVPD()
             }
         }
 
-        std::cout
-            << "\n The critical keywords from system backplane VPD has been "
-               "reset successfully."
-            << std::endl;
+        std::cout << "\n The critical keywords from system backplane VPD has "
+                     "been reset successfully."
+                  << std::endl;
     }
     catch (const std::exception& e)
     {
