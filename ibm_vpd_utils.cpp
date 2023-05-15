@@ -678,15 +678,7 @@ string getPrintableValue(const Binary& vec)
 
     if (it != vec.end()) // if the given vector has any non printable value
     {
-        for (auto itr = it; itr != vec.end(); itr++)
-        {
-            if (*itr != 0x00)
-            {
-                str = byteArrayToHexString(vec);
-                return str;
-            }
-        }
-        str = string(vec.begin(), it);
+        str = byteArrayToHexString(vec);
     }
     else
     {
