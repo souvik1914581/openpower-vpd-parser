@@ -52,7 +52,7 @@ using KWdVPDValueType = std::variant<BinaryVector,std::string, size_t>;
 using KeywordVpdMap = std::unordered_map<std::string, KWdVPDValueType>;
 
 /**
- * Type tp hold keyword::value map of a VPP.
+ * Type to hold keyword::value map of a VPD.
  * Variant can be extended to support additional type.
 */
 using VPDKWdValueMap = std::variant<IPZKwdValueMap, KeywordVpdMap>;

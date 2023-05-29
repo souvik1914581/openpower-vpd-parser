@@ -90,7 +90,8 @@ vpd_manager_SOURCES = ['src/main.cpp',
                        'src/utils.cpp',
                        'src/parser_factory.cpp',
                        'src/ipz_parser.cpp',
-                       'src/worker.cpp']
+                       'src/worker.cpp',
+		       'src/keyword_vpd_parser.cpp']
 
 vpd_manager_dependencies = [sdbusplus]
 
