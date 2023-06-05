@@ -2,3 +2,5 @@ option('BUSNAME', type : 'string', value : 'com.ibm.VPD.Manager',description : '
 option('OBJPATH', type : 'string', value : '/com/ibm/VPD/Manager', description : 'OBJECT PATH FOR THE SERVICE')
 option('IFACE', type : 'string', value : 'com.ibm.VPD.Manager', description : 'INTERFACE NAME')
 option('tests', type: 'feature', value : 'enabled', description: 'Build tests')
+option('BAD_VPD_DIR',type: 'string', value: '/tmp/bad-vpd/', description: 'Directory which contains the bad vpd file - which needs to be included in bmc dump.')
+

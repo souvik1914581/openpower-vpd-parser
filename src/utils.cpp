@@ -1,6 +1,12 @@
+#include "config.h"
+
 #include "utils.hpp"
 
 #include "logger.hpp"
+
+#include <filesystem>
+#include <fstream>
+#include <regex>
 
 namespace vpd
 {
@@ -105,6 +111,65 @@ void writeDbusProperty(const std::string& serviceName,
         // caller needs to handle this throw to handle error in writing Dbus.
         throw std::runtime_error("Dbus write failed");
     }
+}
+
+std::string generateBadVPDFileName(const std::string& vpdFilePath)
+{
+    std::string badVpdFileName = BAD_VPD_DIR;
+    if (vpdFilePath.find("i2c") != std::string::npos)
+    {
+        badVpdFileName += "i2c-";
+        std::regex i2cPattern("(at24/)([0-9]+-[0-9]+)\\/");
+        std::smatch match;
+        if (std::regex_search(vpdFilePath, match, i2cPattern))
+        {
+            badVpdFileName += match.str(2);
+        }
+    }
+    else if (vpdFilePath.find("spi") != std::string::npos)
+    {
+        std::regex spiPattern("((spi)[0-9]+)(.0)");
+        std::smatch match;
+        if (std::regex_search(vpdFilePath, match, spiPattern))
+        {
+            badVpdFileName += match.str(1);
+        }
+    }
+    return badVpdFileName;
+}
+
+void dumpBadVpd(const std::string& vpdFilePath,
+                const types::BinaryVector& vpdVector)
+{
+    std::filesystem::create_directory(BAD_VPD_DIR);
+    auto badVpdPath = generateBadVPDFileName(vpdFilePath);
+
+    if (std::filesystem::exists(badVpdPath))
+    {
+        std::error_code ec;
+        std::filesystem::remove(badVpdPath, ec);
+        if (ec) // error code
+        {
+            std::string error = "Error removing the existing broken vpd in ";
+            error += badVpdPath;
+            error += ". Error code : ";
+            error += ec.value();
+            error += ". Error message : ";
+            error += ec.message();
+            throw std::runtime_error(error);
+        }
+    }
+
+    std::ofstream badVpdFileStream(badVpdPath, std::ofstream::binary);
+    if (badVpdFileStream.is_open())
+    {
+        throw std::runtime_error(
+            "Failed to open bad vpd file path in /tmp/bad-vpd. "
+            "Unable to dump the broken/bad vpd file.");
+    }
+
+    badVpdFileStream.write(reinterpret_cast<const char*>(vpdVector.data()),
+                           vpdVector.size());
 }
 } // namespace utils
 } // namespace vpd
