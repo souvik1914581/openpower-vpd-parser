@@ -657,39 +657,44 @@ const std::string getKwVal(const Parsed& vpdMap, const std::string& rec,
     return kwVal;
 }
 
-std::string byteArrayToHexString(const Binary& vec)
+std::string hexString(const std::variant<Binary, std::string>& kw)
 {
-    std::stringstream ss;
-    std::string hexRep = "0x";
-    ss << hexRep;
-    std::string str = ss.str();
-
-    // convert Decimal to Hex string
-    for (auto& v : vec)
-    {
-        ss << std::setfill('0') << std::setw(2) << std::hex << (int)v;
-        str = ss.str();
-    }
-    return str;
+    std::string hexString;
+    std::visit(
+        [&hexString](auto&& kw) {
+            std::stringstream ss;
+            std::string hexRep = "0x";
+            ss << hexRep;
+            for (auto& kwVal : kw)
+            {
+                ss << std::setfill('0') << std::setw(2) << std::hex
+                   << static_cast<int>(kwVal);
+            }
+            hexString = ss.str();
+        },
+        kw);
+    return hexString;
 }
 
-std::string getPrintableValue(const Binary& vec)
+std::string getPrintableValue(const std::variant<Binary, std::string>& kwVal)
 {
-    std::string str{};
-
-    // find for a non printable value in the vector
-    const auto it = std::find_if(vec.begin(), vec.end(),
-                                 [](const auto& ele) { return !isprint(ele); });
-
-    if (it != vec.end()) // if the given vector has any non printable value
-    {
-        str = byteArrayToHexString(vec);
-    }
-    else
-    {
-        str = std::string(vec.begin(), vec.end());
-    }
-    return str;
+    std::string kwString{};
+    std::visit(
+        [&kwString](auto&& kwVal) {
+            const auto it =
+                std::find_if(kwVal.begin(), kwVal.end(),
+                             [](const auto& kw) { return !isprint(kw); });
+            if (it != kwVal.end())
+            {
+                kwString = hexString(kwVal);
+            }
+            else
+            {
+                kwString = std::string(kwVal.begin(), kwVal.end());
+            }
+        },
+        kwVal);
+    return kwString;
 }
 
 void executePostFailAction(const nlohmann::json& json, const std::string& file)
