@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sdbusplus/asio/property.hpp>
+
 #include <unordered_map>
 
 namespace vpd
@@ -55,6 +56,10 @@ using PoundKwSize = uint16_t;
 
 using RecordOffsetList = std::vector<uint32_t>;
 
+using VPDMapVariant = std::variant<KeywordVpdMap, ParsedVPD>;
+using SystemTypeMap =
+    std::unordered_map<std::string,
+                       std::vector<std::pair<std::string, std::string>>>;
     
 
 } // namespace types

@@ -63,6 +63,11 @@ conf_data.set_quoted('BUSNAME', get_option('BUSNAME'))
 conf_data.set_quoted('OBJPATH', get_option('OBJPATH'))
 conf_data.set_quoted('IFACE', get_option('IFACE'))
 conf_data.set_quoted('BAD_VPD_DIR', get_option('BAD_VPD_DIR'))
+conf_data.set_quoted('INVENTORY_JSON_DEFAULT', get_option('INVENTORY_JSON_DEFAULT'))
+conf_data.set_quoted('INVENTORY_JSON_SYM_LINK', get_option('INVENTORY_JSON_SYM_LINK'))
+conf_data.set_quoted('JSON_ABSOLUTE_PATH_PREFIX', get_option('JSON_ABSOLUTE_PATH_PREFIX'))
+conf_data.set_quoted('SYSTEM_VPD_FILE_PATH', get_option('SYSTEM_VPD_FILE_PATH'))
+conf_data.set_quoted('VPD_SYMLIMK_PATH', get_option('VPD_SYMLIMK_PATH'))
 configure_file(output: 'config.h',
             configuration : conf_data)
 
@@ -83,7 +88,8 @@ vpd_manager_SOURCES = ['src/main.cpp',
                        'src/logger.cpp',
                        'src/utils.cpp',
                        'src/parser_factory.cpp',
-                       'src/ipz_parser.cpp']
+                       'src/ipz_parser.cpp',
+                       'src/worker.cpp']
 
 vpd_manager_dependencies = [sdbusplus]
 
