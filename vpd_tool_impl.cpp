@@ -341,6 +341,15 @@ json VpdTool::interfaceDecider(json& itemEEPROM)
 
         for (const auto& ex : itemEEPROM["extraInterfaces"].items())
         {
+            // Properties under Decorator.Asset interface are derived from VINI
+            // keywords. Displaying VINI keywords and skipping Decorator.Asset
+            // interface's properties will avoid duplicate entries in vpd-tool
+            // output.
+            if (ex.key() == "xyz.openbmc_project.Inventory.Decorator.Asset")
+            {
+                continue;
+            }
+
             if (!(ex.value().is_null()))
             {
                 // TODO: Remove this if condition check once inventory json is
@@ -650,33 +659,56 @@ void VpdTool::readKwFromHw(const uint32_t& startOffset)
     Binary completeVPDFile;
     completeVPDFile.resize(65504);
     fstream vpdFileStream;
-    vpdFileStream.open(fruPath,
-                       std::ios::in | std::ios::out | std::ios::binary);
+    std::string inventoryPath;
 
-    vpdFileStream.seekg(startOffset, ios_base::cur);
-    vpdFileStream.read(reinterpret_cast<char*>(&completeVPDFile[0]), 65504);
-    completeVPDFile.resize(vpdFileStream.gcount());
-    vpdFileStream.clear(std::ios_base::eofbit);
+    if (jsonFile["frus"].contains(fruPath))
+    {
+        uint32_t vpdStartOffset = 0;
+
+        for (const auto& item : jsonFile["frus"][fruPath])
+        {
+            if (item.find("offset") != item.end())
+            {
+                vpdStartOffset = item["offset"];
+                break;
+            }
+        }
+
+        if ((startOffset != vpdStartOffset))
+        {
+            std::cerr << "Invalid offset, please correct the offset" << endl;
+            std::cerr << "Recommended Offset is: " << vpdStartOffset << endl;
+            return;
+        }
+        inventoryPath = jsonFile["frus"][fruPath][0]["inventoryPath"];
+    }
+
+    vpdFileStream.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+    try
+    {
+        vpdFileStream.open(fruPath,
+                           std::ios::in | std::ios::out | std::ios::binary);
+        vpdFileStream.seekg(startOffset, ios_base::cur);
+        vpdFileStream.read(reinterpret_cast<char*>(&completeVPDFile[0]), 65504);
+        completeVPDFile.resize(vpdFileStream.gcount());
+        vpdFileStream.clear(std::ios_base::eofbit);
+    }
+    catch (const std::ifstream::failure& fail)
+    {
+        std::cerr << "Exception in file handling [" << fruPath
+                  << "] error : " << fail.what();
+        std::cerr << "Stream file size = " << vpdFileStream.gcount()
+                  << std::endl;
+        throw;
+    }
 
     if (completeVPDFile.empty())
     {
         throw std::runtime_error("Invalid File");
     }
 
-    const std::string& inventoryPath =
-        jsonFile["frus"][fruPath][0]["inventoryPath"];
-
-    uint32_t vpdStartOffset = 0;
-    for (const auto& item : jsonFile["frus"][fruPath])
-    {
-        if (item.find("offset") != item.end())
-        {
-            vpdStartOffset = item["offset"];
-        }
-    }
-
     Impl obj(completeVPDFile, (constants::pimPath + inventoryPath), fruPath,
-             vpdStartOffset);
+             startOffset);
     std::string keywordVal = obj.readKwFromHw(recordName, keyword);
 
     keywordVal = getPrintableValue(keywordVal);
