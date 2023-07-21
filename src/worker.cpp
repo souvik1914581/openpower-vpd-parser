@@ -2,8 +2,12 @@
 
 #include "worker.hpp"
 
+#include "configuration.hpp"
+#include "constants.hpp"
 #include "exceptions.hpp"
 #include "logger.hpp"
+#include "parser_factory.hpp"
+#include "parser_interface.hpp"
 #include "utils.hpp"
 
 #include <filesystem>
@@ -86,7 +90,7 @@ bool Worker::isMotherboardPathOnDBus() const
         "xyz.openbmc_project.Inventory.Item.Board.Motherboard"};
 
     types::MapperGetObject objectMap =
-        utils::getObjectMap(mboardPath.data(), interfaces);
+        utils::getObjectMap(PIM_PATH_PREFIX + mboardPath, interfaces);
 
     if (objectMap.empty())
     {
@@ -97,46 +101,189 @@ bool Worker::isMotherboardPathOnDBus() const
 
 std::string Worker::getIMValue(const types::ParsedVPD& parsedVpd) const
 {
-    (void)parsedVpd;
-    return "";
+    if (parsedVpd.empty())
+    {
+        throw std::runtime_error("Empty VPD map. Can't Extract IM value");
+    }
+
+    const auto& itrToVSBP = parsedVpd.find("VSBP");
+    if (itrToVSBP == parsedVpd.end())
+    {
+        throw DataException("VSBP record missing.");
+    }
+
+    const auto& itrToIM = (itrToVSBP->second).find("IM");
+    if (itrToIM == (itrToVSBP->second).end())
+    {
+        throw DataException("IM keyword missing.");
+    }
+
+    types::BinaryVector imVal;
+    std::copy(itrToIM->second.begin(), itrToIM->second.end(),
+              back_inserter(imVal));
+
+    std::ostringstream imData;
+    for (auto& aByte : imVal)
+    {
+        imData << std::setw(2) << std::setfill('0') << std::hex
+               << static_cast<int>(aByte);
+    }
+
+    return imData.str();
 }
 
 std::string Worker::getHWVersion(const types::ParsedVPD& parsedVpd) const
 {
-    (void)parsedVpd;
-    return "";
+    if (parsedVpd.empty())
+    {
+        throw std::runtime_error("Empty VPD map. Can't Extract IM value");
+    }
+
+    const auto& itrToVINI = parsedVpd.find("VINI");
+    if (itrToVINI == parsedVpd.end())
+    {
+        throw DataException("VINI record missing.");
+    }
+
+    const auto& itrToHW = (itrToVINI->second).find("HW");
+    if (itrToHW == (itrToVINI->second).end())
+    {
+        throw DataException("HW keyword missing.");
+    }
+
+    types::BinaryVector hwVal;
+    std::copy(itrToHW->second.begin(), itrToHW->second.end(),
+              back_inserter(hwVal));
+
+    // The planar pass only comes from the LSB of the HW keyword,
+    // where as the MSB is used for other purposes such as signifying clock
+    // termination.
+    hwVal[0] = 0x00;
+
+    std::ostringstream hwString;
+    for (auto& aByte : hwVal)
+    {
+        hwString << std::setw(2) << std::setfill('0') << std::hex
+                 << static_cast<int>(aByte);
+    }
+
+    return hwString.str();
+}
+
+void Worker::getVpdDataInVector(const std::string& vpdFilePath,
+                                types::BinaryVector& vpdVector,
+                                size_t& vpdStartOffset)
+{
+    std::fstream vpdFileStream;
+    vpdFileStream.exceptions(std::ifstream::badbit | std::ifstream::failbit);
+
+    try
+    {
+        vpdFileStream.open(vpdFilePath,
+                           std::ios::in | std::ios::out | std::ios::binary);
+        auto vpdSizeToRead = std::min(std::filesystem::file_size(vpdFilePath),
+                                      static_cast<uintmax_t>(65504));
+        vpdVector.resize(vpdSizeToRead);
+
+        vpdFileStream.seekg(vpdStartOffset, std::ios_base::beg);
+        vpdFileStream.read(reinterpret_cast<char*>(&vpdVector[0]),
+                           vpdSizeToRead);
+
+        vpdVector.resize(vpdFileStream.gcount());
+        vpdFileStream.clear(std::ios_base::eofbit);
+    }
+    catch (const std::ifstream::failure& fail)
+    {
+        std::cerr << "Exception in file handling [" << vpdFilePath
+                  << "] error : " << fail.what();
+        std::cerr << "Stream file size = " << vpdFileStream.gcount()
+                  << std::endl;
+        throw;
+    }
+
+    // Make sure we reset the EEPROM pointer to a "safe" location if it was
+    // DIMM SPD that we just read.
+    for (const auto& item : m_parsedJson["frus"][vpdFilePath])
+    {
+        if ((item.find("extraInterfaces") != item.end()) &&
+            (item["extraInterfaces"].find(
+                 "xyz.openbmc_project.Inventory.Item.Dimm") !=
+             item["extraInterfaces"].end()))
+        {
+            // moves the EEPROM pointer to 2048 'th byte.
+            vpdFileStream.seekg(2047, std::ios::beg);
+
+            // Read that byte and discard - to affirm the move
+            // operation.
+            char ch;
+            vpdFileStream.read(&ch, sizeof(ch));
+            break;
+        }
+    }
 }
 
 void Worker::fillVPDMap(const std::string& vpdFilePath)
 {
-    (void)vpdFilePath;
+    logging::logMessage(std::string("Parsing file = ") + vpdFilePath);
+
+    if (vpdFilePath.empty())
+    {
+        logging::logMessage("Empty file path. Unable to process.");
+        return;
+    }
+
+    size_t vpdStartOffset = 0;
+    std::string fruInventoryPath;
+
+    // check if offset present.
+    if (m_parsedJson["frus"].contains(vpdFilePath))
+    {
+        for (const auto& item : m_parsedJson["frus"][vpdFilePath])
+        {
+            if (item.find("offset") != item.end())
+            {
+                vpdStartOffset = item["offset"];
+            }
+        }
+
+        fruInventoryPath =
+            m_parsedJson["frus"][vpdFilePath][0]["inventoryPath"];
+    }
+
+    types::BinaryVector vpdVector;
+    getVpdDataInVector(vpdFilePath, vpdVector, vpdStartOffset);
+
+    std::shared_ptr<ParserInterface> parser = ParserFactory::getParser(
+        vpdVector, (PIM_PATH_PREFIX + fruInventoryPath), vpdFilePath,
+        vpdStartOffset);
+    m_vpdMap = parser->parse();
 }
 
 void Worker::getSystemJson(std::string& systemJson)
 {
-    types::SystemTypeMap systemType{
-        {"50001001", {{"0001", "v2"}}},
-        {"50001000", {{"0001", "v2"}}},
-        {"50001002", {}},
-        {"50003000",
-         {{"000A", "v2"}, {"000B", "v2"}, {"000C", "v2"}, {"0014", "v2"}}},
-        {"50004000", {}}};
-
     fillVPDMap(SYSTEM_VPD_FILE_PATH);
 
     if (auto pVal = std::get_if<types::ParsedVPD>(&m_vpdMap))
     {
         std::string hwKWdValue = getHWVersion(*pVal);
-        const std::string& imKwdValue = getIMValue(*pVal);
-
-        auto itrToIM = systemType.find(imKwdValue);
-        if (itrToIM == systemType.end())
+        if (hwKWdValue.empty())
         {
-            logging::logMessage("IM keyword does not map to any system type");
-            return;
+            throw DataException("HW value fetched is empty.");
         }
 
-        const auto hwVersionList = itrToIM->second;
+        const std::string& imKwdValue = getIMValue(*pVal);
+        if (imKwdValue.empty())
+        {
+            throw DataException("IM value fetched is empty.");
+        }
+
+        auto itrToIM = config::systemType.find(imKwdValue);
+        if (itrToIM == config::systemType.end())
+        {
+            throw DataException("IM keyword does not map to any system type");
+        }
+
+        const types::HWVerList hwVersionList = itrToIM->second.second;
         if (!hwVersionList.empty())
         {
             transform(hwKWdValue.begin(), hwKWdValue.end(), hwKWdValue.begin(),
@@ -150,17 +297,15 @@ void Worker::getSystemJson(std::string& systemJson)
 
             if (itrToHW != hwVersionList.end())
             {
-                // make it dynamic
                 systemJson += imKwdValue + "_" + (*itrToHW).second + ".json";
                 return;
             }
         }
-        systemJson += imKwdValue + ".json";
+        systemJson += itrToIM->second.first + ".json";
+        return;
     }
-    else
-    {
-        logging::logMessage("Invalid VPD type returned from Parser");
-    }
+
+    throw DataException("Invalid VPD type returned from Parser");
 }
 
 static void setEnvAndReboot(const std::string& key, const std::string& value)
@@ -186,8 +331,8 @@ void Worker::setDeviceTreeAndJson()
             // As symlink is also present and motherboard path is also
             // populated, call to thi API implies, this is a situation where
             // VPD-manager service got restarted due to some reason. Do not
-            // process for selection of device tree or JSON selection in this
-            // case.
+            // process for selection of device tree or JSON selection in
+            // this case.
             logging::logMessage("Servcie restarted for some reason.");
             return;
         }
@@ -262,7 +407,7 @@ void Worker::setDeviceTreeAndJson()
 
 void Worker::publishSystemVPD()
 {
-    // TODO: Implement to parse system VPD.
+        // TODO: Implement to parse system VPD.
 }
 
 void Worker::processAllFRU()

@@ -83,12 +83,16 @@ class Worker
     /**
      * @brief An API to read IM value from VPD.
      *
+     * Note: Throws exception in case of error. Caller need to handle.
+     *
      * @param[in] parsedVpd - Parsed VPD.
      */
     std::string getIMValue(const types::ParsedVPD& parsedVpd) const;
 
     /**
      * @brief An API to read HW version from VPD.
+     *
+     * Note: Throws exception in case of error. Caller need to handle.
      *
      * @param[in] parsedVpd - Parsed VPD.
      */
@@ -100,6 +104,20 @@ class Worker
      * @param[in] vpdFilePath - EEPROM file path.
      */
     void fillVPDMap(const std::string& vpdFilePath);
+
+    /**
+     * @brief An API to get VPD in a vector.
+     *
+     * The vector is required by the respective parser to fill the VPD map.
+     * Note: API throws exception in case of failure. Caller needs to handle.
+     *
+     * @param[in] vpdFilePath - EEPROM path of the FRU.
+     * @param[out] vpdVector - VPD in vector form.
+     * @param[in] vpdStartOffset - Offset of VPD data in EEPROM.
+     */
+    void getVpdDataInVector(const std::string& vpdFilePath,
+                            types::BinaryVector& vpdVector,
+                            size_t& vpdStartOffset);
 
     /**
      * @brief An API to check if motherboard path is already published.

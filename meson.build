@@ -68,6 +68,7 @@ conf_data.set_quoted('INVENTORY_JSON_SYM_LINK', get_option('INVENTORY_JSON_SYM_L
 conf_data.set_quoted('JSON_ABSOLUTE_PATH_PREFIX', get_option('JSON_ABSOLUTE_PATH_PREFIX'))
 conf_data.set_quoted('SYSTEM_VPD_FILE_PATH', get_option('SYSTEM_VPD_FILE_PATH'))
 conf_data.set_quoted('VPD_SYMLIMK_PATH', get_option('VPD_SYMLIMK_PATH'))
+conf_data.set_quoted('PIM_PATH_PREFIX', get_option('PIM_PATH_PREFIX'))
 configure_file(output: 'config.h',
             configuration : conf_data)
 
@@ -96,7 +97,7 @@ vpd_manager_dependencies = [sdbusplus]
 vpd_manager_exe = executable(
                 'vpd-manager',
                 vpd_manager_SOURCES,
-                include_directories : 'include/',
+                include_directories : ['include/', 'configuration/'],
                 link_with : libvpdecc,
                 dependencies : [
                                 vpd_manager_dependencies,

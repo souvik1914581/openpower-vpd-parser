@@ -24,7 +24,7 @@ class ParserInterface
      * @return parsed format for VPD data, depending upon the
      * parsing logic.
      */
-    virtual std::variant<types::ParsedVPD, types::KeywordVpdMap> parse() = 0;
+    virtual types::VPDMapVariant parse() = 0;
 
     /**
      * @brief Virtual destructor.

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <sdbusplus/asio/property.hpp>
-
 #include <unordered_map>
 
 namespace vpd
@@ -38,6 +37,9 @@ using DbusVariantType = std::variant<
  using MapperGetObject =
     std::vector<std::pair<std::string, std::vector<std::string>>>;
 
+/**
+ * Map of <Record name, <keyword, value>>
+*/
 using ParsedVPD = std::unordered_map<std::string,
                                   std::unordered_map<std::string, std::string>>;
 using BinaryVector = std::vector<uint8_t>;
@@ -56,11 +58,14 @@ using PoundKwSize = uint16_t;
 
 using RecordOffsetList = std::vector<uint32_t>;
 
-using VPDMapVariant = std::variant<KeywordVpdMap, ParsedVPD>;
+using VPDMapVariant = std::variant<ParsedVPD, KeywordVpdMap>;
+
+using HWVerList = std::vector<std::pair<std::string, std::string>>;
+/**
+ * Map of <systemIM, pair<Default version, vector<HW version, JSON suffix>>>
+*/
 using SystemTypeMap =
-    std::unordered_map<std::string,
-                       std::vector<std::pair<std::string, std::string>>>;
-    
+    std::unordered_map<std::string, std::pair<std::string, HWVerList>>;
 
 } // namespace types
 } // namespace vpd
