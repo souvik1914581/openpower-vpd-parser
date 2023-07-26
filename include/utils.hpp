@@ -2,10 +2,14 @@
 
 #include "types.hpp"
 
+#include <errno.h>
+
+#include <array>
 #include <iostream>
 #include <source_location>
 #include <span>
 #include <string_view>
+#include <vector>
 
 namespace vpd
 {
@@ -102,6 +106,61 @@ std::string generateBadVPDFileName(const std::string& vpdFilePath);
  */
 void dumpBadVpd(const std::string& vpdFilePath,
                 const types::BinaryVector& vpdVector);
+
+/**
+ * @brief API to return null at the end of variadic template args.
+ *
+ * @return empty string.
+ */
+inline std::string getCommand()
+{
+    return "";
+}
+
+/**
+ * @brief API to arrange create command.
+ *
+ * @param[in] arguments to create the command
+ * @return cmd - command string
+ */
+template <typename T, typename... Types>
+inline std::string getCommand(T arg1, Types... args)
+{
+    std::string cmd = " " + arg1 + getCommand(args...);
+
+    return cmd;
+}
+
+/**
+ * @brief API to create shell command and execute.
+ *
+ * Note: Throws exception on any failure. Caller needs to handle.
+ *
+ * @param[in] arguments for command
+ * @returns output of that command
+ */
+template <typename T, typename... Types>
+inline std::vector<std::string> executeCmd(T&& path, Types... args)
+{
+    std::vector<std::string> cmdOutput;
+    std::array<char, 128> buffer;
+
+    std::string cmd = path + getCommand(args...);
+
+    std::unique_ptr<FILE, decltype(&pclose)> cmdPipe(popen(cmd.c_str(), "r"),
+                                                     pclose);
+    if (!cmdPipe)
+    {
+        std::cerr << "popen failed with error" << strerror(errno) << std::endl;
+        throw std::runtime_error("popen failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), cmdPipe.get()) != nullptr)
+    {
+        cmdOutput.emplace_back(buffer.data());
+    }
+
+    return cmdOutput;
+}
 
 } // namespace utils
 } // namespace vpd

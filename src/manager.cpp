@@ -1,5 +1,7 @@
 #include "manager.hpp"
 
+#include "logger.hpp"
+
 namespace vpd
 {
 Manager::Manager(const std::shared_ptr<boost::asio::io_context>& ioCon,
@@ -8,5 +10,15 @@ Manager::Manager(const std::shared_ptr<boost::asio::io_context>& ioCon,
     m_ioContext(ioCon),
     m_interface(iFace), m_conn(conn)
 {
+    try
+    {
+        m_worker = std::make_shared<Worker>();
+        m_worker->setDeviceTreeAndJson();
+    }
+    catch (const std::exception& e)
+    {
+        logging::logMessage("VPD-Manager service failed.");
+        throw;
+    }
 }
 } // namespace vpd

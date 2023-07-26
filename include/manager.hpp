@@ -1,5 +1,7 @@
 #pragma once
 
+#include "worker.hpp"
+
 #include <sdbusplus/asio/object_server.hpp>
 
 namespace vpd
@@ -46,6 +48,9 @@ class Manager
 
     // Shared pointer to bus connection.
     const std::shared_ptr<sdbusplus::asio::connection>& m_conn;
+
+    // Shared pointer to worker class
+    std::shared_ptr<Worker> m_worker;
 };
 
 } // namespace vpd

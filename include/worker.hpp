@@ -1,5 +1,9 @@
 #pragma once
 
+#include "types.hpp"
+
+#include <nlohmann/json.hpp>
+
 namespace vpd
 {
 /**
@@ -26,8 +30,14 @@ class Worker
 
     /**
      * @brief Constructor.
+     *
+     * Constructor will also, based on symlink pick the correct JSON and
+     * initialize the parsed JSON variable.
+     *
+     * Note: Throws std::exception in case of construction failure. Caller needs
+     * to handle to detect successful object creation.
      */
-    Worker() = default;
+    Worker();
 
     /**
      * @brief Destructor
@@ -40,7 +50,8 @@ class Worker
      * This API based on system chooses corresponding device tree and JSON.
      * If device tree change is required, it updates the "fitconfig" and reboots
      * the system. Else it is NOOP.
-     * Similarly for JSON, synlink is craeted if not found else ignored.
+     *
+     * Note: In case of any error, exception is thrown. Caller need to handle.
      */
     void setDeviceTreeAndJson();
 
@@ -56,5 +67,52 @@ class Worker
      * publish their VPD over Dbus.
      */
     void processAllFRU();
+
+  private:
+    /**
+     * @brief API to select system specific JSON.
+     *
+     * The api based on the IM value of VPD, will select appropriate JSON for
+     * the system. In case no system is found corresponding to the extracted IM
+     * value, error will be logged.
+     *
+     * @param[out] systemJson - System JSON name.
+     */
+    void getSystemJson(std::string& systemJson);
+
+    /**
+     * @brief An API to read IM value from VPD.
+     *
+     * @param[in] parsedVpd - Parsed VPD.
+     */
+    std::string getIMValue(const types::ParsedVPD& parsedVpd) const;
+
+    /**
+     * @brief An API to read HW version from VPD.
+     *
+     * @param[in] parsedVpd - Parsed VPD.
+     */
+    std::string getHWVersion(const types::ParsedVPD& parsedVpd) const;
+
+    /**
+     * @brief An API to parse given VPD file path.
+     *
+     * @param[in] vpdFilePath - EEPROM file path.
+     */
+    void fillVPDMap(const std::string& vpdFilePath);
+
+    /**
+     * @brief An API to check if motherboard path is already published.
+     */
+    bool isMotherboardPathOnDBus() const;
+
+    // Parsed JSON file.
+    nlohmann::json m_parsedJson{};
+
+    // Parsed VPD.
+    types::VPDMapVariant m_vpdMap{};
+
+    // Hold if symlink is present or not.
+    bool m_isSymlinkPresent = false;
 };
 } // namespace vpd
