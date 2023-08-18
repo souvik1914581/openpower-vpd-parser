@@ -13,7 +13,9 @@ Manager::Manager(const std::shared_ptr<boost::asio::io_context>& ioCon,
     try
     {
         m_worker = std::make_shared<Worker>();
-        m_worker->setDeviceTreeAndJson();
+
+        // Set up minimal things that is needed before bus name is claimed.
+        m_worker->performInitialSetup();
     }
     catch (const std::exception& e)
     {

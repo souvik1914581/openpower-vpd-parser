@@ -1,12 +1,15 @@
 #pragma once
 
 #include <sdbusplus/asio/property.hpp>
+#include <sdbusplus/server.hpp>
 #include <unordered_map>
 
 namespace vpd
 {
 namespace types
 {
+using BinaryVector = std::vector<uint8_t>;
+
 // This covers mostly all the data type supported over Dbus for a property.
 // clang-format off
 using DbusVariantType = std::variant<
@@ -23,6 +26,7 @@ using DbusVariantType = std::variant<
     uint16_t,
     uint8_t,
     bool,
+    BinaryVector,
     std::vector<uint32_t>,
     std::vector<uint16_t>,
     sdbusplus::message::object_path,
@@ -40,11 +44,20 @@ using DbusVariantType = std::variant<
 /**
  * Map of <Record name, <keyword, value>>
 */
-using ParsedVPD = std::unordered_map<std::string,
+using IPZVpdMap = std::unordered_map<std::string,
                                   std::unordered_map<std::string, std::string>>;
-using BinaryVector = std::vector<uint8_t>;
-using kwdVpdValueTypes = std::variant<size_t, BinaryVector, std::string>;
-using KeywordVpdMap = std::unordered_map<std::string, kwdVpdValueTypes>;
+
+/* A type for holding the innermost map of property::value.*/
+using KwdValueMap = std::unordered_map<std::string, std::string>;
+using KeywordVpdMap = std::unordered_map<std::string, DbusVariantType>;
+
+using VPDKWdValueMap = std::variant<KwdValueMap, KeywordVpdMap>;
+
+/* Map<Property, Value>*/
+using PropertyMap = std::map<std::string, DbusVariantType>;
+/* Map<Interface<Property, Value>>*/
+using InterfaceMap = std::map<std::string, PropertyMap>;
+using ObjectMap = std::map<sdbusplus::message::object_path, InterfaceMap>;
 
 using KwSize = uint8_t;
 using RecordId = uint8_t;
@@ -58,7 +71,7 @@ using PoundKwSize = uint16_t;
 
 using RecordOffsetList = std::vector<uint32_t>;
 
-using VPDMapVariant = std::variant<ParsedVPD, KeywordVpdMap>;
+using VPDMapVariant = std::variant<IPZVpdMap, KeywordVpdMap>;
 
 using HWVerList = std::vector<std::pair<std::string, std::string>>;
 /**

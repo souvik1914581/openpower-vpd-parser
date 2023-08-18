@@ -2,6 +2,7 @@
 
 #include "utils.hpp"
 
+#include "constants.hpp"
 #include "logger.hpp"
 
 #include <filesystem>
@@ -38,7 +39,7 @@ types::MapperGetObject getObjectMap(const std::string& objectPath,
     }
     catch (const sdbusplus::exception::SdBusError& e)
     {
-        logging::logMessage("e.what()");
+        logging::logMessage(e.what());
     }
 
     return getObjectMap;
@@ -170,6 +171,56 @@ void dumpBadVpd(const std::string& vpdFilePath,
 
     badVpdFileStream.write(reinterpret_cast<const char*>(vpdVector.data()),
                            vpdVector.size());
+}
+
+void getKwVal(const types::KwdValueMap& kwdValueMap, const std::string& kwd,
+              std::string& kwdValue)
+{
+    if (kwd.empty() || kwdValueMap.empty())
+    {
+        logging::logMessage("Invalid parameters");
+        throw std::runtime_error("Invalid parameters");
+    }
+
+    auto itrToKwd = kwdValueMap.find(kwd);
+    if (itrToKwd != kwdValueMap.end())
+    {
+        kwdValue = itrToKwd->second;
+        return;
+    }
+
+    throw std::runtime_error("Keyword not found");
+}
+
+bool callPIM(types::ObjectMap&& objectMap)
+{
+    try
+    {
+        std::array<const char*, 1> pimInterface = {constants::pimIntf};
+
+        auto mapperObjectMap = getObjectMap(constants::pimPath, pimInterface);
+
+        if (!mapperObjectMap.empty())
+        {
+            auto bus = sdbusplus::bus::new_default();
+            auto pimMsg = bus.new_method_call(
+                mapperObjectMap.begin()->first.c_str(), constants::pimPath,
+                constants::pimIntf, "Notify");
+            pimMsg.append(std::move(objectMap));
+            bus.call(pimMsg);
+        }
+        else
+        {
+            logging::logMessage("Mapper returned empty object map for PIM");
+            return false;
+        }
+    }
+    catch (const sdbusplus::exception::SdBusError& e)
+    {
+        logging::logMessage(e.what());
+        return false;
+    }
+    return true;
 }
 } // namespace utils
 } // namespace vpd

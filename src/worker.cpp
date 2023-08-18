@@ -51,6 +51,75 @@ Worker::Worker()
     }
 }
 
+static bool isChassisPowerOn()
+{
+    auto powerState = utils::readDbusProperty(
+        "xyz.openbmc_project.State.Chassis",
+        "/xyz/openbmc_project/state/chassis0",
+        "xyz.openbmc_project.State.Chassis", "CurrentPowerState");
+
+    if (auto curPowerState = std::get_if<std::string>(&powerState))
+    {
+        if ("xyz.openbmc_project.State.Chassis.PowerState.On" == *curPowerState)
+        {
+            logging::logMessage("VPD cannot be read in power on state.");
+            return true;
+        }
+        return false;
+    }
+
+    throw std::runtime_error("Dbus call to get chassis power state failed");
+}
+
+void Worker::performInitialSetup()
+{
+    try
+    {
+        if (isChassisPowerOn())
+        {
+            // Nothing needs to be done. Service restarted for some reason.
+            return;
+        }
+
+        // Check if sysmlink to inventory JSON already exist.
+        if (m_isSymlinkPresent)
+        {
+            types::VPDMapVariant parsedVpdMap;
+            fillVPDMap(SYSTEM_VPD_FILE_PATH, parsedVpdMap);
+
+            if (isSystemVPDOnDBus())
+            {
+                // TODO
+                //  Restore system VPD logic should initiate from here.
+            }
+
+            publishSystemVPD(parsedVpdMap);
+        }
+        else
+        {
+            setDeviceTreeAndJson();
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        if (typeid(ex) == std::type_index(typeid(DataException)))
+        {
+            // TODO:Catch logic to be implemented once PEL code goes in.
+        }
+        else if (typeid(ex) == std::type_index(typeid(EccException)))
+        {
+            // TODO:Catch logic to be implemented once PEL code goes in.
+        }
+        else if (typeid(ex) == std::type_index(typeid(JsonException)))
+        {
+            // TODO:Catch logic to be implemented once PEL code goes in.
+        }
+
+        logging::logMessage(ex.what());
+        throw;
+    }
+}
+
 static std::string readFitConfigValue()
 {
     std::vector<std::string> output = utils::executeCmd("/sbin/fw_printenv");
@@ -74,7 +143,7 @@ static std::string readFitConfigValue()
     return fitConfigValue;
 }
 
-bool Worker::isMotherboardPathOnDBus() const
+bool Worker::isSystemVPDOnDBus() const
 {
     const std::string& mboardPath =
         m_parsedJson["frus"][SYSTEM_VPD_FILE_PATH].at(0).value("inventoryPath",
@@ -82,7 +151,7 @@ bool Worker::isMotherboardPathOnDBus() const
 
     if (mboardPath.empty())
     {
-        throw JsonException("Motherboard path missing in JSON",
+        throw JsonException("System vpd file path missing in JSON",
                             INVENTORY_JSON_SYM_LINK);
     }
 
@@ -99,7 +168,7 @@ bool Worker::isMotherboardPathOnDBus() const
     return true;
 }
 
-std::string Worker::getIMValue(const types::ParsedVPD& parsedVpd) const
+std::string Worker::getIMValue(const types::IPZVpdMap& parsedVpd) const
 {
     if (parsedVpd.empty())
     {
@@ -132,7 +201,7 @@ std::string Worker::getIMValue(const types::ParsedVPD& parsedVpd) const
     return imData.str();
 }
 
-std::string Worker::getHWVersion(const types::ParsedVPD& parsedVpd) const
+std::string Worker::getHWVersion(const types::IPZVpdMap& parsedVpd) const
 {
     if (parsedVpd.empty())
     {
@@ -222,14 +291,19 @@ void Worker::getVpdDataInVector(const std::string& vpdFilePath,
     }
 }
 
-void Worker::fillVPDMap(const std::string& vpdFilePath)
+void Worker::fillVPDMap(const std::string& vpdFilePath,
+                        types::VPDMapVariant& vpdMap)
 {
     logging::logMessage(std::string("Parsing file = ") + vpdFilePath);
 
     if (vpdFilePath.empty())
     {
-        logging::logMessage("Empty file path. Unable to process.");
-        return;
+        throw std::runtime_error("Invalid file path passed to fillVPDMap API.");
+    }
+
+    if (!std::filesystem::exists(vpdFilePath))
+    {
+        throw std::runtime_error("Can't Find physical file");
     }
 
     size_t vpdStartOffset = 0;
@@ -249,6 +323,11 @@ void Worker::fillVPDMap(const std::string& vpdFilePath)
         fruInventoryPath =
             m_parsedJson["frus"][vpdFilePath][0]["inventoryPath"];
     }
+    else
+    {
+        throw std::runtime_error(std::string("File path missing in JSON.") +
+                                 vpdFilePath);
+    }
 
     types::BinaryVector vpdVector;
     getVpdDataInVector(vpdFilePath, vpdVector, vpdStartOffset);
@@ -256,14 +335,13 @@ void Worker::fillVPDMap(const std::string& vpdFilePath)
     std::shared_ptr<ParserInterface> parser = ParserFactory::getParser(
         vpdVector, (PIM_PATH_PREFIX + fruInventoryPath), vpdFilePath,
         vpdStartOffset);
-    m_vpdMap = parser->parse();
+    vpdMap = parser->parse();
 }
 
-void Worker::getSystemJson(std::string& systemJson)
+void Worker::getSystemJson(std::string& systemJson,
+                           const types::VPDMapVariant& parsedVpdMap)
 {
-    fillVPDMap(SYSTEM_VPD_FILE_PATH);
-
-    if (auto pVal = std::get_if<types::ParsedVPD>(&m_vpdMap))
+    if (auto pVal = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
     {
         std::string hwKWdValue = getHWVersion(*pVal);
         if (hwKWdValue.empty())
@@ -324,90 +402,318 @@ static void setEnvAndReboot(const std::string& key, const std::string& value)
 
 void Worker::setDeviceTreeAndJson()
 {
-    try
+    types::VPDMapVariant parsedVpdMap;
+    fillVPDMap(SYSTEM_VPD_FILE_PATH, parsedVpdMap);
+    
+    // Do we have the entry for device tree in parsed JSON?
+    if (m_parsedJson.find("devTree") == m_parsedJson.end())
     {
-        if (m_isSymlinkPresent && isMotherboardPathOnDBus())
+        // Implies it is default JSON.
+        std::string systemJson{JSON_ABSOLUTE_PATH_PREFIX};
+        getSystemJson(systemJson, parsedVpdMap);
+
+        if (!systemJson.compare(JSON_ABSOLUTE_PATH_PREFIX))
         {
-            // As symlink is also present and motherboard path is also
-            // populated, call to thi API implies, this is a situation where
-            // VPD-manager service got restarted due to some reason. Do not
-            // process for selection of device tree or JSON selection in
-            // this case.
-            logging::logMessage("Servcie restarted for some reason.");
-            return;
+            // TODO: Log a PEL saying that "System type not supported"
+            throw DataException("Error in getting system JSON.");
         }
 
-        // Do we have the entry for device tree in parsed JSON?
-        if (m_parsedJson.find("devTree") == m_parsedJson.end())
+        // create a new symlink based on the system
+        std::filesystem::create_symlink(systemJson, INVENTORY_JSON_SYM_LINK);
+
+        // re-parse the JSON once appropriate JSON has been selected.
+        try
         {
-            // Implies it is default JSON.
-            std::string systemJson{JSON_ABSOLUTE_PATH_PREFIX};
-            getSystemJson(systemJson);
-
-            if (!systemJson.compare(JSON_ABSOLUTE_PATH_PREFIX))
-            {
-                // TODO: Log a PEL saying that "System type not supported"
-                throw DataException("Error in getting system JSON.");
-            }
-
-            // create a new symlink based on the system
-            std::filesystem::create_symlink(systemJson,
-                                            INVENTORY_JSON_SYM_LINK);
-
-            // re-parse the JSON once appropriate JSON has been selected.
-            try
-            {
-                m_parsedJson = nlohmann::json::parse(INVENTORY_JSON_SYM_LINK);
-            }
-            catch (const nlohmann::json::parse_error& ex)
-            {
-                throw(JsonException("Json parsing failed", systemJson));
-            }
+            m_parsedJson = nlohmann::json::parse(INVENTORY_JSON_SYM_LINK);
         }
-
-        auto devTreeFromJson = m_parsedJson["devTree"].value("path", "");
-        if (devTreeFromJson.empty())
+        catch (const nlohmann::json::parse_error& ex)
         {
-            throw JsonException(
-                "Mandatory value for device tree missing from JSON",
-                INVENTORY_JSON_SYM_LINK);
+            throw(JsonException("Json parsing failed", systemJson));
         }
-
-        auto fitConfigVal = readFitConfigValue();
-
-        if (fitConfigVal.find(devTreeFromJson) != std::string::npos)
-        {
-            // fitconfig is updated and correct JSON is set.
-            return;
-        }
-
-        // Set fitconfig even if it is read as empty.
-        setEnvAndReboot("fitconfig", devTreeFromJson);
-        exit(EXIT_SUCCESS);
     }
-    catch (const std::exception& ex)
-    {
-        if (typeid(ex) == std::type_index(typeid(DataException)))
-        {
-            // TODO:Catch logic to be implemented once PEL code goes in.
-        }
-        else if (typeid(ex) == std::type_index(typeid(EccException)))
-        {
-            // TODO:Catch logic to be implemented once PEL code goes in.
-        }
-        else if (typeid(ex) == std::type_index(typeid(JsonException)))
-        {
-            // TODO:Catch logic to be implemented once PEL code goes in.
-        }
 
-        logging::logMessage(ex.what());
-        throw;
+    auto devTreeFromJson = m_parsedJson["devTree"].value("path", "");
+    if (devTreeFromJson.empty())
+    {
+        throw JsonException("Mandatory value for device tree missing from JSON",
+                            INVENTORY_JSON_SYM_LINK);
+    }
+
+    auto fitConfigVal = readFitConfigValue();
+
+    if (fitConfigVal.find(devTreeFromJson) != std::string::npos)
+    {
+        // fitconfig is updated and correct JSON is set.
+
+        // proceed to publish system VPD.
+        publishSystemVPD(parsedVpdMap);
+        return;
+    }
+
+    // Set fitconfig even if it is read as empty.
+    setEnvAndReboot("fitconfig", devTreeFromJson);
+    exit(EXIT_SUCCESS);
+}
+
+void Worker::populateFruSpecificInterfaces(
+    const types::VPDKWdValueMap& kwdValueMap, const std::string& interface,
+    types::InterfaceMap& interfaceMap)
+{
+    // TODO implementation
+    (void)kwdValueMap;
+    (void)interface;
+    (void)interfaceMap;
+}
+
+void Worker::populateInterfaces(const nlohmann::json& interfaceJson,
+                                types::InterfaceMap& interfaceMap,
+                                const types::VPDMapVariant& parsedVpdMap)
+{
+    // TODO implementation
+    (void)interfaceJson;
+    (void)interfaceMap;
+    (void)parsedVpdMap;
+}
+
+void Worker::insertOrMerge(types::InterfaceMap& interfaceMap,
+                           const std::string& interface,
+                           types::PropertyMap&& property)
+{
+    // TODO implementaton
+    (void)interfaceMap;
+    (void)interface;
+    (void)property;
+}
+
+bool Worker::isCPUIOGoodOnly(const std::string& pgKeyword)
+{
+    // TODO implementation
+    (void)pgKeyword;
+    return false;
+}
+
+void Worker::primeInventory(const types::IPZVpdMap& ipzVpdMap,
+                            types::ObjectMap primeObjects)
+{
+    // TODO implementation
+    (void)ipzVpdMap;
+    (void)primeObjects;
+}
+
+void Worker::processEmbeddedAndSynthesizedFrus(const nlohmann::json& singleFru,
+                                               types::InterfaceMap& interfaces)
+{
+    // embedded property(true or false) says whether the subfru is embedded
+    // into the parent fru (or) not. VPD sets Present property only for
+    // embedded frus. If the subfru is not an embedded FRU, the subfru may
+    // or may not be physically present. Those non embedded frus will always
+    // have Present=false irrespective of its physical presence or absence.
+    // Eg: nvme drive in nvme slot is not an embedded FRU. So don't set
+    // Present to true for such sub frus.
+    // Eg: ethernet port is embedded into bmc card. So set Present to true
+    // for such sub frus. Also donot populate present property for embedded
+    // subfru which is synthesized. Currently there is no subfru which are
+    // both embedded and synthesized. But still the case is handled here.
+
+    if ((singleFru.value("embedded", true)) &&
+        (!singleFru.value("synthesized", false)))
+    {
+        // Check if its required to handle presence for this FRU.
+        if (singleFru.value("handlePresence", true))
+        {
+            types::PropertyMap presProp;
+            presProp.emplace("Present", true);
+            insertOrMerge(interfaces, "xyz.openbmc_project.Inventory.Item",
+                          move(presProp));
+        }
     }
 }
 
-void Worker::publishSystemVPD()
+void Worker::processExtraInterfaces(const nlohmann::json& singleFru,
+                                    types::InterfaceMap& interfaces,
+                                    const types::VPDMapVariant& parsedVpdMap)
 {
-        // TODO: Implement to parse system VPD.
+    if (singleFru.contains("extraInterfaces"))
+    {
+        populateInterfaces(singleFru["extraInterfaces"], interfaces,
+                           parsedVpdMap);
+
+        if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
+        {
+            if (singleFru["extraInterfaces"].contains(
+                    "xyz.openbmc_project.Inventory.Item.Cpu"))
+            {
+                auto itrToRec = (*ipzVpdMap).find("CP00");
+                if (itrToRec != (*ipzVpdMap).end())
+                {
+                    return;
+                }
+
+                std::string pgKeywordValue;
+                utils::getKwVal(itrToRec->second, "PG", pgKeywordValue);
+                if (!pgKeywordValue.empty())
+                {
+                    if (isCPUIOGoodOnly(pgKeywordValue))
+                    {
+                        interfaces["xyz.openbmc_project.Inventory.Item"]
+                                  ["PrettyName"] = "IO Module";
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Worker::processCopyRecordFlag(const nlohmann::json& singleFru,
+                                   const types::VPDMapVariant& parsedVpdMap,
+                                   types::InterfaceMap& interfaces)
+{
+    if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
+    {
+        for (const auto& record : singleFru["copyRecords"])
+        {
+            const std::string& recordName = record;
+            if ((*ipzVpdMap).find(recordName) != (*ipzVpdMap).end())
+            {
+                populateFruSpecificInterfaces((*ipzVpdMap).at(recordName),
+                                              constants::ipzVpdInf + recordName,
+                                              interfaces);
+            }
+        }
+    }
+}
+
+void Worker::processInheritFlag(const types::VPDMapVariant& parsedVpdMap,
+                                types::InterfaceMap& interfaces)
+{
+    if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
+    {
+        for (const auto& record : *ipzVpdMap)
+        {
+            populateFruSpecificInterfaces(
+                record.second, constants::ipzVpdInf + record.first, interfaces);
+        }
+    }
+    else if (auto kwdVpdMap = std::get_if<types::KeywordVpdMap>(&parsedVpdMap))
+    {
+        populateFruSpecificInterfaces(*kwdVpdMap, constants::kwdVpdInf,
+                                      interfaces);
+    }
+
+    if (m_parsedJson.contains("commonInterfaces"))
+    {
+        populateInterfaces(m_parsedJson["commonInterfaces"], interfaces,
+                           parsedVpdMap);
+    }
+}
+
+bool Worker::processFruWithCCIN(const nlohmann::json& singleFru,
+                                const types::VPDMapVariant& parsedVpdMap)
+{
+    if (auto ipzVPDMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
+    {
+        auto itrToRec = (*ipzVPDMap).find("VINI");
+        if (itrToRec != (*ipzVPDMap).end())
+        {
+            return false;
+        }
+
+        std::string ccinFromVpd;
+        utils::getKwVal(itrToRec->second, "CC", ccinFromVpd);
+        if (ccinFromVpd.empty())
+        {
+            return true;
+        }
+
+        transform(ccinFromVpd.begin(), ccinFromVpd.end(), ccinFromVpd.begin(),
+                  ::toupper);
+
+        std::vector<std::string> ccinList;
+        for (std::string ccin : singleFru["ccin"])
+        {
+            transform(ccin.begin(), ccin.end(), ccin.begin(), ::toupper);
+            ccinList.push_back(ccin);
+        }
+
+        if (ccinList.empty() && (find(ccinList.begin(), ccinList.end(),
+                                      ccinFromVpd) == ccinList.end()))
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
+void Worker::populateDbus(const types::VPDMapVariant& parsedVpdMap,
+                          types::ObjectMap& objectInterfaceMap,
+                          const std::string& vpdFilePath)
+{
+    if (vpdFilePath.empty())
+    {
+        throw std::runtime_error(
+            "Invalid parameter passed to populateDbus API.");
+    }
+
+    types::InterfaceMap interfaces;
+
+    for (const auto& aFru : m_parsedJson["frus"][vpdFilePath])
+    {
+        const auto& inventoryPath = aFru["inventoryPath"];
+        sdbusplus::message::object_path fruObjectPath(inventoryPath);
+
+        if (aFru.contains("ccin"))
+        {
+            if (!processFruWithCCIN(aFru, parsedVpdMap))
+            {
+                continue;
+            }
+        }
+
+        if (aFru.value("inherit", true))
+        {
+            processInheritFlag(parsedVpdMap, interfaces);
+        }
+
+        // If specific record needs to be copied.
+        if (aFru.contains("copyRecords"))
+        {
+            processCopyRecordFlag(aFru, parsedVpdMap, interfaces);
+        }
+
+        // Process extra interfaces w.r.t a FRU.
+        processExtraInterfaces(aFru["extraInterfaces"], interfaces,
+                               parsedVpdMap);
+
+        // Process FRUS which are embedded in the parent FRU and whose VPD
+        // will be synthesized.
+        processEmbeddedAndSynthesizedFrus(aFru, interfaces);
+
+        objectInterfaceMap.emplace(std::move(fruObjectPath), std::move(interfaces));
+    }
+}
+
+void Worker::publishSystemVPD(const types::VPDMapVariant& parsedVpdMap)
+{
+    types::ObjectMap objectInterfaceMap;
+
+    if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
+    {
+        populateDbus(parsedVpdMap, objectInterfaceMap, SYSTEM_VPD_FILE_PATH);
+
+        types::ObjectMap primeObjects;
+        primeInventory(*ipzVpdMap, primeObjects);
+        objectInterfaceMap.insert(primeObjects.begin(), primeObjects.end());
+
+        // Notify PIM
+        if (!utils::callPIM(move(objectInterfaceMap)))
+        {
+            throw std::runtime_error("Call to PIM failed for system VPD");
+        }
+    }
+    else
+    {
+        throw DataException("Invalid format of parsed VPD map.");
+    }
 }
 
 void Worker::processAllFRU()

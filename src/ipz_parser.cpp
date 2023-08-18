@@ -480,10 +480,10 @@ std::string
  * @param[in] iterator - pointer to the start of keywords under the record.
  * @return keyword-value map of keywords under that record.
  */
-static types::ParsedVPD::mapped_type
+static types::IPZVpdMap::mapped_type
     readKeywords(types::BinaryVector::const_iterator& itrToKwds)
 {
-    types::ParsedVPD::mapped_type kwdValueMap{};
+    types::IPZVpdMap::mapped_type kwdValueMap{};
     while (true)
     {
         // Note keyword name
