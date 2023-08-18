@@ -88,11 +88,10 @@ std::shared_ptr<ParserInterface> ParserFactory::getParser(
     const types::BinaryVector& vpdVector, const std::string& inventoryPath,
     const std::string& vpdFilePath, uint32_t vpdStartOffset)
 {
-    // TODO: Remove after implementation of concrete class.
-    (void)vpdVector;
-    (void)inventoryPath;
-    (void)vpdFilePath;
-    (void)vpdStartOffset;
+    if (vpdVector.empty())
+    {
+        throw std::runtime_error("Empty VPD vector passed to parser factory");
+    }
 
     vpdType type = vpdTypeCheck(vpdVector);
 

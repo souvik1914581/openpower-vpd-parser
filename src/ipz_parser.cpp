@@ -264,10 +264,9 @@ void IpzVpdParser::checkHeader(types::BinaryVector::const_iterator itrToVPD)
 
 auto IpzVpdParser::readTOC(types::BinaryVector::const_iterator& itrToVPD)
 {
-    std::advance(itrToVPD, Offset::VTOC_PTR);
-
     // The offset to VTOC could be 1 or 2 bytes long
-    uint16_t vtocOffset = readUInt16LE(itrToVPD);
+    uint16_t vtocOffset =
+        readUInt16LE((itrToVPD + Offset::VTOC_PTR)); // itrToVPD);
 
     // Got the offset to VTOC, skip past record header and keyword header
     // to get to the record name.
@@ -284,7 +283,7 @@ auto IpzVpdParser::readTOC(types::BinaryVector::const_iterator& itrToVPD)
     }
 
 #ifdef ECC_CHECK
-    if (!vtocEccCheck())
+    if (vtocEccCheck())
     {
         throw(EccException("ERROR: VTOC ECC check Failed"));
     }
@@ -583,7 +582,7 @@ void IpzVpdParser::processRecord(auto recordOffset)
 #endif
 }
 
-std::variant<types::ParsedVPD, types::KeywordVpdMap> IpzVpdParser::parse()
+types::VPDMapVariant IpzVpdParser::parse()
 {
     try
     {
@@ -624,6 +623,7 @@ std::variant<types::ParsedVPD, types::KeywordVpdMap> IpzVpdParser::parse()
 
             // throw generic error from here to inform main caller about
             // failure.
+            logging::logMessage(e.what());
             throw std::runtime_error("Data Exception in IPZ parser for file " +
                                      m_vpdFilePath);
         }
@@ -638,6 +638,8 @@ std::variant<types::ParsedVPD, types::KeywordVpdMap> IpzVpdParser::parse()
              createPEL(additionalData, pelSeverity, errIntfForEccCheckFail,
                        nullptr);
              */
+
+            logging::logMessage(e.what());
             utils::dumpBadVpd(m_vpdFilePath, m_vpdVector);
 
             // throw generic error from here to inform main caller about
