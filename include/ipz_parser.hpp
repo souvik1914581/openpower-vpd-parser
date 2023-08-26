@@ -156,7 +156,7 @@ class IpzVpdParser : public ParserInterface
     const std::string& m_vpdFilePath;
 
     // stores parsed VPD data.
-    types::ParsedVPD m_parsedVPDMap{};
+    types::IPZVpdMap m_parsedVPDMap{};
 
     // File stream to VPD file
     std::fstream m_vpdFileStream;

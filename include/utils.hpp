@@ -162,5 +162,27 @@ inline std::vector<std::string> executeCmd(T&& path, Types... args)
     return cmdOutput;
 }
 
+/**
+ * @brief An api to read value of a keyword.
+ *
+ * Note: Throws exception. Caller needs to handle.
+ *
+ * @param[in] kwdValueMap - A map having Kwd value pair.
+ * @param[in] kwd - keyword name.
+ * @param[out] kwdValue - Value of the keyword read from map.
+ */
+void getKwVal(const types::KwdValueMap& kwdValueMap, const std::string& kwd,
+              std::string& kwdValue);
+
+/**
+ * @brief API to publish data on PIM
+ *
+ * The API calls notify on PIM object to publlish VPD.
+ *
+ * @param[in] objectMap - Object, its interface and data.
+ * @return bool - Status of call to PIM notify.
+ */
+bool callPIM(types::ObjectMap&& objectMap);
+
 } // namespace utils
 } // namespace vpd
