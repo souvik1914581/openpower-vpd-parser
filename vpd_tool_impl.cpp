@@ -1,6 +1,7 @@
 #include "vpd_tool_impl.hpp"
 
 #include "impl.hpp"
+#include "parser_factory.hpp"
 #include "vpd_exceptions.hpp"
 
 #include <cstdlib>
@@ -18,6 +19,53 @@ namespace fs = std::filesystem;
 using json = nlohmann::json;
 using namespace openpower::vpd::exceptions;
 using namespace openpower::vpd::parser;
+using namespace openpower::vpd::parser::factory;
+using namespace openpower::vpd::parser::interface;
+
+static void
+    getVPDInMap(const std::string& vpdPath,
+                std::unordered_map<std::string, DbusPropertyMap>& vpdMap,
+                json& js, const std::string& invPath)
+{
+    auto jsonToParse = INVENTORY_JSON_DEFAULT;
+    if (fs::exists(INVENTORY_JSON_SYM_LINK))
+    {
+        jsonToParse = INVENTORY_JSON_SYM_LINK;
+    }
+
+    std::ifstream inventoryJson(jsonToParse);
+    if (!inventoryJson)
+    {
+        throw std::runtime_error("VPD JSON file not found");
+    }
+
+    try
+    {
+        js = json::parse(inventoryJson);
+    }
+    catch (const json::parse_error& ex)
+    {
+        throw std::runtime_error("VPD JSON parsing failed");
+    }
+
+    Binary vpdVector{};
+
+    vpdVector = getVpdDataInVector(js, constants::systemVpdFilePath);
+    ParserInterface* parser = ParserFactory::getParser(vpdVector, invPath);
+    auto parseResult = parser->parse();
+    ParserFactory::freeParser(parser);
+
+    if (auto pVal = std::get_if<Store>(&parseResult))
+    {
+        vpdMap = pVal->getVpdMap();
+    }
+    else
+    {
+        std::string err =
+            vpdPath + " is not of type IPZ VPD. Unable to parse the VPD.";
+        throw std::runtime_error(err);
+    }
+}
 
 Binary VpdTool::toBinary(const std::string& value)
 {
@@ -593,4 +641,406 @@ void VpdTool::readKwFromHw()
                   << " or both are not present in the given FRU path "
                   << fruPath << std::endl;
     }
+}
+
+void VpdTool::printFixSystemVPDOption(UserOption option)
+{
+    switch (option)
+    {
+        case VpdTool::EXIT:
+            cout << "\nEnter 0 => To exit successfully : ";
+            break;
+        case VpdTool::BMC_DATA_FOR_ALL:
+            cout << "\n\nEnter 1 => If you choose the data on BMC for all "
+                    "mismatching record-keyword pairs";
+            break;
+        case VpdTool::SYSTEM_BACKPLANE_DATA_FOR_ALL:
+            cout << "\nEnter 2 => If you choose the data on System "
+                    "Backplane for all mismatching record-keyword pairs";
+            break;
+        case VpdTool::MORE_OPTIONS:
+            cout << "\nEnter 3 => If you wish to explore more options";
+            break;
+        case VpdTool::BMC_DATA_FOR_CURRENT:
+            cout << "\nEnter 4 => If you choose the data on BMC as the "
+                    "right value";
+            break;
+        case VpdTool::SYSTEM_BACKPLANE_DATA_FOR_CURRENT:
+            cout << "\nEnter 5 => If you choose the data on System "
+                    "Backplane as the right value";
+            break;
+        case VpdTool::NEW_VALUE_ON_BOTH:
+            cout << "\nEnter 6 => If you wish to enter a new value to "
+                    "update both on BMC and System Backplane";
+            break;
+        case VpdTool::SKIP_CURRENT:
+            cout << "\nEnter 7 => If you wish to skip the above "
+                    "record-keyword pair";
+            break;
+    }
+}
+
+void VpdTool::getSystemDataFromCache(IntfPropMap& svpdBusData)
+{
+    std::string outline(191, '=');
+    cout << "\nRestorable record-keyword pairs and their data on BMC & "
+            "System Backplane.\n\n"
+         << outline << std::endl;
+
+    cout << left << setw(6) << "S.No" << left << setw(8) << "Record" << left
+         << setw(9) << "Keyword" << left << setw(75) << "Data On BMC" << left
+         << setw(75) << "Data On System Backplane" << left << setw(14)
+         << "Data Mismatch\n"
+         << outline << std::endl;
+
+    // Get system VPD data in map
+    Binary vpdVector{};
+    json js{};
+
+    auto jsonToParse = INVENTORY_JSON_DEFAULT;
+    if (fs::exists(INVENTORY_JSON_SYM_LINK))
+    {
+        jsonToParse = INVENTORY_JSON_SYM_LINK;
+    }
+
+    ifstream inventoryJson(jsonToParse);
+    if (!inventoryJson)
+    {
+        throw runtime_error("VPD JSON file not found");
+    }
+    js = json::parse(inventoryJson);
+
+    vpdVector = getVpdDataInVector(js, constants::systemVpdFilePath);
+    ParserInterface* parser = ParserFactory::getParser(
+        vpdVector, constants::pimPath + std::string(constants::SYSTEM_OBJECT));
+    auto parseResult = parser->parse();
+    ParserFactory::freeParser(parser);
+
+    unordered_map<string, DbusPropertyMap> vpdMap;
+
+    if (auto pVal = get_if<Store>(&parseResult))
+    {
+        vpdMap = pVal->getVpdMap();
+    }
+    else
+    {
+        std::cerr << "\n System backplane VPD is not of type IPZ. Unable to "
+                     "parse the VPD "
+                  << constants::systemVpdFilePath << " . Exit with error."
+                  << std::endl;
+        exit(1);
+    }
+
+    const auto vsys = getAllDBusProperty<GetAllResultType>(
+        constants::pimIntf,
+        "/xyz/openbmc_project/inventory/system/chassis/motherboard",
+        "com.ibm.ipzvpd.VSYS");
+    svpdBusData.emplace("VSYS", vsys);
+
+    const auto vcen = getAllDBusProperty<GetAllResultType>(
+        constants::pimIntf,
+        "/xyz/openbmc_project/inventory/system/chassis/motherboard",
+        "com.ibm.ipzvpd.VCEN");
+    svpdBusData.emplace("VCEN", vcen);
+
+    const auto lxr0 = getAllDBusProperty<GetAllResultType>(
+        constants::pimIntf,
+        "/xyz/openbmc_project/inventory/system/chassis/motherboard",
+        "com.ibm.ipzvpd.LXR0");
+    svpdBusData.emplace("LXR0", lxr0);
+
+    const auto util = getAllDBusProperty<GetAllResultType>(
+        constants::pimIntf,
+        "/xyz/openbmc_project/inventory/system/chassis/motherboard",
+        "com.ibm.ipzvpd.UTIL");
+    svpdBusData.emplace("UTIL", util);
+}
+
+int VpdTool::fixSystemVPD()
+{
+    uint8_t num = 0;
+
+    // Get system VPD data in map
+    unordered_map<string, DbusPropertyMap> vpdMap;
+    json js;
+    getVPDInMap(constants::systemVpdFilePath, vpdMap, js,
+                constants::pimPath +
+                    static_cast<std::string>(constants::SYSTEM_OBJECT));
+
+    // Get system VPD D-Bus Data in a map
+    IntfPropMap svpdBusData;
+    getSystemDataFromCache(svpdBusData);
+
+    for (const auto& recordKw : svpdKwdMap)
+    {
+        string record = recordKw.first;
+
+        // Extract specific record data from the svpdBusData map.
+        const auto& rec = svpdBusData.find(record);
+
+        if (rec == svpdBusData.end())
+        {
+            std::cerr << record << " not a part of critical system VPD records."
+                      << std::endl;
+            continue;
+        }
+
+        const auto& recData = svpdBusData.find(record)->second;
+
+        string busStr{}, hwValStr{};
+
+        for (const auto& keyword : recordKw.second)
+        {
+            string mismatch = "NO"; // no mismatch
+            string hardwareValue{};
+            auto recItr = vpdMap.find(record);
+
+            if (recItr != vpdMap.end())
+            {
+                DbusPropertyMap& kwValMap = recItr->second;
+                auto kwItr = kwValMap.find(keyword);
+                if (kwItr != kwValMap.end())
+                {
+                    hardwareValue = kwItr->second;
+                }
+            }
+
+            inventory::Value kwValue;
+            for (auto& kwData : recData)
+            {
+                if (kwData.first == keyword)
+                {
+                    kwValue = kwData.second;
+                    break;
+                }
+            }
+
+            if (keyword != "SE")
+            {
+                ostringstream hwValStream;
+                hwValStream << "0x";
+                hwValStr = hwValStream.str();
+
+                for (uint16_t byte : hardwareValue)
+                {
+                    hwValStream << setfill('0') << setw(2) << hex << byte;
+                    hwValStr = hwValStream.str();
+                }
+
+                if (const auto value = get_if<Binary>(&kwValue))
+                {
+                    busStr = getPrintableValue(*value);
+                }
+                if (busStr != hwValStr)
+                {
+                    mismatch = "YES";
+                }
+            }
+            else
+            {
+                if (const auto value = get_if<Binary>(&kwValue))
+                {
+                    busStr = getPrintableValue(*value);
+                }
+                if (busStr != hardwareValue)
+                {
+                    mismatch = "YES";
+                }
+                hwValStr = hardwareValue;
+            }
+            recKwData.push_back(
+                make_tuple(++num, record, keyword, busStr, hwValStr, mismatch));
+
+            std::string splitLine(191, '-');
+            cout << left << setw(6) << num << left << setw(8) << record << left
+                 << setw(9) << keyword << left << setw(75) << setfill(' ')
+                 << busStr << left << setw(75) << setfill(' ') << hwValStr
+                 << left << setw(14) << mismatch << '\n'
+                 << splitLine << endl;
+        }
+    }
+    parseSVPDOptions(js);
+    return 0;
+}
+
+void VpdTool::parseSVPDOptions(const nlohmann::json& json)
+{
+    do
+    {
+        printFixSystemVPDOption(VpdTool::BMC_DATA_FOR_ALL);
+        printFixSystemVPDOption(VpdTool::SYSTEM_BACKPLANE_DATA_FOR_ALL);
+        printFixSystemVPDOption(VpdTool::MORE_OPTIONS);
+        printFixSystemVPDOption(VpdTool::EXIT);
+
+        uint8_t option = 0;
+        cin >> option;
+
+        std::string outline(191, '=');
+        cout << '\n' << outline << endl;
+
+        if (json.find("frus") == json.end())
+        {
+            throw runtime_error("Frus not found in json");
+        }
+
+        bool mismatchFound = false;
+
+        switch (option)
+        {
+            case VpdTool::BMC_DATA_FOR_ALL:
+                for (const auto& data : recKwData)
+                {
+                    if (get<5>(data) == "YES")
+                    {
+                        EditorImpl edit(constants::systemVpdFilePath, json,
+                                        get<1>(data), get<2>(data));
+                        edit.updateKeyword(toBinary(get<3>(data)), 0, true);
+                        mismatchFound = true;
+                    }
+                }
+
+                if (mismatchFound)
+                {
+                    cout << "\nData updated successfully for all mismatching "
+                            "record-keyword pairs by choosing their "
+                            "corresponding "
+                            "data on BMC. Exit successfully.\n"
+                         << endl;
+                }
+                else
+                {
+                    cout
+                        << "\nNo mismatch found for any of the above mentioned "
+                           "record-keyword pair. Exit successfully.\n";
+                }
+
+                exit(0);
+            case VpdTool::SYSTEM_BACKPLANE_DATA_FOR_ALL:
+                for (const auto& data : recKwData)
+                {
+                    if (get<5>(data) == "YES")
+                    {
+                        EditorImpl edit(constants::systemVpdFilePath, json,
+                                        get<1>(data), get<2>(data));
+                        edit.updateKeyword(toBinary(get<4>(data)), 0, true);
+                        mismatchFound = true;
+                    }
+                }
+
+                if (mismatchFound)
+                {
+                    cout << "\nData updated successfully for all mismatching "
+                            "record-keyword pairs by choosing their "
+                            "corresponding "
+                            "data on System Backplane.\n"
+                         << endl;
+                }
+                else
+                {
+                    cout
+                        << "\nNo mismatch found for any of the above mentioned "
+                           "record-keyword pair. Exit successfully.\n";
+                }
+
+                exit(0);
+            case VpdTool::MORE_OPTIONS:
+                cout << "\nIterate through all restorable record-keyword "
+                        "pairs\n";
+
+                for (const auto& data : recKwData)
+                {
+                    do
+                    {
+                        cout << '\n' << outline << endl;
+
+                        cout << left << setw(6) << "S.No" << left << setw(8)
+                             << "Record" << left << setw(9) << "Keyword" << left
+                             << setw(75) << setfill(' ') << "Data On BMC"
+                             << left << setw(75) << setfill(' ')
+                             << "Data On System Backplane" << left << setw(14)
+                             << "Data Mismatch" << endl;
+
+                        cout << left << setw(6) << get<0>(data) << left
+                             << setw(8) << get<1>(data) << left << setw(9)
+                             << get<2>(data) << left << setw(75) << setfill(' ')
+                             << get<3>(data) << left << setw(75) << setfill(' ')
+                             << get<4>(data) << left << setw(14)
+                             << get<5>(data);
+
+                        cout << '\n' << outline << endl;
+
+                        if (get<5>(data) == "NO")
+                        {
+                            cout << "\nNo mismatch found.\n";
+                            printFixSystemVPDOption(VpdTool::NEW_VALUE_ON_BOTH);
+                            printFixSystemVPDOption(VpdTool::SKIP_CURRENT);
+                            printFixSystemVPDOption(VpdTool::EXIT);
+                        }
+                        else
+                        {
+                            printFixSystemVPDOption(
+                                VpdTool::BMC_DATA_FOR_CURRENT);
+                            printFixSystemVPDOption(
+                                VpdTool::SYSTEM_BACKPLANE_DATA_FOR_CURRENT);
+                            printFixSystemVPDOption(VpdTool::NEW_VALUE_ON_BOTH);
+                            printFixSystemVPDOption(VpdTool::SKIP_CURRENT);
+                            printFixSystemVPDOption(VpdTool::EXIT);
+                        }
+
+                        cin >> option;
+                        cout << '\n' << outline << endl;
+
+                        EditorImpl edit(constants::systemVpdFilePath, json,
+                                        get<1>(data), get<2>(data));
+                        string value;
+
+                        switch (option)
+                        {
+                            case VpdTool::BMC_DATA_FOR_CURRENT:
+                                edit.updateKeyword(toBinary(get<3>(data)), 0,
+                                                   true);
+                                cout << "\nData updated successfully.\n";
+                                break;
+                            case VpdTool::SYSTEM_BACKPLANE_DATA_FOR_CURRENT:
+                                edit.updateKeyword(toBinary(get<4>(data)), 0,
+                                                   true);
+                                cout << "\nData updated successfully.\n";
+                                break;
+                            case VpdTool::NEW_VALUE_ON_BOTH:
+                                cout << "\nEnter the new value to update both "
+                                        "on "
+                                        "BMC & "
+                                        "System Backplane (Value should be in "
+                                        "ASCII or "
+                                        "in HEX(prefixed with 0x)) : ";
+                                cin >> value;
+                                cout << '\n' << outline << endl;
+
+                                edit.updateKeyword(toBinary(value), 0, true);
+                                cout << "\nData updated successfully.\n";
+                                break;
+                            case VpdTool::SKIP_CURRENT:
+                                cout
+                                    << "\nSkipped the above record-keyword "
+                                       "pair. "
+                                       "Continue to the next available pair.\n";
+                                break;
+                            case VpdTool::EXIT:
+                                cout << "\nExit successfully\n";
+                                exit(0);
+                            default:
+                                cout << "\nProvide a valid option. Retrying "
+                                        "for the "
+                                        "current record-keyword pair\n";
+                        }
+                    } while (1);
+                }
+                exit(0);
+            case VpdTool::EXIT:
+                cout << "\nExit successfully";
+                exit(0);
+            default:
+                cout << "\nProvide a valid option. Retry.";
+        }
+    } while (true);
 }
