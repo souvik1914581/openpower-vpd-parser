@@ -207,15 +207,24 @@ class Worker
                                types::InterfaceMap& interfaces);
 
     /**
-     * @brief API to populate FRU specific interfaces.
+     * @brief An API to populate IPZ VPD property map.
      *
-     * @param[in] kwdValueMap - Keyword and its value.
-     * @param[in] interface - Interface that needs to be published
-     * @param[out] interfaceMap - Map to hold the populated interface.
+     * @param[out] interfacePropMap - Map of interface and properties under it.
+     * @param[in] keyordValueMap - Keyword value map of IPZ VPD.
+     * @param[in] interfaceName - Name of the interface.
      */
-    void populateFruSpecificInterfaces(const types::VPDKWdValueMap& kwdValueMap,
-                                       const std::string& interface,
-                                       types::InterfaceMap& interfaceMap);
+    void populateIPZVPDpropertyMap(types::InterfaceMap& interfacePropMap,
+                                   const types::IPZKwdValueMap& keyordValueMap,
+                                   const std::string& interfaceName);
+
+    /**
+     * @brief An API to populate Kwd VPD property map.
+     *
+     * @param[in] keyordValueMap - Keyword value map of Kwd VPD.
+     * @param[out] interfaceMap - interface and property,value under it.
+     */
+    void populateKwdVPDpropertyMap(const types::KeywordVpdMap& keyordVPDMap,
+                                   types::InterfaceMap& interfaceMap);
 
     /**
      * @brief API to populate all required interface for a FRU.

@@ -38,20 +38,24 @@ using DbusVariantType = std::variant<
                            std::string, std::string>>
  >;
 
- using MapperGetObject =
+using MapperGetObject =
     std::vector<std::pair<std::string, std::vector<std::string>>>;
 
-/**
- * Map of <Record name, <keyword, value>>
-*/
-using IPZVpdMap = std::unordered_map<std::string,
-                                  std::unordered_map<std::string, std::string>>;
-
 /* A type for holding the innermost map of property::value.*/
-using KwdValueMap = std::unordered_map<std::string, std::string>;
-using KeywordVpdMap = std::unordered_map<std::string, DbusVariantType>;
+using IPZKwdValueMap = std::unordered_map<std::string, std::string>;
+/*IPZ VPD Map of format <Record name, <keyword, value>>*/
+using IPZVpdMap = std::unordered_map<std::string, IPZKwdValueMap>;
 
-using VPDKWdValueMap = std::variant<KwdValueMap, KeywordVpdMap>;
+/*Value types supported by Keyword VPD*/
+using KWdVPDValueType = std::variant<BinaryVector,std::string, size_t>;
+/* This hold map of parsed data of keyword VPD type*/
+using KeywordVpdMap = std::unordered_map<std::string, KWdVPDValueType>;
+
+/**
+ * Type tp hold keyword::value map of a VPP.
+ * Variant can be extended to support additional type.
+*/
+using VPDKWdValueMap = std::variant<IPZKwdValueMap, KeywordVpdMap>;
 
 /* Map<Property, Value>*/
 using PropertyMap = std::map<std::string, DbusVariantType>;

@@ -455,34 +455,209 @@ void Worker::setDeviceTreeAndJson()
     exit(EXIT_SUCCESS);
 }
 
-void Worker::populateFruSpecificInterfaces(
-    const types::VPDKWdValueMap& kwdValueMap, const std::string& interface,
-    types::InterfaceMap& interfaceMap)
+void Worker::populateIPZVPDpropertyMap(
+    types::InterfaceMap& interfacePropMap,
+    const types::IPZKwdValueMap& keyordValueMap,
+    const std::string& interfaceName)
 {
-    // TODO implementation
-    (void)kwdValueMap;
-    (void)interface;
-    (void)interfaceMap;
+    types::PropertyMap propertyValueMap;
+    for (const auto& kwdVal : keyordValueMap)
+    {
+        auto kwd = kwdVal.first;
+
+        if (kwd[0] == '#')
+        {
+            kwd = std::string("PD_") + kwd[1];
+        }
+        else if (isdigit(kwd[0]))
+        {
+            kwd = std::string("N_") + kwd;
+        }
+
+        types::BinaryVector value(kwdVal.second.begin(), kwdVal.second.end());
+        propertyValueMap.emplace(move(kwd), move(value));
+    }
+
+    if (!propertyValueMap.empty())
+    {
+        interfacePropMap.emplace(interfaceName, propertyValueMap);
+    }
+}
+
+void Worker::populateKwdVPDpropertyMap(const types::KeywordVpdMap& keyordVPDMap,
+                                       types::InterfaceMap& interfaceMap)
+{
+    for (const auto& kwdValMap : keyordVPDMap)
+    {
+        types::PropertyMap propertyValueMap;
+        auto kwd = kwdValMap.first;
+
+        if (kwd[0] == '#')
+        {
+            kwd = std::string("PD_") + kwd[1];
+        }
+        else if (isdigit(kwd[0]))
+        {
+            kwd = std::string("N_") + kwd;
+        }
+
+        if (auto keywordValue = get_if<types::BinaryVector>(&kwdValMap.second))
+        {
+            types::BinaryVector value((*keywordValue).begin(),
+                                      (*keywordValue).end());
+            propertyValueMap.emplace(move(kwd), move(value));
+        }
+        else if (auto keywordValue = get_if<std::string>(&kwdValMap.second))
+        {
+            types::BinaryVector value((*keywordValue).begin(),
+                                      (*keywordValue).end());
+            propertyValueMap.emplace(move(kwd), move(value));
+        }
+        else if (auto keywordValue = get_if<size_t>(&kwdValMap.second))
+        {
+            if (kwd == "MemorySizeInKB")
+            {
+                types::PropertyMap memProp;
+                memProp.emplace(move(kwd), ((*keywordValue)));
+                interfaceMap.emplace("xyz.openbmc_project.Inventory.Item.Dimm",
+                                     move(memProp));
+                continue;
+            }
+            else
+            {
+                logging::logMessage("Unknown Keyword =" + kwd +
+                                    " found in keyword VPD map");
+                continue;
+            }
+        }
+        else
+        {
+            logging::logMessage(
+                "Unknown variant type found in keyword VPD map.");
+            continue;
+        }
+
+        if (!propertyValueMap.empty())
+        {
+            interfaceMap.emplace(constants::kwdVpdInf, move(propertyValueMap));
+        }
+    }
 }
 
 void Worker::populateInterfaces(const nlohmann::json& interfaceJson,
                                 types::InterfaceMap& interfaceMap,
                                 const types::VPDMapVariant& parsedVpdMap)
 {
-    // TODO implementation
-    (void)interfaceJson;
-    (void)interfaceMap;
-    (void)parsedVpdMap;
-}
+    for (const auto& interfacesPropPair : interfaceJson.items())
+    {
+        const std::string& interface = interfacesPropPair.key();
+        types::PropertyMap propertyMap;
 
-void Worker::insertOrMerge(types::InterfaceMap& interfaceMap,
-                           const std::string& interface,
-                           types::PropertyMap&& property)
-{
-    // TODO implementaton
-    (void)interfaceMap;
-    (void)interface;
-    (void)property;
+        for (const auto& propValuePair : interfacesPropPair.value().items())
+        {
+            const std::string property = propValuePair.key();
+
+            if (propValuePair.value().is_boolean())
+            {
+                propertyMap.emplace(property,
+                                    propValuePair.value().get<bool>());
+            }
+            else if (propValuePair.value().is_string())
+            {
+                if (property.compare("LocationCode") == 0 &&
+                    interface.compare("com.ibm.ipzvpd.Location") == 0)
+                {
+                    std::string value = utils::getExpandedLocationCode(
+                        propValuePair.value().get<std::string>(), parsedVpdMap);
+                }
+                else
+                {
+                    propertyMap.emplace(
+                        property, propValuePair.value().get<std::string>());
+                }
+            }
+            else if (propValuePair.value().is_array())
+            {
+                try
+                {
+                    propertyMap.emplace(
+                        property,
+                        propValuePair.value().get<types::BinaryVector>());
+                }
+                catch (const nlohmann::detail::type_error& e)
+                {
+                    std::cerr << "Type exception: " << e.what() << "\n";
+                }
+            }
+            else if (propValuePair.value().is_number())
+            {
+                // For now assume the value is a size_t.  In the future it would
+                // be nice to come up with a way to get the type from the JSON.
+                propertyMap.emplace(property,
+                                    propValuePair.value().get<size_t>());
+            }
+            else if (propValuePair.value().is_object())
+            {
+                const std::string& record =
+                    propValuePair.value().value("recordName", "");
+                const std::string& keyword =
+                    propValuePair.value().value("keywordName", "");
+                const std::string& encoding =
+                    propValuePair.value().value("encoding", "");
+
+                if (auto ipzVpdMap =
+                        std::get_if<types::IPZVpdMap>(&parsedVpdMap))
+                {
+                    if (!record.empty() && !keyword.empty() &&
+                        (*ipzVpdMap).count(record) &&
+                        (*ipzVpdMap).at(record).count(keyword))
+                    {
+                        auto encoded = utils::encodeKeyword(
+                            ((*ipzVpdMap).at(record).at(keyword)), encoding);
+                        propertyMap.emplace(property, encoded);
+                    }
+                }
+                else if (auto kwdVpdMap =
+                             std::get_if<types::KeywordVpdMap>(&parsedVpdMap))
+                {
+                    if (!keyword.empty() && (*kwdVpdMap).count(keyword))
+                    {
+                        if (auto kwValue = std::get_if<types::BinaryVector>(
+                                &(*kwdVpdMap).at(keyword)))
+                        {
+                            auto encodedValue = utils::encodeKeyword(
+                                std::string((*kwValue).begin(),
+                                            (*kwValue).end()),
+                                encoding);
+
+                            propertyMap.emplace(property, encodedValue);
+                        }
+                        else if (auto kwValue = std::get_if<std::string>(
+                                     &(*kwdVpdMap).at(keyword)))
+                        {
+                            auto encodedValue = utils::encodeKeyword(
+                                std::string((*kwValue).begin(),
+                                            (*kwValue).end()),
+                                encoding);
+
+                            propertyMap.emplace(property, encodedValue);
+                        }
+                        else if (auto uintValue = std::get_if<size_t>(
+                                     &(*kwdVpdMap).at(keyword)))
+                        {
+                            propertyMap.emplace(property, *uintValue);
+                        }
+                        else
+                        {
+                            logging::logMessage(
+                                "Unknown keyword found, Keywrod = " + keyword);
+                        }
+                    }
+                }
+            }
+        }
+        utils::insertOrMerge(interfaceMap, interface, move(propertyMap));
+    }
 }
 
 bool Worker::isCPUIOGoodOnly(const std::string& pgKeyword)
@@ -515,17 +690,13 @@ void Worker::processEmbeddedAndSynthesizedFrus(const nlohmann::json& singleFru,
     // subfru which is synthesized. Currently there is no subfru which are
     // both embedded and synthesized. But still the case is handled here.
 
-    if ((singleFru.value("embedded", true)) &&
-        (!singleFru.value("synthesized", false)))
+    // Check if its required to handle presence for this FRU.
+    if (singleFru.value("handlePresence", true))
     {
-        // Check if its required to handle presence for this FRU.
-        if (singleFru.value("handlePresence", true))
-        {
-            types::PropertyMap presProp;
-            presProp.emplace("Present", true);
-            insertOrMerge(interfaces, "xyz.openbmc_project.Inventory.Item",
-                          move(presProp));
-        }
+        types::PropertyMap presProp;
+        presProp.emplace("Present", true);
+        utils::insertOrMerge(interfaces, "xyz.openbmc_project.Inventory.Item",
+                             move(presProp));
     }
 }
 
@@ -533,31 +704,27 @@ void Worker::processExtraInterfaces(const nlohmann::json& singleFru,
                                     types::InterfaceMap& interfaces,
                                     const types::VPDMapVariant& parsedVpdMap)
 {
-    if (singleFru.contains("extraInterfaces"))
+    populateInterfaces(singleFru["extraInterfaces"], interfaces, parsedVpdMap);
+
+    if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
     {
-        populateInterfaces(singleFru["extraInterfaces"], interfaces,
-                           parsedVpdMap);
-
-        if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
+        if (singleFru["extraInterfaces"].contains(
+                "xyz.openbmc_project.Inventory.Item.Cpu"))
         {
-            if (singleFru["extraInterfaces"].contains(
-                    "xyz.openbmc_project.Inventory.Item.Cpu"))
+            auto itrToRec = (*ipzVpdMap).find("CP00");
+            if (itrToRec != (*ipzVpdMap).end())
             {
-                auto itrToRec = (*ipzVpdMap).find("CP00");
-                if (itrToRec != (*ipzVpdMap).end())
-                {
-                    return;
-                }
+                return;
+            }
 
-                std::string pgKeywordValue;
-                utils::getKwVal(itrToRec->second, "PG", pgKeywordValue);
-                if (!pgKeywordValue.empty())
+            std::string pgKeywordValue;
+            utils::getKwVal(itrToRec->second, "PG", pgKeywordValue);
+            if (!pgKeywordValue.empty())
+            {
+                if (isCPUIOGoodOnly(pgKeywordValue))
                 {
-                    if (isCPUIOGoodOnly(pgKeywordValue))
-                    {
-                        interfaces["xyz.openbmc_project.Inventory.Item"]
-                                  ["PrettyName"] = "IO Module";
-                    }
+                    interfaces["xyz.openbmc_project.Inventory.Item"]
+                              ["PrettyName"] = "IO Module";
                 }
             }
         }
@@ -575,9 +742,10 @@ void Worker::processCopyRecordFlag(const nlohmann::json& singleFru,
             const std::string& recordName = record;
             if ((*ipzVpdMap).find(recordName) != (*ipzVpdMap).end())
             {
-                populateFruSpecificInterfaces((*ipzVpdMap).at(recordName),
-                                              constants::ipzVpdInf + recordName,
-                                              interfaces);
+
+                populateIPZVPDpropertyMap(interfaces,
+                                          (*ipzVpdMap).at(recordName),
+                                          constants::ipzVpdInf + recordName);
             }
         }
     }
@@ -588,16 +756,15 @@ void Worker::processInheritFlag(const types::VPDMapVariant& parsedVpdMap,
 {
     if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
     {
-        for (const auto& record : *ipzVpdMap)
+        for (const auto& [recordName, kwdValueMap] : *ipzVpdMap)
         {
-            populateFruSpecificInterfaces(
-                record.second, constants::ipzVpdInf + record.first, interfaces);
+            populateIPZVPDpropertyMap(interfaces, kwdValueMap,
+                                      constants::ipzVpdInf + recordName);
         }
     }
     else if (auto kwdVpdMap = std::get_if<types::KeywordVpdMap>(&parsedVpdMap))
     {
-        populateFruSpecificInterfaces(*kwdVpdMap, constants::kwdVpdInf,
-                                      interfaces);
+        populateKwdVPDpropertyMap(*kwdVpdMap, interfaces);
     }
 
     if (m_parsedJson.contains("commonInterfaces"))
@@ -680,13 +847,20 @@ void Worker::populateDbus(const types::VPDMapVariant& parsedVpdMap,
             processCopyRecordFlag(aFru, parsedVpdMap, interfaces);
         }
 
-        // Process extra interfaces w.r.t a FRU.
-        processExtraInterfaces(aFru["extraInterfaces"], interfaces,
-                               parsedVpdMap);
+        if (aFru.contains("extraInterfaces"))
+        {
+            // Process extra interfaces w.r.t a FRU.
+            processExtraInterfaces(aFru["extraInterfaces"], interfaces,
+                                   parsedVpdMap);
+        }
 
         // Process FRUS which are embedded in the parent FRU and whose VPD
         // will be synthesized.
-        processEmbeddedAndSynthesizedFrus(aFru, interfaces);
+        if ((aFru.value("embedded", true)) &&
+            (!aFru.value("synthesized", false)))
+        {
+            processEmbeddedAndSynthesizedFrus(aFru, interfaces);
+        }
 
         objectInterfaceMap.emplace(std::move(fruObjectPath), std::move(interfaces));
     }

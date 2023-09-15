@@ -44,5 +44,10 @@ constexpr auto pimIntf = "xyz.openbmc_project.Inventory.Manager";
 constexpr auto ipzVpdInf = "com.ibm.ipzvpd.";
 constexpr auto kwdVpdInf = "com.ibm.ipzvpd.VINI";
 
+static constexpr auto BD_YEAR_END = 4;
+static constexpr auto BD_MONTH_END = 7;
+static constexpr auto BD_DAY_END = 10;
+static constexpr auto BD_HOUR_END = 13;
+
 } // namespace constants
 } // namespace vpd
