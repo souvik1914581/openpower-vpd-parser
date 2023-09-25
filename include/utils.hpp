@@ -171,7 +171,7 @@ inline std::vector<std::string> executeCmd(T&& path, Types... args)
  * @param[in] kwd - keyword name.
  * @param[out] kwdValue - Value of the keyword read from map.
  */
-void getKwVal(const types::KwdValueMap& kwdValueMap, const std::string& kwd,
+void getKwVal(const types::IPZKwdValueMap& kwdValueMap, const std::string& kwd,
               std::string& kwdValue);
 
 /**
@@ -183,6 +183,57 @@ void getKwVal(const types::KwdValueMap& kwdValueMap, const std::string& kwd,
  * @return bool - Status of call to PIM notify.
  */
 bool callPIM(types::ObjectMap&& objectMap);
+
+/**
+ * @brief An API to process encoding of a keyword.
+ *
+ * @param[in] keyword - Keyword to be processed.
+ * @param[in] encoding - Type of encoding.
+ * @return Value after being processed for encoded type.
+ */
+std::string encodeKeyword(const std::string& keyword,
+                          const std::string& encoding);
+
+/**
+ * @brief Helper function to insert or merge in map.
+ *
+ * This method checks in an interface if the given interface exists. If the
+ * interface key already exists, property map is inserted corresponding to it.
+ * If the key does'nt exist then given interface and property map pair is newly
+ * created. If the property present in propertymap already exist in the
+ * InterfaceMap, then the new property value is ignored.
+ *
+ * @param[in,out] map - Interface map.
+ * @param[in] interface - Interface to be processed.
+ * @param[in] propertyMap - new property map that needs to be emplaced.
+ */
+void insertOrMerge(types::InterfaceMap& map, const std::string& interface,
+                   types::PropertyMap&& propertyMap);
+
+/**
+ * @brief API to expand unpanded location code.
+ *
+ * Note: The API handles all the exception internally, in case of any error
+ * unexpanded location code will be returned as it is.
+ *
+ * @param[in] unexpandedLocationCode - Unexpanded location code.
+ * @param[in] parsedVpdMap - Parsed VPD map.
+ * @return Expanded location code. In case of any error, unexpanded is returned
+ * as it is.
+ */
+std::string getExpandedLocationCode(const std::string& unexpandedLocationCode,
+                                    const types::VPDMapVariant& parsedVpdMap);
+
+/** @brief Return the hex representation of the incoming byte.
+ *
+ * @param [in] aByte - The input byte
+ * @returns The hex representation of the byte as a character.
+ */
+constexpr auto toHex(size_t aByte)
+{
+    constexpr auto map = "0123456789abcdef";
+    return map[aByte];
+}
 
 } // namespace utils
 } // namespace vpd
