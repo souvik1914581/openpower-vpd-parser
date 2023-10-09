@@ -208,7 +208,7 @@ auto memoryVpdParser::getDdr5BasedDDimmSize(Binary::const_iterator iterator)
                     l_diePerPackage * l_densityPerDie * l_ranksPerChannel) /
                    (8 * l_dramWidth);
 
-    } while (1);
+    } while (false);
 
     return constants::CONVERT_MB_TO_KB * dimmSize;
 }
@@ -287,11 +287,13 @@ size_t memoryVpdParser::getDDimmSize(Binary::const_iterator iterator)
     if ((iterator[constants::SPD_BYTE_2] & constants::SPD_BYTE_MASK) ==
         constants::SPD_DRAM_TYPE_DDR4)
     {
+        std::cout<<" MEM 2 a"<<std::endl;
         dimmSize = getDdr4BasedDDimmSize(iterator);
     }
     else if ((iterator[constants::SPD_BYTE_2] & constants::SPD_BYTE_MASK) ==
              constants::SPD_DRAM_TYPE_DDR5)
     {
+        std::cout<<" MEM 2 b"<<std::endl;
         dimmSize = getDdr5BasedDDimmSize(iterator);
     }
     else
@@ -305,38 +307,41 @@ size_t memoryVpdParser::getDDimmSize(Binary::const_iterator iterator)
 kwdVpdMap memoryVpdParser::readKeywords(Binary::const_iterator iterator)
 {
     KeywordVpdMap map{};
-
+    std::cout<<" MEM 1"<<std::endl;
     // collect Dimm size value
     auto dimmSize = getDDimmSize(iterator);
     if (!dimmSize)
     {
         cerr << "Error: Calculated dimm size is 0.";
     }
-
+std::cout<<" MEM 1 a"<<std::endl;
     map.emplace("MemorySizeInKB", dimmSize);
     // point the iterator to DIMM data and skip "11S"
     advance(iterator, MEMORY_VPD_DATA_START + 3);
     Binary partNumber(iterator, iterator + PART_NUM_LEN);
-
+std::cout<<" MEM 1 b"<<std::endl;
     advance(iterator, PART_NUM_LEN);
     Binary serialNumber(iterator, iterator + SERIAL_NUM_LEN);
-
+std::cout<<" MEM 1 c"<<std::endl;
     advance(iterator, SERIAL_NUM_LEN);
     Binary ccin(iterator, iterator + CCIN_LEN);
-
+std::cout<<" MEM 1 d"<<std::endl;
     map.emplace("FN", partNumber);
     map.emplace("PN", move(partNumber));
     map.emplace("SN", move(serialNumber));
     map.emplace("CC", move(ccin));
-
+std::cout<<" MEM 1 e"<<std::endl;
     return map;
 }
 
 variant<kwdVpdMap, Store> memoryVpdParser::parse()
 {
+    std::cout<<" MEM 1"<<std::endl;
     // Read the data and return the map
     auto iterator = memVpd.cbegin();
+    std::cout<<" MEM 2"<<std::endl;
     auto vpdDataMap = readKeywords(iterator);
+    std::cout<<" MEM 3"<<std::endl;
 
     return vpdDataMap;
 }

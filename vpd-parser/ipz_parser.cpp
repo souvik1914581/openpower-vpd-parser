@@ -15,6 +15,7 @@ using namespace openpower::vpd::constants;
 
 std::variant<kwdVpdMap, Store> IpzVpdParser::parse()
 {
+    std::cout<<" IPZ 1"<<std::endl;
     Impl p(vpd, inventoryPath, vpdFilePath, vpdStartOffset);
     Store s = p.run();
     return s;

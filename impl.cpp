@@ -588,14 +588,16 @@ Store Impl::run()
 
     // Read the table of contents record
     std::size_t ptLen = readTOC(iterator);
-
+std::cout<<" IMPL 1"<<std::endl;
     // Read the table of contents record, to get offsets
     // to other records.
     auto offsets = readPT(iterator, ptLen);
     for (const auto& offset : offsets)
     {
+        std::cout<<" IMPL 2"<<std::endl;
         processRecord(offset);
     }
+std::cout<<" IMPL 3"<<std::endl;
     // Return a Store object, which has interfaces to
     // access parsed VPD by record:keyword
     return Store(std::move(out));
