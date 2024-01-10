@@ -3,6 +3,7 @@
 #include "constants.hpp"
 #include "exceptions.hpp"
 #include "ipz_parser.hpp"
+#include "keyword_vpd_parser.hpp"
 
 namespace vpd
 {
@@ -30,8 +31,7 @@ enum vpdType
  */
 static vpdType vpdTypeCheck(const types::BinaryVector& vpdVector)
 {
-    if (vpdVector[constants::IPZ_DATA_START] ==
-        constants::KW_VAL_PAIR_START_TAG)
+    if (vpdVector[constants::IPZ_DATA_START] == constants::IPZ_DATA_START_TAG)
     {
         return vpdType::IPZ_VPD;
     }
@@ -106,8 +106,7 @@ std::shared_ptr<ParserInterface>
 
         case vpdType::KEYWORD_VPD:
         {
-            // TODO:
-            // return shared pointer to class object.
+            return std::make_shared<KeywordVpdParser>(vpdVector);
         }
 
         case vpdType::DDR4_DDIMM_MEMORY_VPD:
