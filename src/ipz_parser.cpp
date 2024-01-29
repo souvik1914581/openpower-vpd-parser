@@ -546,22 +546,17 @@ void IpzVpdParser::processRecord(auto recordOffset)
 
     std::string recordName(itrToVPDStart, itrToVPDStart + Length::RECORD_NAME);
 
-    if (recordName == "VINI" || recordName == "OPFR" || recordName == "OSYS")
-    {
-        // If it's a record we're interested in, proceed to find
-        // contained keywords and their values.
-        std::advance(itrToVPDStart, Length::RECORD_NAME);
+    // proceed to find contained keywords and their values.
+    std::advance(itrToVPDStart, Length::RECORD_NAME);
 
-        // Reverse back to RT Kw, in ipz vpd, to Read RT KW & value
-        std::advance(itrToVPDStart, -(Length::KW_NAME + sizeof(types::KwSize) +
-                                      Length::RECORD_NAME));
+    // Reverse back to RT Kw, in ipz vpd, to Read RT KW & value
+    std::advance(itrToVPDStart, -(Length::KW_NAME + sizeof(types::KwSize) +
+                                  Length::RECORD_NAME));
 
-        // Add entry for this record (and contained keyword:value pairs)
-        // to the parsed vpd output.
-        m_parsedVPDMap.emplace(std::move(recordName),
-                               std::move(readKeywords(itrToVPDStart)));
-
-    }
+    // Add entry for this record (and contained keyword:value pairs)
+    // to the parsed vpd output.
+    m_parsedVPDMap.emplace(std::move(recordName),
+                           std::move(readKeywords(itrToVPDStart)));
 }
 
 types::VPDMapVariant IpzVpdParser::parse()
