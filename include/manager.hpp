@@ -52,7 +52,7 @@ class Manager
      * Note: Throws exception in case of any failure. Needs to be handled by the
      * caller.
      */
-    void setTimerForSystemVPDDetection();
+    void SetTimerToDetectSVPDOnDbus();
 #endif
 
     // Shared pointer to asio context object.
