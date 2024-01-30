@@ -350,9 +350,11 @@ std::string getExpandedLocationCode(const std::string& unexpandedLocationCode,
                                      "chassis/motherboard",
                                      kwdInterface, kwd1);
 
-                if (auto kwdVal = std::get_if<std::string>(&retVal))
+                if (auto kwdVal = std::get_if<types::BinaryVector>(&retVal))
                 {
-                    firstKwdValue = *kwdVal;
+                    firstKwdValue.assign(
+                        reinterpret_cast<const char*>(kwdVal->data()),
+                        kwdVal->size());
                 }
                 else
                 {
@@ -366,9 +368,11 @@ std::string getExpandedLocationCode(const std::string& unexpandedLocationCode,
                                      "chassis/motherboard",
                                      kwdInterface, kwd2);
 
-                if (auto kwdVal = std::get_if<std::string>(&retVal))
+                if (auto kwdVal = std::get_if<types::BinaryVector>(&retVal))
                 {
-                    secondKwdValue = *kwdVal;
+                    secondKwdValue.assign(
+                        reinterpret_cast<const char*>(kwdVal->data()),
+                        kwdVal->size());
                 }
                 else
                 {
