@@ -34,8 +34,7 @@ class DdimmVpdParser : public ParserInterface
      */
     DdimmVpdParser(const types::BinaryVector& i_vpdVector) :
         m_vpdVector(i_vpdVector)
-    {
-    }
+    {}
 
     /**
      * @brief API to parse DDIMM VPD file.

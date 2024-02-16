@@ -2,14 +2,15 @@
 
 #include "ipz_parser.hpp"
 
+#include "vpdecc/vpdecc.h"
+
 #include "constants.hpp"
 #include "exceptions.hpp"
 #include "utils.hpp"
 
 #include <nlohmann/json.hpp>
-#include <typeindex>
 
-#include "vpdecc/vpdecc.h"
+#include <typeindex>
 
 namespace vpd
 {
@@ -514,8 +515,8 @@ types::IPZVpdMap::mapped_type
         if (supportedKeywords.end() != supportedKeywords.find(kwdName))
         {
             // Keyword is of interest to us
-            std::string kwdValue =
-                readKwData(kwdName, kwdDataLength, itrToKwds);
+            std::string kwdValue = readKwData(kwdName, kwdDataLength,
+                                              itrToKwds);
             kwdValueMap.emplace(std::move(kwdName), std::move(kwdValue));
         }
 

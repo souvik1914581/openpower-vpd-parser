@@ -5,10 +5,11 @@
 #include "utils.hpp"
 
 #include <CLI/CLI.hpp>
-#include <filesystem>
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <parser_factory.hpp>
+
+#include <filesystem>
+#include <iostream>
 
 /**
  * @brief This file implements a generic parser APP.

@@ -3,9 +3,10 @@
 #include "logger.hpp"
 #include "manager.hpp"
 
-#include <iostream>
 #include <sdbusplus/asio/connection.hpp>
 #include <sdbusplus/asio/object_server.hpp>
+
+#include <iostream>
 
 /**
  * @brief Main function for VPD parser application.
@@ -24,8 +25,8 @@ int main(int, char**)
         std::shared_ptr<sdbusplus::asio::dbus_interface> interface =
             server.add_interface(OBJPATH, IFACE);
 
-        auto vpdManager =
-            std::make_shared<vpd::Manager>(io_con, interface, connection);
+        auto vpdManager = std::make_shared<vpd::Manager>(io_con, interface,
+                                                         connection);
         interface->initialize();
 
         vpd::logging::logMessage("Start VPD-Manager event loop");

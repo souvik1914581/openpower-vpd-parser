@@ -2,6 +2,7 @@
 
 #include <sdbusplus/asio/property.hpp>
 #include <sdbusplus/server.hpp>
+
 #include <unordered_map>
 
 namespace vpd

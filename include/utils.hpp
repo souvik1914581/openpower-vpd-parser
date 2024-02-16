@@ -4,9 +4,10 @@
 
 #include <errno.h>
 
+#include <nlohmann/json.hpp>
+
 #include <array>
 #include <iostream>
-#include <nlohmann/json.hpp>
 #include <source_location>
 #include <span>
 #include <string_view>

@@ -6,8 +6,9 @@
 
 #include <string.h>
 
-#include <iostream>
 #include <nlohmann/json.hpp>
+
+#include <iostream>
 
 namespace vpd
 {

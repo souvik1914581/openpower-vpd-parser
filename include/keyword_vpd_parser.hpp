@@ -28,8 +28,7 @@ class KeywordVpdParser : public ParserInterface
     KeywordVpdParser(const types::BinaryVector& kwVpdVector) :
         m_keywordVpdVector(kwVpdVector),
         m_vpdIterator(m_keywordVpdVector.begin())
-    {
-    }
+    {}
 
     /**
      * @brief A wrapper function to parse the keyword VPD binary data.

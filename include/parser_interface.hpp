@@ -29,8 +29,6 @@ class ParserInterface
     /**
      * @brief Virtual destructor.
      */
-    virtual ~ParserInterface()
-    {
-    }
+    virtual ~ParserInterface() {}
 };
 } // namespace vpd
