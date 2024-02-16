@@ -28,8 +28,7 @@ class Exception : public std::runtime_error
      */
     explicit Exception(const std::string& msg) :
         std::runtime_error(msg), m_errMsg(msg)
-    {
-    }
+    {}
 
     /** @brief inline method to return exception string.
      *
@@ -67,9 +66,7 @@ class EccException : public Exception
      *
      *  @param[in] msg - Information w.r.t exception.
      */
-    explicit EccException(const std::string& msg) : Exception(msg)
-    {
-    }
+    explicit EccException(const std::string& msg) : Exception(msg) {}
 
 }; // class EccException
 
@@ -94,9 +91,7 @@ class DataException : public Exception
      *
      *  @param[in] msg - string to define exception
      */
-    explicit DataException(const std::string& msg) : Exception(msg)
-    {
-    }
+    explicit DataException(const std::string& msg) : Exception(msg) {}
 
 }; // class DataException
 
@@ -118,8 +113,7 @@ class JsonException : public Exception
      */
     JsonException(const std::string& msg, const std::string& path) :
         Exception(msg), m_jsonPath(path)
-    {
-    }
+    {}
 
     /** @brief Json path getter method.
      *

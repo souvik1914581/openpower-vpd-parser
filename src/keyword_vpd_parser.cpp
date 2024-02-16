@@ -114,8 +114,8 @@ void KeywordVpdParser::validateChecksum(
     uint8_t checkSumCalculated = 0;
 
     // Checksum calculation
-    checkSumCalculated =
-        std::accumulate(checkSumStart, checkSumEnd, checkSumCalculated);
+    checkSumCalculated = std::accumulate(checkSumStart, checkSumEnd,
+                                         checkSumCalculated);
     checkSumCalculated = ~checkSumCalculated + 1;
     uint8_t checksumVpdValue = *(m_vpdIterator + constants::ONE_BYTE);
 

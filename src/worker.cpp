@@ -348,11 +348,11 @@ void Worker::getSystemJson(std::string& systemJson,
             transform(hwKWdValue.begin(), hwKWdValue.end(), hwKWdValue.begin(),
                       ::toupper);
 
-            auto itrToHW =
-                std::find_if(hwVersionList.begin(), hwVersionList.end(),
-                             [&hwKWdValue](const auto& aPair) {
-                                 return aPair.first == hwKWdValue;
-                             });
+            auto itrToHW = std::find_if(hwVersionList.begin(),
+                                        hwVersionList.end(),
+                                        [&hwKWdValue](const auto& aPair) {
+                return aPair.first == hwKWdValue;
+            });
 
             if (itrToHW != hwVersionList.end())
             {
@@ -702,7 +702,7 @@ void Worker::processExtraInterfaces(const nlohmann::json& singleFru,
             {
                 return;
             }
-        
+
             std::string pgKeywordValue;
             utils::getKwVal(itrToRec->second, "PG", pgKeywordValue);
             if (!pgKeywordValue.empty())
@@ -728,7 +728,6 @@ void Worker::processCopyRecordFlag(const nlohmann::json& singleFru,
             const std::string& recordName = record;
             if ((*ipzVpdMap).find(recordName) != (*ipzVpdMap).end())
             {
-
                 populateIPZVPDpropertyMap(interfaces,
                                           (*ipzVpdMap).at(recordName),
                                           constants::ipzVpdInf + recordName);
@@ -824,24 +823,24 @@ void Worker::populateDbus(const types::VPDMapVariant& parsedVpdMap,
                     continue;
                 }
             }
-    
+
             if (aFru.value("inherit", true))
             {
                 processInheritFlag(parsedVpdMap, interfaces);
             }
-    
+
             // If specific record needs to be copied.
             if (aFru.contains("copyRecords"))
             {
                 processCopyRecordFlag(aFru, parsedVpdMap, interfaces);
             }
-    
+
             if (aFru.contains("extraInterfaces"))
             {
                 // Process extra interfaces w.r.t a FRU.
                 processExtraInterfaces(aFru, interfaces, parsedVpdMap);
             }
-    
+
             // Process FRUS which are embedded in the parent FRU and whose VPD
             // will be synthesized.
             if ((aFru.value("embedded", true)) &&
@@ -849,7 +848,7 @@ void Worker::populateDbus(const types::VPDMapVariant& parsedVpdMap,
             {
                 processEmbeddedAndSynthesizedFrus(aFru, interfaces);
             }
-    
+
             objectInterfaceMap.emplace(std::move(fruObjectPath),
                                        std::move(interfaces));
         }
@@ -866,7 +865,7 @@ void Worker::publishSystemVPD(const types::VPDMapVariant& parsedVpdMap)
         types::ObjectMap primeObjects;
         primeInventory(*ipzVpdMap, primeObjects);
         objectInterfaceMap.insert(primeObjects.begin(), primeObjects.end());
-    
+
         // Notify PIM
         if (!utils::callPIM(move(objectInterfaceMap)))
         {

@@ -83,8 +83,8 @@ uint8_t DdimmVpdParser::getDdr5DiePerPackage(uint8_t i_ByteValue)
     }
     else
     {
-        l_DiePerPackage =
-            pow(constants::VALUE_2, (i_ByteValue - constants::VALUE_1));
+        l_DiePerPackage = pow(constants::VALUE_2,
+                              (i_ByteValue - constants::VALUE_1));
     }
     return l_DiePerPackage;
 }
@@ -185,11 +185,11 @@ size_t DdimmVpdParser::getDdr5BasedDdimmSize(
                 std::to_string(i_iterator[constants::SPD_BYTE_6]) + "]");
             break;
         }
-        uint8_t l_dramWidth =
-            constants::VALUE_4 *
-            (constants::VALUE_1 << ((i_iterator[constants::SPD_BYTE_6] &
-                                     constants::MASK_BYTE_BITS_567) >>
-                                    constants::VALUE_5));
+        uint8_t l_dramWidth = constants::VALUE_4 *
+                              (constants::VALUE_1
+                               << ((i_iterator[constants::SPD_BYTE_6] &
+                                    constants::MASK_BYTE_BITS_567) >>
+                                   constants::VALUE_5));
 
         l_dimmSize = (l_channelsPerDdimm * l_busWidthPerChannel *
                       l_diePerPackage * l_densityPerDie * l_ranksPerChannel) /
