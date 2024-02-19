@@ -130,4 +130,28 @@ class JsonException : public Exception
 
 }; // class JSonException
 
+/** @class GpioException
+ *  @brief Custom handler for GPIO exception.
+ *
+ *  This class extends Exceptions class and define
+ *  type for GPIO related exception in VPD.
+ */
+class GpioException : public Exception
+{
+  public:
+    // deleted methods
+    GpioException() = delete;
+    GpioException(const GpioException&) = delete;
+    GpioException(GpioException&&) = delete;
+    GpioException& operator=(const GpioException&) = delete;
+
+    // default destructor
+    ~GpioException() = default;
+
+    /** @brief constructor
+     *  @param[in] msg - string to define exception
+     */
+    explicit GpioException(const std::string& msg) : Exception(msg) {}
+};
+
 } // namespace vpd
