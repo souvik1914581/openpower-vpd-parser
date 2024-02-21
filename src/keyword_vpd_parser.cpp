@@ -13,64 +13,65 @@ namespace vpd
 
 types::VPDMapVariant KeywordVpdParser::parse()
 {
-    try
+    if (m_keywordVpdVector.empty())
     {
-        m_vpdIterator = m_keywordVpdVector.begin();
-
-        if (*m_vpdIterator != constants::KW_VPD_START_TAG)
-        {
-            throw(
-                DataException("Invalid Large resource type Identifier String"));
-        }
-
-        checkNextBytesValidity(sizeof(constants::KW_VPD_START_TAG));
-        std::advance(m_vpdIterator, sizeof(constants::KW_VPD_START_TAG));
-
-        uint16_t dataSize = getKwDataSize();
-
-        checkNextBytesValidity(constants::TWO_BYTES + dataSize);
-        std::advance(m_vpdIterator, constants::TWO_BYTES + dataSize);
-
-        // Check for invalid vendor defined large resource type
-        if (*m_vpdIterator != constants::KW_VPD_PAIR_START_TAG)
-        {
-            if (*m_vpdIterator != constants::ALT_KW_VPD_PAIR_START_TAG)
-            {
-                throw(DataException("Invalid Keyword Vpd Start Tag"));
-            }
-        }
-        auto kwValMap = populateVpdMap();
-
-        // Do these validations before returning parsed data.
-        // Check for small resource type end tag
-        if (*m_vpdIterator != constants::KW_VAL_PAIR_END_TAG)
-        {
-            throw(DataException("Invalid Small resource type End"));
-        }
-
-        // Check vpd end Tag.
-        if (*m_vpdIterator != constants::KW_VPD_END_TAG)
-        {
-            throw(DataException("Invalid Small resource type."));
-        }
-        return kwValMap;
+        throw(DataException("Vector for Keyword format VPD is empty"));
     }
-    catch (const DataException& ex)
+    m_vpdIterator = m_keywordVpdVector.begin();
+
+    if (*m_vpdIterator != constants::KW_VPD_START_TAG)
     {
-        logging::logMessage(ex.what());
-
-        throw(DataException("VPD is corrupted, need to fix it."));
+        throw(DataException("Invalid Large resource type Identifier String"));
     }
+
+    checkNextBytesValidity(sizeof(constants::KW_VPD_START_TAG));
+    std::advance(m_vpdIterator, sizeof(constants::KW_VPD_START_TAG));
+
+    uint16_t l_dataSize = getKwDataSize();
+
+    checkNextBytesValidity(constants::TWO_BYTES + l_dataSize);
+    std::advance(m_vpdIterator, constants::TWO_BYTES + l_dataSize);
+
+    // Check for invalid vendor defined large resource type
+    if (*m_vpdIterator != constants::KW_VPD_PAIR_START_TAG)
+    {
+        if (*m_vpdIterator != constants::ALT_KW_VPD_PAIR_START_TAG)
+        {
+            throw(DataException("Invalid Keyword Vpd Start Tag"));
+        }
+    }
+    types::BinaryVector::const_iterator l_checkSumStart = m_vpdIterator;
+    auto l_kwValMap = populateVpdMap();
+
+    // Do these validations before returning parsed data.
+    // Check for small resource type end tag
+    if (*m_vpdIterator != constants::KW_VAL_PAIR_END_TAG)
+    {
+        throw(DataException("Invalid Small resource type End"));
+    }
+
+    types::BinaryVector::const_iterator l_checkSumEnd = m_vpdIterator;
+    validateChecksum(l_checkSumStart, l_checkSumEnd);
+
+    checkNextBytesValidity(constants::TWO_BYTES);
+    std::advance(m_vpdIterator, constants::TWO_BYTES);
+
+    // Check VPD end Tag.
+    if (*m_vpdIterator != constants::KW_VPD_END_TAG)
+    {
+        throw(DataException("Invalid Small resource type."));
+    }
+
+    return l_kwValMap;
 }
 
 types::KeywordVpdMap KeywordVpdParser::populateVpdMap()
 {
-    types::BinaryVector::const_iterator checkSumStart = m_vpdIterator;
     checkNextBytesValidity(constants::ONE_BYTE);
     std::advance(m_vpdIterator, constants::ONE_BYTE);
 
-    auto totalSize = getKwDataSize();
-    if (totalSize == 0)
+    auto l_totalSize = getKwDataSize();
+    if (l_totalSize == 0)
     {
         throw(DataException("Data size is 0, badly formed keyword VPD"));
     }
@@ -78,60 +79,54 @@ types::KeywordVpdMap KeywordVpdParser::populateVpdMap()
     checkNextBytesValidity(constants::TWO_BYTES);
     std::advance(m_vpdIterator, constants::TWO_BYTES);
 
-    types::KeywordVpdMap kwValMap;
+    types::KeywordVpdMap l_kwValMap;
 
     // Parse the keyword-value and store the pairs in map
-    while (totalSize > 0)
+    while (l_totalSize > 0)
     {
         checkNextBytesValidity(constants::TWO_BYTES);
-        std::string keywordName(m_vpdIterator,
-                                m_vpdIterator + constants::TWO_BYTES);
+        std::string l_keywordName(m_vpdIterator,
+                                  m_vpdIterator + constants::TWO_BYTES);
         std::advance(m_vpdIterator, constants::TWO_BYTES);
 
-        size_t kwSize = *m_vpdIterator;
-        checkNextBytesValidity(kwSize);
+        size_t l_kwSize = *m_vpdIterator;
+        checkNextBytesValidity(constants::ONE_BYTE + l_kwSize);
         m_vpdIterator++;
-        std::vector<uint8_t> valueBytes(m_vpdIterator, m_vpdIterator + kwSize);
-        std::advance(m_vpdIterator, kwSize);
+        std::vector<uint8_t> l_valueBytes(m_vpdIterator,
+                                          m_vpdIterator + l_kwSize);
+        std::advance(m_vpdIterator, l_kwSize);
 
-        kwValMap.emplace(
-            std::make_pair(std::move(keywordName), std::move(valueBytes)));
+        l_kwValMap.emplace(
+            std::make_pair(std::move(l_keywordName), std::move(l_valueBytes)));
 
-        totalSize -= constants::TWO_BYTES + constants::ONE_BYTE + kwSize;
+        l_totalSize -= constants::TWO_BYTES + constants::ONE_BYTE + l_kwSize;
     }
 
-    types::BinaryVector::const_iterator checkSumEnd = m_vpdIterator;
-
-    validateChecksum(checkSumStart, checkSumEnd);
-
-    return kwValMap;
+    return l_kwValMap;
 }
 
 void KeywordVpdParser::validateChecksum(
-    types::BinaryVector::const_iterator checkSumStart,
-    types::BinaryVector::const_iterator checkSumEnd)
+    types::BinaryVector::const_iterator i_checkSumStart,
+    types::BinaryVector::const_iterator i_checkSumEnd)
 {
-    uint8_t checkSumCalculated = 0;
+    uint8_t l_checkSumCalculated = 0;
 
     // Checksum calculation
-    checkSumCalculated = std::accumulate(checkSumStart, checkSumEnd,
-                                         checkSumCalculated);
-    checkSumCalculated = ~checkSumCalculated + 1;
-    uint8_t checksumVpdValue = *(m_vpdIterator + constants::ONE_BYTE);
+    l_checkSumCalculated = std::accumulate(i_checkSumStart, i_checkSumEnd,
+                                           l_checkSumCalculated);
+    l_checkSumCalculated = ~l_checkSumCalculated + 1;
+    uint8_t l_checksumVpdValue = *(m_vpdIterator + constants::ONE_BYTE);
 
-    if (checkSumCalculated != checksumVpdValue)
+    if (l_checkSumCalculated != l_checksumVpdValue)
     {
         throw(DataException("Invalid Checksum"));
     }
-
-    checkNextBytesValidity(constants::TWO_BYTES);
-    std::advance(m_vpdIterator, constants::TWO_BYTES);
 }
 
-void KeywordVpdParser::checkNextBytesValidity(uint8_t numberOfBytes)
+void KeywordVpdParser::checkNextBytesValidity(uint8_t i_numberOfBytes)
 {
     if ((std::distance(m_keywordVpdVector.begin(),
-                       m_vpdIterator + numberOfBytes)) >
+                       m_vpdIterator + i_numberOfBytes)) >
         std::distance(m_keywordVpdVector.begin(), m_keywordVpdVector.end()))
     {
         throw(DataException("Truncated VPD data"));
