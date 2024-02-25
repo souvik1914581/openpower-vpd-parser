@@ -3,6 +3,7 @@
 #include "parser_interface.hpp"
 #include "types.hpp"
 #include "utils.hpp"
+#include "worker.hpp"
 
 #include <CLI/CLI.hpp>
 #include <nlohmann/json.hpp>
@@ -57,25 +58,32 @@ int main(int argc, char** argv)
             throw std::runtime_error("Empty VPD file path");
         }
 
-        // VPD file path should exist in the system for parser to work on it.
-        if (!std::filesystem::exists(vpdFilePath))
-        {
-            throw std::runtime_error("VPD file path does not exist");
-        }
-
         nlohmann::json json;
+        vpd::types::VPDMapVariant parsedVpdDataMap;
+
+        // Below are two different ways of parsing the VPD.
         if (!configFilePath.empty())
         {
-            json = vpd::utils::getParsedJson(configFilePath);
+            vpd::logging::logMessage("Processing with config JSON");
+
+            std::shared_ptr<vpd::Worker> objWorker =
+                std::make_shared<vpd::Worker>(configFilePath);
+            parsedVpdDataMap = objWorker->parseVpdFile(vpdFilePath);
+
+            // Based on requirement, call appropriate public API of worker class
+            /*If required to publish the FRU data on Dbus*/
+            // objWorker->publishFruDataOnDbus(parsedVpdDataMap);
+        }
+        else
+        {
+            // Will work with empty JSON
+            std::shared_ptr<vpd::Parser> vpdParser =
+                std::make_shared<vpd::Parser>(vpdFilePath, json);
+            parsedVpdDataMap = vpdParser->parse();
         }
 
-        // Instantiate generic parser and call parse to get parsed data based on
-        // VPD type.
-        std::shared_ptr<vpd::Parser> vpdParser =
-            std::make_shared<vpd::Parser>(vpdFilePath, json);
-        vpd::types::VPDMapVariant parsedVpdDataMap = vpdParser->parse();
-
-        // Custom logic to be implemented based on the type of variant,
+        // If custom handling is required then custom logic to be implemented
+        // based on the type of variant,
         //  eg: for IPZ VPD format
         if (auto ipzVpdMap =
                 std::get_if<vpd::types::IPZVpdMap>(&parsedVpdDataMap))
