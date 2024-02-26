@@ -31,15 +31,9 @@ Worker::Worker(std::string pathToConfigJson) :
         // reset.
         if (std::filesystem::exists(INVENTORY_JSON_SYM_LINK))
         {
-            logging::logMessage("SYm Link already present");
+            logging::logMessage("Sym Link already present");
             jsonToParse = INVENTORY_JSON_SYM_LINK;
             m_isSymlinkPresent = true;
-        }
-        // implies it is a fresh boot/factory reset.
-        else
-        {
-            // Create the directory for hosting the symlink
-            std::filesystem::create_directories(VPD_SYMLIMK_PATH);
         }
 
         try
@@ -63,6 +57,7 @@ Worker::Worker(std::string pathToConfigJson) :
     }
 }
 
+#ifdef IBM_SYSTEM
 static bool isChassisPowerOn()
 {
     auto powerState = utils::readDbusProperty(
@@ -109,6 +104,9 @@ void Worker::performInitialSetup()
         }
         else
         {
+            // implies it is a fresh boot/factory reset.
+            // Create the directory for hosting the symlink
+            std::filesystem::create_directories(VPD_SYMLIMK_PATH);
             setDeviceTreeAndJson();
         }
     }
@@ -131,6 +129,7 @@ void Worker::performInitialSetup()
         throw;
     }
 }
+#endif
 
 static std::string readFitConfigValue()
 {
@@ -878,38 +877,43 @@ void Worker::publishSystemVPD(const types::VPDMapVariant& parsedVpdMap)
     }
 }
 
+types::VPDMapVariant Worker::parseVpdFile(const std::string& i_vpdFilePath)
+{
+    // TODO: Special handling for FRUs eg: pre/post actions.
+    if (!std::filesystem::exists(i_vpdFilePath))
+    {
+        throw std::runtime_error("Could not find file path " + i_vpdFilePath +
+                                 "Skipping parser trigger for the EEPROM");
+    }
+
+    std::shared_ptr<Parser> vpdParser = std::make_shared<Parser>(i_vpdFilePath,
+                                                                 m_parsedJson);
+    return vpdParser->parse();
+}
+
 std::tuple<bool, std::string>
-    Worker::parseAndPublishVPD(const std::string& vpdFilePath)
+    Worker::parseAndPublishVPD(const std::string& i_vpdFilePath)
 {
     try
     {
-        // TODO: Special handling for FRUs eg: pre/post actions.
-        if (!std::filesystem::exists(vpdFilePath))
-        {
-            logging::logMessage("Could not find file path " + vpdFilePath +
-                                "Skipping parser trigger for the EEPROM");
-            return std::make_tuple(false, vpdFilePath);
-        }
-
-        std::shared_ptr<Parser> vpdParser =
-            std::make_shared<Parser>(vpdFilePath, m_parsedJson);
-        const types::VPDMapVariant& parsedVpdMap = vpdParser->parse();
+        const types::VPDMapVariant& parsedVpdMap = parseVpdFile(i_vpdFilePath);
 
         types::ObjectMap objectInterfaceMap;
-        populateDbus(parsedVpdMap, objectInterfaceMap, vpdFilePath);
+        populateDbus(parsedVpdMap, objectInterfaceMap, i_vpdFilePath);
 
         logging::logMessage("Dbus sucessfully populated for FRU " +
-                            vpdFilePath);
+                            i_vpdFilePath);
         // Notify PIM
         /*    if (!utils::callPIM(move(objectInterfaceMap)))
             {
-                throw std::runtime_error("Call to PIM failed for system VPD");
+                throw std::runtime_error("Call to PIM failed for system
+           VPD");
             }*/
     }
     catch (const std::exception& ex)
     {
-        // handle all the exceptions internally. Return only true/false based on
-        // status of execution.
+        // handle all the exceptions internally. Return only true/false
+        // based on status of execution.
         if (typeid(ex) == std::type_index(typeid(DataException)))
         {
             // TODO: Add custom handling
@@ -921,9 +925,9 @@ std::tuple<bool, std::string>
             // TODO: Add custom handling
             logging::logMessage(ex.what());
         }
-        return std::make_tuple(false, vpdFilePath);
+        return std::make_tuple(false, i_vpdFilePath);
     }
-    return std::make_tuple(true, vpdFilePath);
+    return std::make_tuple(true, i_vpdFilePath);
 }
 
 void Worker::collectFrusFromJson()

@@ -49,6 +49,7 @@ class Worker
      */
     ~Worker() = default;
 
+#ifdef IBM_SYSTEM
     /**
      * @brief API to perform initial setup before manager claims Bus name.
      *
@@ -57,12 +58,20 @@ class Worker
      * system VPD should be on DBus.
      */
     void performInitialSetup();
+#endif
+
+    /**
+     * @brief An API to check if system VPD is already published.
+     *
+     * @return Status, true if system is already collected else false.
+     */
+    bool isSystemVPDOnDBus() const;
 
     /**
      * @brief API to process all FRUs presnt in config JSON file.
      *
      * This API based on config JSON passed/selected for the system, will
-     * trigger parser for multiple FRUs.
+     * trigger parser for all the FRUs and publish it on DBus.
      *
      * Note: Config JSON file path should be passed to worker class constructor
      * to make use of this API.
@@ -71,11 +80,11 @@ class Worker
     void collectFrusFromJson();
 
     /**
-     * @brief An API to check if system VPD is already published.
+     * @brief API to parse VPD data
      *
-     * @return Status, true if system is already collected else false.
+     * @param[in] i_vpdFilePath - Path to the VPD file.
      */
-    bool isSystemVPDOnDBus() const;
+    types::VPDMapVariant parseVpdFile(const std::string& i_vpdFilePath);
 
     /**
      * @brief An API to populate DBus interfaces for a FRU.
@@ -98,12 +107,12 @@ class Worker
      * Note: This API will handle all the exceptions internally and will only
      * return status of parsing and publishing of VPD over D-Bus.
      *
-     * @param[in] vpdFilePath - Path of file containing VPD.
+     * @param[in] i_vpdFilePath - Path of file containing VPD.
      * @return Tuple of status and file path. Status, true if successfull else
      * false.
      */
     std::tuple<bool, std::string>
-        parseAndPublishVPD(const std::string& vpdFilePath);
+        parseAndPublishVPD(const std::string& i_vpdFilePath);
 
     /**
      * @brief An API to set appropriate device tree and JSON.
