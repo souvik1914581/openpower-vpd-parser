@@ -43,9 +43,9 @@ class KeywordVpdParser : public ParserInterface
 
   private:
     /**
-     * @brief Parse the vpd data and emplace them as pair into the Map.
+     * @brief Parse the VPD data and emplace them as pair into the Map.
      *
-     * @throw DataException - VPD data size is 0, check vpd
+     * @throw DataException - VPD data size is 0, check VPD
      * @return map of keyword:value
      */
     types::KeywordVpdMap populateVpdMap();
@@ -56,17 +56,18 @@ class KeywordVpdParser : public ParserInterface
      * Finding the 2's complement of sum of all the
      * keywords,values and large resource identifier string.
      *
-     * @param checkSumStart - vpd iterator pointing at checksum start value
-     * @param checkSumEnd - vpd iterator pointing at checksum end value
-     * @throw DataException - checksum invalid, check vpd
+     * @param[in] i_checkSumStart - VPD iterator pointing at checksum start
+     * value
+     * @param[in] i_checkSumEnd - VPD iterator pointing at checksum end value
+     * @throw DataException - checksum invalid, check VPD
      */
-    void validateChecksum(types::BinaryVector::const_iterator checkSumStart,
-                          types::BinaryVector::const_iterator checkSumEnd);
+    void validateChecksum(types::BinaryVector::const_iterator i_checkSumStart,
+                          types::BinaryVector::const_iterator i_checkSumEnd);
 
     /**
-     * @brief It reads 2 bytes from current vpd pointer
+     * @brief It reads 2 bytes from current VPD pointer
      *
-     * @return 2 bytes of vpd data
+     * @return 2 bytes of VPD data
      */
     inline size_t getKwDataSize()
     {
@@ -83,14 +84,14 @@ class KeywordVpdParser : public ParserInterface
      * @param[in] numberOfBytes - no.of positions the iterator is going to be
      * iterated
      *
-     * @throw DataException - Truncated vpd data, check VPD.
+     * @throw DataException - Truncated VPD data, check VPD.
      */
     void checkNextBytesValidity(uint8_t numberOfBytes);
 
     /*Vector of keyword VPD data*/
     const types::BinaryVector& m_keywordVpdVector;
 
-    /*Iterator to vpd data*/
+    /*Iterator to VPD data*/
     types::BinaryVector::const_iterator m_vpdIterator;
 };
 } // namespace vpd
