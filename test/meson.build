@@ -27,11 +27,10 @@ endif
 
 dependency_list = [gtest_dep, gmock_dep, sdbusplus]
 
-configuration_inc = include_directories('..', '../include')
+configuration_inc = include_directories('..', '../include', '../vpdecc')
 
 test_sources = [
   '../src/utils.cpp',
-  '../src/logger.cpp',
   '../src/logger.cpp',
   '../src/ddimm_parser.cpp',
   '../src/parser.cpp',
@@ -43,7 +42,8 @@ test_sources = [
 
 tests = [
   'utest_utils.cpp',
-  'utest_keyword_parser.cpp'
+  'utest_keyword_parser.cpp',
+  'utest_ddimm_parser.cpp'
 ]
 
 foreach test_file : tests
