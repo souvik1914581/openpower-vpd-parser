@@ -25,6 +25,11 @@ if not gtest_dep.found() or not gmock_dep.found()
   endif
 endif
 
+parser_build_arguments = []
+if get_option('ipz_ecc_check').enabled()
+    parser_build_arguments += ['-DIPZ_ECC_CHECK']
+endif
+
 dependency_list = [gtest_dep, gmock_dep, sdbusplus]
 
 configuration_inc = include_directories('..', '../include', '../vpdecc')
@@ -43,7 +48,8 @@ test_sources = [
 tests = [
   'utest_utils.cpp',
   'utest_keyword_parser.cpp',
-  'utest_ddimm_parser.cpp'
+  'utest_ddimm_parser.cpp',
+  'utest_ipz_parser.cpp'
 ]
 
 foreach test_file : tests
@@ -51,7 +57,8 @@ foreach test_file : tests
                      test_file,
                      test_sources,
                      include_directories: configuration_inc,
-                     dependencies: dependency_list
+                     dependencies: dependency_list,
+                     cpp_args: parser_build_arguments
                      ),
        workdir: meson.current_source_dir())
 endforeach
