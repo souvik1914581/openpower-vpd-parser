@@ -78,10 +78,6 @@ if get_option('ibm_system').enabled()
     parser_build_arguments += ['-DIBM_SYSTEM']
 endif
 
-if get_option('use_json').enabled()
-    parser_build_arguments += ['-DPARSER_USE_JSON'] 
-endif
-
 vpd_manager_exe = executable(
                 'vpd-manager',
                 vpd_manager_SOURCES,
