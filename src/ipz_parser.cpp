@@ -154,7 +154,7 @@ bool IpzVpdParser::vtocEccCheck()
     auto vtocOffset = readUInt16LE(vpdPtr);
 
     // Get the VTOC Length
-    std::advance(vpdPtr, Offset::VTOC_PTR + sizeof(types::RecordOffset));
+    std::advance(vpdPtr, sizeof(types::RecordOffset));
     auto vtocLength = readUInt16LE(vpdPtr);
 
     // Get the ECC Offset
@@ -282,7 +282,7 @@ auto IpzVpdParser::readTOC(types::BinaryVector::const_iterator& itrToVPD)
         throw(DataException("VTOC record not found"));
     }
 
-    if (vtocEccCheck())
+    if (!vtocEccCheck())
     {
         throw(EccException("ERROR: VTOC ECC check Failed"));
     }
@@ -316,14 +316,12 @@ types::RecordOffsetList
     // we care only about the record offset information.
     while (itrToPT < end)
     {
+        std::string recordName(itrToPT, itrToPT + Length::RECORD_NAME);
         // Skip record name and record type
         std::advance(itrToPT, Length::RECORD_NAME + sizeof(types::RecordType));
 
         // Get record offset
         recordOffsets.push_back(readUInt16LE(itrToPT));
-
-        std::string recordName(itrToPT, itrToPT + Length::RECORD_NAME);
-
         try
         {
             // Verify the ECC for this Record
@@ -519,11 +517,11 @@ types::IPZVpdMap::mapped_type
                                               itrToKwds);
             kwdValueMap.emplace(std::move(kwdName), std::move(kwdValue));
         }
-
-        // support all the Keywords
-        auto stop = std::next(itrToKwds, kwdDataLength);
-        std::string kwdata(itrToKwds, stop);
-        kwdValueMap.emplace(std::move(kwdName), std::move(kwdata));
+        else
+        {
+            logging::logMessage("The keyword : " + kwdName +
+                                ", is not supported");
+        }
 
         // Jump past keyword data length
         std::advance(itrToKwds, kwdDataLength);
