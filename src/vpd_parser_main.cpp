@@ -43,10 +43,8 @@ int main(int argc, char** argv)
         app.add_option("-f, --file", vpdFilePath, "VPD file path")->required();
 
         std::string configFilePath{};
-#ifdef PARSER_USE_JSON
+
         app.add_option("-c,--config", configFilePath, "Path to JSON config");
-        vpd::logging::logMessage("Config file path recieved" + configFilePath);
-#endif
 
         CLI11_PARSE(app, argc, argv);
 
@@ -64,7 +62,8 @@ int main(int argc, char** argv)
         // Below are two different ways of parsing the VPD.
         if (!configFilePath.empty())
         {
-            vpd::logging::logMessage("Processing with config JSON");
+            vpd::logging::logMessage("Processing with config file - " +
+                                     configFilePath);
 
             std::shared_ptr<vpd::Worker> objWorker =
                 std::make_shared<vpd::Worker>(configFilePath);
