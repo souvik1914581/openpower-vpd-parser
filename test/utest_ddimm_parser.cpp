@@ -69,9 +69,10 @@ TEST(DdimmVpdParserTest, InvalidDensityPerDie)
 
 TEST(DdimmVpdParserTest, InvalidVpdType)
 {
-    // Invalid VPD type - corrupted at index[3]
+    // Invalid VPD type - corrupted at index[2] & index[3]
+    // Not able to find the VPD type, vpdTypeCheck failed
     nlohmann::json l_json;
-    std::string l_vpdFile("vpd_files/ddr5_ddimm_corrupted_index_3.dat");
+    std::string l_vpdFile("vpd_files/ddr5_ddimm_corrupted_index_2_3.dat");
     Parser l_vpdParser(l_vpdFile, l_json);
 
     EXPECT_THROW(l_vpdParser.parse(), std::exception);
