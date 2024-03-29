@@ -15,45 +15,6 @@
 namespace vpd
 {
 
-/**
- * @brief Encoding scheme of a VPD keyword's data
- */
-enum KwdEncoding
-{
-    ASCII, /**< data encoded in ascii */
-    RAW,   /**< raw data */
-    // Keywords needing custom decoding
-    MAC,  /**< The keyword B1 needs to be decoded specially */
-    DATE, /**< Special decoding of MB meant for Build Date */
-    UUID  /**< Special decoding of UD meant for UUID */
-};
-
-/** @brief OpenPOWER VPD keywords we're interested in */
-enum OpenPowerKeyword
-{
-    DR, /**< FRU name/description */
-    PN, /**< FRU part number */
-    SN, /**< FRU serial number */
-    CC, /**< Customer Card Identification Number (CCIN) */
-    HW, /**< FRU version */
-    B1, /**< MAC Address */
-    VN, /**< FRU manufacturer name */
-    MB, /**< FRU manufacture date */
-    MM, /**< FRU model */
-    UD, /**< System UUID */
-    VS, /**< OpenPower serial number */
-    VP  /**< OpenPower part number */
-};
-
-static const std::unordered_map<std::string, KwdEncoding> supportedKeywords = {
-    {"DR", KwdEncoding::ASCII}, {"PN", KwdEncoding::ASCII},
-    {"SN", KwdEncoding::ASCII}, {"CC", KwdEncoding::ASCII},
-    {"HW", KwdEncoding::RAW},   {"B1", KwdEncoding::MAC},
-    {"VN", KwdEncoding::ASCII}, {"MB", KwdEncoding::DATE},
-    {"MM", KwdEncoding::ASCII}, {"UD", KwdEncoding::UUID},
-    {"VP", KwdEncoding::ASCII}, {"VS", KwdEncoding::ASCII},
-};
-
 // Offset of different entries in VPD data.
 enum Offset
 {
@@ -370,104 +331,6 @@ types::RecordOffsetList
     return recordOffsets;
 }
 
-std::string
-    IpzVpdParser::readKwData(std::string_view kwdName,
-                             std::size_t kwdDataLength,
-                             types::BinaryVector::const_iterator itrToKwdData)
-{
-    switch (supportedKeywords.find(kwdName.data())->second)
-    {
-        case KwdEncoding::ASCII:
-        {
-            return std::string(itrToKwdData,
-                               std::next(itrToKwdData, kwdDataLength));
-        }
-
-        case KwdEncoding::RAW:
-        {
-            std::string data(itrToKwdData,
-                             std::next(itrToKwdData, kwdDataLength));
-            std::string result{};
-            std::for_each(data.cbegin(), data.cend(), [&result](size_t aChar) {
-                result += toHex(aChar >> 4);
-                result += toHex(aChar & 0x0F);
-            });
-            return result;
-        }
-
-        case KwdEncoding::DATE:
-        {
-            // MB is BuildDate, represent as
-            // 1997-01-01-08:30:00
-            // <year>-<month>-<day>-<hour>:<min>:<sec>
-            std::string data(itrToKwdData,
-                             std::next(itrToKwdData, constants::MB_LEN_BYTES));
-            std::string result;
-            result.reserve(constants::MB_LEN_BYTES);
-            auto strItr = data.cbegin();
-            std::advance(strItr, 1);
-            std::for_each(strItr, data.cend(), [&result](size_t c) {
-                result += toHex(c >> 4);
-                result += toHex(c & 0x0F);
-            });
-
-            result.insert(constants::MB_YEAR_END, 1, '-');
-            result.insert(constants::MB_MONTH_END, 1, '-');
-            result.insert(constants::MB_DAY_END, 1, '-');
-            result.insert(constants::MB_HOUR_END, 1, ':');
-            result.insert(constants::MB_MIN_END, 1, ':');
-
-            return result;
-        }
-
-        case KwdEncoding::MAC:
-        {
-            // B1 is MAC address, represent as AA:BB:CC:DD:EE:FF
-            std::string data(
-                itrToKwdData,
-                std::next(itrToKwdData, constants::MAC_ADDRESS_LEN_BYTES));
-            std::string result{};
-            auto strItr = data.cbegin();
-            size_t firstDigit = *strItr;
-            result += toHex(firstDigit >> 4);
-            result += toHex(firstDigit & 0x0F);
-            std::advance(strItr, 1);
-            std::for_each(strItr, data.cend(), [&result](size_t c) {
-                result += ":";
-                result += toHex(c >> 4);
-                result += toHex(c & 0x0F);
-            });
-            return result;
-        }
-
-        case KwdEncoding::UUID:
-        {
-            // UD, the UUID info, represented as
-            // 123e4567-e89b-12d3-a456-426655440000
-            //<time_low>-<time_mid>-<time hi and version>
-            //-<clock_seq_hi_and_res clock_seq_low>-<48 bits node id>
-            std::string data(
-                itrToKwdData,
-                std::next(itrToKwdData, constants::UUID_LEN_BYTES));
-            std::string result{};
-            std::for_each(data.cbegin(), data.cend(), [&result](size_t c) {
-                result += toHex(c >> 4);
-                result += toHex(c & 0x0F);
-            });
-            result.insert(constants::UUID_TIME_LOW_END, 1, '-');
-            result.insert(constants::UUID_TIME_MID_END, 1, '-');
-            result.insert(constants::UUID_TIME_HIGH_END, 1, '-');
-            result.insert(constants::UUID_CLK_SEQ_END, 1, '-');
-
-            return result;
-        }
-        default:
-            break;
-    }
-
-    return {};
-}
-
 types::IPZVpdMap::mapped_type
     IpzVpdParser::readKeywords(types::BinaryVector::const_iterator& itrToKwds)
 {
@@ -509,19 +372,10 @@ types::IPZVpdMap::mapped_type
             std::advance(itrToKwds, sizeof(types::KwSize));
         }
 
-        // Pointing to keyword data now
-        if (supportedKeywords.end() != supportedKeywords.find(kwdName))
-        {
-            // Keyword is of interest to us
-            std::string kwdValue = readKwData(kwdName, kwdDataLength,
-                                              itrToKwds);
-            kwdValueMap.emplace(std::move(kwdName), std::move(kwdValue));
-        }
-        else
-        {
-            logging::logMessage("The keyword : " + kwdName +
-                                ", is not supported");
-        }
+        // support all the Keywords
+        auto stop = std::next(itrToKwds, kwdDataLength);
+        std::string kwdata(itrToKwds, stop);
+        kwdValueMap.emplace(std::move(kwdName), std::move(kwdata));
 
         // Jump past keyword data length
         std::advance(itrToKwds, kwdDataLength);
