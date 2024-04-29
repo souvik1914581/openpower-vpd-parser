@@ -55,6 +55,40 @@ Worker::Worker(std::string pathToConfigJson) :
     }
 }
 
+void Worker::enableMuxChips()
+{
+    if (m_parsedJson.empty())
+    {
+        // config JSON should not be empty at this point of execution.
+        throw std::runtime_error("Config JSON is empty. Can't enable muxes");
+        return;
+    }
+
+    if (!m_parsedJson.contains("muxes"))
+    {
+        logging::logMessage("No mux defined for the system in config JSON");
+        return;
+    }
+
+    // iterate over each MUX detail and enable them.
+    for (const auto& item : m_parsedJson["muxes"])
+    {
+        if (item.contains("holdidlepath"))
+        {
+            std::string cmd = "echo 0 > ";
+            cmd += item["holdidlepath"];
+
+            logging::logMessage("Enabling mux with command = " + cmd);
+
+            utils::executeCmd(cmd);
+            continue;
+        }
+
+        logging::logMessage(
+            "Mux Entry does not have hold idle path. Can't enable the mux");
+    }
+}
+
 #ifdef IBM_SYSTEM
 static bool isChassisPowerOn()
 {
@@ -80,33 +114,20 @@ void Worker::performInitialSetup()
 {
     try
     {
-        if (isChassisPowerOn())
+        if (!isChassisPowerOn())
         {
-            // Nothing needs to be done. Service restarted for some reason.
-            return;
-        }
-
-        // Check if sysmlink to inventory JSON already exist.
-        if (m_isSymlinkPresent)
-        {
-            types::VPDMapVariant parsedVpdMap;
-            fillVPDMap(SYSTEM_VPD_FILE_PATH, parsedVpdMap);
-
-            if (isSystemVPDOnDBus())
-            {
-                // TODO
-                //  Restore system VPD logic should initiate from here.
-            }
-
-            publishSystemVPD(parsedVpdMap);
-        }
-        else
-        {
-            // implies it is a fresh boot/factory reset.
-            // Create the directory for hosting the symlink
-            std::filesystem::create_directories(VPD_SYMLIMK_PATH);
             setDeviceTreeAndJson();
         }
+
+        // Enable all mux which are used for connecting to the i2c on the
+        // pcie slots for pcie cards. These are not enabled by kernel due to
+        // an issue seen with Castello cards, where the i2c line hangs on a
+        // probe.
+        enableMuxChips();
+
+        // Nothing needs to be done. Service restarted or BMC re-booted for
+        // some reason at system power on.
+        return;
     }
     catch (const std::exception& ex)
     {
@@ -380,6 +401,30 @@ static void setEnvAndReboot(const std::string& key, const std::string& value)
 
 void Worker::setDeviceTreeAndJson()
 {
+    std::error_code ec;
+    ec.clear();
+    if (!std::filesystem::exists(VPD_SYMLIMK_PATH, ec))
+    {
+        if (ec)
+        {
+            throw std::runtime_error(
+                "File system call to exist failed with error = " +
+                ec.message());
+        }
+
+        // implies it is a fresh boot/factory reset.
+        // Create the directory for hosting the symlink
+        if (!std::filesystem::create_directories(VPD_SYMLIMK_PATH, ec))
+        {
+            if (ec)
+            {
+                throw std::runtime_error(
+                    "File system call to create directory failed with error = " +
+                    ec.message());
+            }
+        }
+    }
+
     // JSON is madatory for processing of this API.
     if (m_parsedJson.empty())
     {
@@ -403,7 +448,13 @@ void Worker::setDeviceTreeAndJson()
         }
 
         // create a new symlink based on the system
-        std::filesystem::create_symlink(systemJson, INVENTORY_JSON_SYM_LINK);
+        std::filesystem::create_symlink(systemJson, INVENTORY_JSON_SYM_LINK,
+                                        ec);
+        if (ec)
+        {
+            throw std::runtime_error(
+                "create_symlink system call failed with error" + ec.message());
+        }
 
         // re-parse the JSON once appropriate JSON has been selected.
         try
@@ -426,8 +477,13 @@ void Worker::setDeviceTreeAndJson()
     auto fitConfigVal = readFitConfigValue();
 
     if (fitConfigVal.find(devTreeFromJson) != std::string::npos)
-    {
-        // fitconfig is updated and correct JSON is set.
+    { // fitconfig is updated and correct JSON is set.
+
+        if (isSystemVPDOnDBus())
+        {
+            // TODO
+            //  Restore system VPD logic should initiate from here.
+        }
 
         // proceed to publish system VPD.
         publishSystemVPD(parsedVpdMap);
