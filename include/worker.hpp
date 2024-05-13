@@ -121,7 +121,7 @@ class Worker
      * If device tree change is required, it updates the "fitconfig" and reboots
      * the system. Else it is NOOP.
      *
-     * Note: In case of any error, exception is thrown. Caller need to handle.
+     * @throw std::runtime_error
      */
     void setDeviceTreeAndJson();
 
@@ -337,6 +337,16 @@ class Worker
      */
     bool processPreAction(const std::string& i_vpdFilePath,
                           const std::string& i_flagToProcess);
+
+    /**
+     * @brief Function to enable and bring MUX out of idle state.
+     *
+     * This finds all the MUX defined in the system json and enables them by
+     * setting the holdidle parameter to 0.
+     *
+     * @throw std::runtime_error
+     */
+    void enableMuxChips();
 
     // Parsed JSON file.
     nlohmann::json m_parsedJson{};
