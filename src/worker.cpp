@@ -374,7 +374,15 @@ void Worker::getSystemJson(std::string& systemJson,
 
             if (itrToHW != hwVersionList.end())
             {
-                systemJson += imKwdValue + "_" + (*itrToHW).second + ".json";
+                if (!(*itrToHW).second.empty())
+                {
+                    systemJson += (*itrToIM).first + "_" + (*itrToHW).second +
+                                  ".json";
+                }
+                else
+                {
+                    systemJson += (*itrToIM).first + ".json";
+                }
                 return;
             }
         }
