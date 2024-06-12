@@ -467,7 +467,7 @@ void Worker::setDeviceTreeAndJson()
         }
     }
 
-    auto devTreeFromJson = m_parsedJson["devTree"].value("path", "");
+    auto devTreeFromJson = m_parsedJson["devTree"];
     if (devTreeFromJson.empty())
     {
         throw JsonException("Mandatory value for device tree missing from JSON",
