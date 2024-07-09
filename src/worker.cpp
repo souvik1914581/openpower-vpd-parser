@@ -94,7 +94,7 @@ void Worker::enableMuxChips()
 #ifdef IBM_SYSTEM
 static bool isChassisPowerOn()
 {
-    auto powerState = utils::readDbusProperty(
+    auto powerState = dbusUtility::readDbusProperty(
         "xyz.openbmc_project.State.Chassis",
         "/xyz/openbmc_project/state/chassis0",
         "xyz.openbmc_project.State.Chassis", "CurrentPowerState");
@@ -1111,7 +1111,7 @@ std::tuple<bool, std::string>
         logging::logMessage("Dbus sucessfully populated for FRU " +
                             i_vpdFilePath);
         // Notify PIM
-        /*    if (!utils::callPIM(move(objectInterfaceMap)))
+        /*    if (!dbusUtility::callPIM(move(objectInterfaceMap)))
             {
                 throw std::runtime_error("Call to PIM failed for system
            VPD");
