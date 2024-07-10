@@ -25,7 +25,6 @@ endif
 build_tests = get_option('tests')
 
 sdbusplus = dependency('sdbusplus', fallback: [ 'sdbusplus', 'sdbusplus_dep' ])
-phosphor_logging = dependency('phosphor-logging')
 
 if not build_tests.disabled()
     subdir('test')
@@ -78,7 +77,7 @@ vpd_manager_SOURCES = ['src/manager_main.cpp',
                     'src/manager.cpp',
                     ] + common_SOURCES
 
-parser_dependencies = [sdbusplus, libgpiodcxx, phosphor_logging]
+parser_dependencies = [sdbusplus, libgpiodcxx]
 
 parser_build_arguments = []
 if get_option('ibm_system').enabled()
