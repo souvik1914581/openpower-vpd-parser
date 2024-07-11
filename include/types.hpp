@@ -1,7 +1,9 @@
 #pragma once
 
+#include <phosphor-logging/elog-errors.hpp>
 #include <sdbusplus/asio/property.hpp>
 #include <sdbusplus/server.hpp>
+#include <xyz/openbmc_project/Common/error.hpp>
 
 #include <tuple>
 #include <unordered_map>
@@ -110,6 +112,12 @@ using KwData = std::tuple<Keyword, BinaryVector>;
 using IpzType = std::tuple<Record, Keyword>;
 using ReadVpdParams = std::variant<IpzType, Keyword>;
 using WriteVpdParams = std::variant<IpzData, KwData>;
+
+using ListOfPaths = std::vector<sdbusplus::message::object_path>;
+
+using DbusInvalidArgument =
+    sdbusplus::xyz::openbmc_project::Common::Error::InvalidArgument;
+using InvalidArgument = phosphor::logging::xyz::openbmc_project::Common::InvalidArgument;
 
 enum class VpdTarget
 {
