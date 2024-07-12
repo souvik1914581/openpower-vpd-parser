@@ -17,18 +17,23 @@ Parser::Parser(const std::string& vpdFilePath, nlohmann::json parsedJson) :
     }
 }
 
-types::VPDMapVariant Parser::parse()
+std::shared_ptr<vpd::ParserInterface> Parser::getVpdParserInstance()
 {
     // Read the VPD data into a vector.
-    types::BinaryVector vpdVector;
-    genericUtility::getVpdDataInVector(m_vpdFilePath, vpdVector,
+    genericUtility::getVpdDataInVector(m_vpdFilePath, m_vpdVector,
                                        m_vpdStartOffset);
 
     // This will detect the type of parser required.
-    std::shared_ptr<vpd::ParserInterface> parser =
-        ParserFactory::getParser(vpdVector, m_vpdFilePath, m_vpdStartOffset);
+    std::shared_ptr<vpd::ParserInterface> l_parser =
+        ParserFactory::getParser(m_vpdVector, m_vpdFilePath, m_vpdStartOffset);
 
-    return parser->parse();
+    return l_parser;
+}
+
+types::VPDMapVariant Parser::parse()
+{
+    std::shared_ptr<vpd::ParserInterface> l_parser = getVpdParserInstance();
+    return l_parser->parse();
 }
 
 } // namespace vpd
