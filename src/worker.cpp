@@ -749,6 +749,13 @@ bool Worker::primeInventory(const std::string& i_vpdFilePath)
         types::InterfaceMap l_interfaces;
         sdbusplus::message::object_path l_fruObjectPath(l_Fru["inventoryPath"]);
 
+        if (l_Fru.contains("ccin"))
+        {
+            logging::logMessage(
+                "Skipping priming for FRUs that needs CCIN check.");
+            continue;
+        }
+
         // Add extra interfaces mentioned in the Json config file
         if (l_Fru.contains("extraInterfaces"))
         {
