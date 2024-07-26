@@ -1120,11 +1120,11 @@ std::tuple<bool, std::string>
         logging::logMessage("Dbus sucessfully populated for FRU " +
                             i_vpdFilePath);
         // Notify PIM
-        /*    if (!dbusUtility::callPIM(move(objectInterfaceMap)))
-            {
-                throw std::runtime_error("Call to PIM failed for system
-           VPD");
-            }*/
+        if (!dbusUtility::callPIM(move(objectInterfaceMap)))
+        {
+            throw std::runtime_error(
+                "Call to PIM failed while publishing VPD.");
+        }
     }
     catch (const std::exception& ex)
     {
