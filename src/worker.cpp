@@ -891,7 +891,7 @@ bool Worker::processFruWithCCIN(const nlohmann::json& singleFru,
     if (auto ipzVPDMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
     {
         auto itrToRec = (*ipzVPDMap).find("VINI");
-        if (itrToRec != (*ipzVPDMap).end())
+        if (itrToRec == (*ipzVPDMap).end())
         {
             return false;
         }
@@ -900,7 +900,7 @@ bool Worker::processFruWithCCIN(const nlohmann::json& singleFru,
         genericUtility::getKwVal(itrToRec->second, "CC", ccinFromVpd);
         if (ccinFromVpd.empty())
         {
-            return true;
+            return false;
         }
 
         transform(ccinFromVpd.begin(), ccinFromVpd.end(), ccinFromVpd.begin(),
@@ -913,8 +913,13 @@ bool Worker::processFruWithCCIN(const nlohmann::json& singleFru,
             ccinList.push_back(ccin);
         }
 
-        if (ccinList.empty() && (find(ccinList.begin(), ccinList.end(),
-                                      ccinFromVpd) == ccinList.end()))
+        if (ccinList.empty())
+        {
+            return false;
+        }
+
+        if (find(ccinList.begin(), ccinList.end(), ccinFromVpd) ==
+            ccinList.end())
         {
             return false;
         }
