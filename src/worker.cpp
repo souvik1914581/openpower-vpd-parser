@@ -1187,7 +1187,7 @@ void Worker::collectFrusFromJson()
 
         logging::logMessage("Parsing triggered for FRU = " + vpdFilePath);
 
-        std::thread{[&vpdFilePath, this]() {
+        std::thread{[vpdFilePath, this]() {
             auto l_futureObject = std::async(&Worker::parseAndPublishVPD, this,
                                              vpdFilePath);
             // Thread launched.
