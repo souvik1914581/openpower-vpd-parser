@@ -40,6 +40,28 @@ class ParserInterface
     }
 
     /**
+     * @brief API to write keyword's value on hardware.
+     *
+     * This virtual method is created to achieve runtime polymorphism for
+     * hardware writes on VPD of different types. This virtual method can be
+     * redefined at derived classess to implement write according to the type of
+     * VPD.
+     *
+     * @param[in] i_paramsToWriteData - Data required to perform write.
+     *
+     * @throw May throw exception depending on the implementation of derived
+     * methods.
+     * @return On success returns number of bytes written on hardware, On
+     * failure returns -1.
+     */
+    virtual int
+        writeKeywordOnHardware(const types::WriteVpdParams i_paramsToWriteData)
+    {
+        (void)i_paramsToWriteData;
+        return -1;
+    }
+
+    /**
      * @brief Virtual destructor.
      */
     virtual ~ParserInterface() {}
