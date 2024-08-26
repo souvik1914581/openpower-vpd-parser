@@ -616,11 +616,22 @@ int Manager::updateKeywordOnHardware(
     const types::Path& i_fruPath, const nlohmann::json& i_sysCfgJsonObj,
     const types::WriteVpdParams i_paramsToWriteData)
 {
-    (void)i_fruPath;
-    (void)i_sysCfgJsonObj;
-    (void)i_paramsToWriteData;
+    try
+    {
+        std::shared_ptr<Parser> l_parserObj =
+            std::make_shared<Parser>(i_fruPath, i_sysCfgJsonObj);
 
-    return -1;
+        std::shared_ptr<ParserInterface> l_vpdParserInstance =
+            l_parserObj->getVpdParserInstance();
+
+        return (
+            l_vpdParserInstance->writeKeywordOnHardware(i_paramsToWriteData));
+    }
+    catch (const std::exception& l_error)
+    {
+        // TODO : Log PEL
+        return -1;
+    }
 }
 
 int Manager::updateKeywordOnDbus(
