@@ -1,0 +1,15 @@
+compiler = meson.get_compiler('cpp')
+if compiler.has_header('CLI/CLI.hpp')
+    CLI11_dep = declare_dependency()
+else
+    CLI11_dep = dependency('CLI11')
+endif
+
+sources = ['src/vpd_tool_main.cpp']
+
+vpd_tool_exe = executable('vpd-tool',
+                          sources,
+                          include_directories : ['../include/'],
+                          dependencies: [CLI11_dep],
+                          install: true
+                        )
