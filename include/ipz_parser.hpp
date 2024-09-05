@@ -35,8 +35,8 @@ class IpzVpdParser : public ParserInterface
      */
     IpzVpdParser(const types::BinaryVector& vpdVector,
                  const std::string& vpdFilePath, size_t vpdStartOffset = 0) :
-        m_vpdVector(vpdVector),
-        m_vpdFilePath(vpdFilePath), m_vpdStartOffset(vpdStartOffset)
+        m_vpdVector(vpdVector), m_vpdFilePath(vpdFilePath),
+        m_vpdStartOffset(vpdStartOffset)
     {
         try
         {

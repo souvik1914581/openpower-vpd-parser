@@ -37,8 +37,8 @@ class GpioEventHandler
         const std::string& i_presencePin, const bool& i_presenceValue,
         const std::string& i_inventoryPath,
         const std::shared_ptr<boost::asio::io_context>& i_ioContext) :
-        m_presencePin(i_presencePin),
-        m_presenceValue(i_presenceValue), m_inventoryPath(i_inventoryPath)
+        m_presencePin(i_presencePin), m_presenceValue(i_presenceValue),
+        m_inventoryPath(i_inventoryPath)
     {
         setEventHandlerForGpioPresence(i_ioContext);
     }
