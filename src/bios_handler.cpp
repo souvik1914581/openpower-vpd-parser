@@ -112,7 +112,7 @@ void IbmBiosHandler::biosAttributesCallback(sdbusplus::message_t& i_msg)
 
                 if (l_attributeName == "pvm_keep_and_clear")
                 {
-                    // TODO: Save keep and clear to VPD.
+                    saveKeepAndClearToVpd(*l_val);
                 }
 
                 if (l_attributeName == "pvm_create_default_lpar")
@@ -154,6 +154,9 @@ void IbmBiosHandler::backUpOrRestoreBiosAttributes()
 
     // process clear NVRAM
     processClearNvram();
+
+    // process keep and clear
+    processKeepAndClear();
 }
 
 types::BiosAttributeCurrentValue
@@ -459,5 +462,94 @@ void IbmBiosHandler::processClearNvram()
         return;
     }
     logging::logMessage("Invalid type recieved for clear NVRAM from VPD.");
+}
+
+void IbmBiosHandler::saveKeepAndClearToVpd(const std::string& i_KeepAndClearVal)
+{
+    if (i_KeepAndClearVal.empty())
+    {
+        logging::logMessage(
+            "Empty value received for keep and clear from BIOS. Skip updating to VPD.");
+        return;
+    }
+
+    // Read required keyword from DBus as we need to set only a Bit.
+    auto l_kwdValueVariant = dbusUtility::readDbusProperty(
+        constants::pimServiceName, constants::systemVpdInvPath,
+        constants::utilInf, constants::kwdKeepAndClear);
+
+    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    {
+        commonUtility::toLower(const_cast<std::string&>(i_KeepAndClearVal));
+
+        types::BinaryVector l_valToUpdateInVpd;
+        if (i_KeepAndClearVal.compare("enabled") == constants::STR_CMP_SUCCESS)
+        {
+            // 1st bit is used to store the value.
+            l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) |
+                                            constants::VALUE_1);
+        }
+        else
+        {
+            // 1st bit is used to store the value.
+            l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) &
+                                            ~(constants::VALUE_1));
+        }
+        // TODO: Write API to be called to update in VPD.
+        return;
+    }
+    logging::logMessage("Invalid type recieved for keep and clear from VPD.");
+}
+
+void IbmBiosHandler::saveKeepAndClearToBios(
+    const std::string& i_KeepAndClearVal)
+{
+    // checking for exact length as it is a string and can have garbage value.
+    if (i_KeepAndClearVal.size() != constants::VALUE_1)
+    {
+        logging::logMessage(
+            "Bad size for keep and clear in VPD. Skip writing to BIOS.");
+        return;
+    }
+
+    // 1st bit is used to store keep and clear value.
+    std::string l_valtoUpdate =
+        (i_KeepAndClearVal.at(0) & constants::VALUE_1) ? "Enabled" : "Disabled";
+
+    types::PendingBIOSAttrs l_pendingBiosAttribute;
+    l_pendingBiosAttribute.push_back(std::make_pair(
+        "pvm_keep_and_clear",
+        std::make_tuple(
+            "xyz.openbmc_project.BIOSConfig.Manager.AttributeType.Enumeration",
+            l_valtoUpdate)));
+
+    try
+    {
+        dbusUtility::writeDbusProperty(
+            constants::biosConfigMgrService, constants::biosConfigMgrObjPath,
+            constants::biosConfigMgrInterface, "PendingAttributes",
+            l_pendingBiosAttribute);
+    }
+    catch (const std::exception& l_ex)
+    {
+        logging::logMessage(
+            "DBus call to update keep and clear value in pending attribute failed. " +
+            std::string(l_ex.what()));
+    }
+}
+
+void IbmBiosHandler::processKeepAndClear()
+{
+    // Read required keyword from VPD.
+    auto l_kwdValueVariant = dbusUtility::readDbusProperty(
+        constants::pimServiceName, constants::systemVpdInvPath,
+        constants::utilInf, constants::kwdKeepAndClear);
+
+    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    {
+        saveKeepAndClearToBios(*l_pVal);
+        return;
+    }
+    logging::logMessage("Invalid type recieved for keep and clear from VPD.");
 }
 } // namespace vpd

@@ -94,6 +94,7 @@ constexpr auto kwdCCIN = "CC";
 constexpr auto kwdRG = "RG";
 constexpr auto kwdAMM = "D0";
 constexpr auto kwdClearNVRAM_CreateLPAR = "D1";
+constexpr auto kwdKeepAndClear = "D1";
 constexpr auto locationCodeInf = "com.ibm.ipzvpd.Location";
 constexpr auto pldmServiceName = "xyz.openbmc_project.PLDM";
 constexpr auto pimServiceName = "xyz.openbmc_project.Inventory.Manager";
@@ -104,7 +105,6 @@ constexpr auto biosConfigMgrInterface =
     "xyz.openbmc_project.BIOSConfig.Manager";
 constexpr auto systemVpdInvPath =
     "/xyz/openbmc_project/inventory/system/chassis/motherboard";
-
 static constexpr auto BD_YEAR_END = 4;
 static constexpr auto BD_MONTH_END = 7;
 static constexpr auto BD_DAY_END = 10;
