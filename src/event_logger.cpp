@@ -53,7 +53,7 @@ void EventLogger::createAsyncPelWithInventoryCallout(
     const types::ErrorType& i_errorType, const types::SeverityType& i_severity,
     const std::vector<types::InventoryCalloutData>& i_callouts,
     const std::string& i_fileName, const std::string& i_funcName,
-    const std::string& i_internalRc, const std::string& i_description,
+    const uint8_t i_internalRc, const std::string& i_description,
     const std::optional<std::string> i_userData1,
     const std::optional<std::string> i_userData2,
     const std::optional<std::string> i_symFru,
@@ -114,7 +114,7 @@ void EventLogger::createAsyncPelWithInventoryCallout(
             "Create", NULL, NULL, "ssa{ss}", l_message.c_str(),
             l_severity.c_str(), l_additionalDataCount, "FileName",
             i_fileName.c_str(), "FunctionName", i_funcName.c_str(),
-            "InternalRc", i_internalRc.c_str(), "DESCRIPTION",
+            "InternalRc", std::to_string(i_internalRc).c_str(), "DESCRIPTION",
             l_description.c_str(), "UserData1", l_userData1.c_str(),
             "UserData2", l_userData2.c_str(), "CALLOUT_INVENTORY_PATH",
             get<0>(l_invCallout).c_str(), "CALLOUT_PRIORITY",
@@ -138,7 +138,7 @@ void EventLogger::createAsyncPelWithI2cDeviceCallout(
     const types::ErrorType i_errorType, const types::SeverityType i_severity,
     const std::vector<types::DeviceCalloutData>& i_callouts,
     const std::string& i_fileName, const std::string& i_funcName,
-    const std::string& i_internalRc,
+    const uint8_t i_internalRc,
     const std::optional<std::pair<std::string, std::string>> i_userData1,
     const std::optional<std::pair<std::string, std::string>> i_userData2)
 {
@@ -157,7 +157,7 @@ void EventLogger::createAsyncPelWithI2cBusCallout(
     const types::ErrorType i_errorType, const types::SeverityType i_severity,
     const std::vector<types::I2cBusCalloutData>& i_callouts,
     const std::string& i_fileName, const std::string& i_funcName,
-    const std::string& i_internalRc,
+    const uint8_t i_internalRc,
     const std::optional<std::pair<std::string, std::string>> i_userData1,
     const std::optional<std::pair<std::string, std::string>> i_userData2)
 {

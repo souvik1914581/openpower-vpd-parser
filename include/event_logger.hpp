@@ -55,7 +55,7 @@ class EventLogger
         const types::SeverityType& i_severity,
         const std::vector<types::InventoryCalloutData>& i_callouts,
         const std::string& i_fileName, const std::string& i_funcName,
-        const std::string& i_internalRc, const std::string& i_description,
+        const uint8_t i_internalRc, const std::string& i_description,
         const std::optional<std::string> i_userData1,
         const std::optional<std::string> i_userData2,
         const std::optional<std::string> i_symFru,
@@ -79,7 +79,7 @@ class EventLogger
         const types::SeverityType i_severity,
         const std::vector<types::DeviceCalloutData>& i_callouts,
         const std::string& i_fileName, const std::string& i_funcName,
-        const std::string& i_internalRc,
+        const uint8_t i_internalRc,
         const std::optional<std::pair<std::string, std::string>> i_userData1,
         const std::optional<std::pair<std::string, std::string>> i_userData2);
 
@@ -101,7 +101,7 @@ class EventLogger
         const types::SeverityType i_severity,
         const std::vector<types::I2cBusCalloutData>& i_callouts,
         const std::string& i_fileName, const std::string& i_funcName,
-        const std::string& i_internalRc,
+        const uint8_t i_internalRc,
         const std::optional<std::pair<std::string, std::string>> i_userData1,
         const std::optional<std::pair<std::string, std::string>> i_userData2);
 
