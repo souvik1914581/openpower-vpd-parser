@@ -1,11 +1,14 @@
+#include "config.h"
 #include "bios_handler.hpp"
 
 #include "constants.hpp"
 #include "logger.hpp"
+#include "parser.hpp"
 
 #include <sdbusplus/bus/match.hpp>
 #include <utility/common_utility.hpp>
 #include <utility/dbus_utility.hpp>
+#include <utility/json_utility.hpp>
 
 #include <string>
 
@@ -283,7 +286,7 @@ void IbmBiosHandler::saveAmmToVpd(const std::string& i_memoryMirrorMode)
         (i_memoryMirrorMode == "Enabled" ? constants::AMM_ENABLED_IN_VPD
                                          : constants::AMM_DISABLED_IN_VPD)};
 
-    // TODO: Call write keyword API to update the value in VPD.
+    updateKeyword(std::make_tuple("UTIL",constants::kwdAMM,l_valToUpdateInVpd));
 }
 
 void IbmBiosHandler::saveAmmToBios(const std::string& i_ammVal)
@@ -622,5 +625,42 @@ void IbmBiosHandler::processKeepAndClear()
         return;
     }
     logging::logMessage("Invalid type recieved for keep and clear from VPD.");
+}
+
+int IbmBiosHandler::updateKeyword(const types::WriteVpdParams& i_paramsToWriteData)
+{
+    // Get parsedSystemJson
+    nlohmann::json l_sysCfgJsonObj = jsonUtility::getParsedJson(INVENTORY_JSON_SYM_LINK);
+
+    if (l_sysCfgJsonObj.empty())
+    {
+        logging::logMessage("Error while getting System Config JSON");
+        return -1;
+    }
+    else
+    {
+        // Get the EEPROM path
+        try
+        {
+            const types::Path l_fruPath = jsonUtility::getFruPathFromJson(l_sysCfgJsonObj,
+                                                        constants::systemVpdInvPath);
+            if(l_fruPath.empty())
+            {
+                logging::logMessage("D-bus object path not present in JSON.");
+                return -1;
+            }
+
+            std::shared_ptr<Parser> l_parserObj =
+                std::make_shared<Parser>(l_fruPath, l_sysCfgJsonObj);
+            return l_parserObj->updateVpdKeyword(i_paramsToWriteData);
+        }
+        catch (const std::exception& l_exception)
+        {
+            logging::logMessage(
+                "Error while getting FRU path, Path: " + std::string(constants::systemVpdInvPath) +
+                ", error: " + std::string(l_exception.what()));
+            return -1;
+        }
+    }
 }
 } // namespace vpd

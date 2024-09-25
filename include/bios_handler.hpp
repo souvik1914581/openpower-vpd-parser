@@ -185,6 +185,23 @@ class IbmBiosHandler : public BiosHandlerInterface
      * @param[in] i_KeepAndClearVal - Value to be saved.
      */
     void saveKeepAndClearToVpd(const std::string& i_KeepAndClearVal);
+
+    /**
+     * @brief API to save given BIOS attribute to VPD.
+     *
+     * This API is used to update keyword value on the EEPROM path and its
+     * redundant path(s) if any taken from system config JSON. And also updates
+     * keyword value on DBus.
+     *
+     * To update IPZ type VPD, input parameter for writing should be in the form
+     * of (Record, Keyword, Value). Eg: ("UTIL", "D0", {0x01, 0x02, 0x03}).
+     *
+     * @param[in] i_paramsToWriteData - Input details.
+     *
+     * @return On success returns number of bytes written, on failure returns
+     * -1.
+     */
+    int updateKeyword(const types::WriteVpdParams& i_paramsToWriteData);
 };
 
 /**
