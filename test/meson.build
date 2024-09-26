@@ -46,6 +46,7 @@ test_sources = [
   '../src/isdimm_parser.cpp',
   '../src/ipz_parser.cpp',
   '../src/keyword_vpd_parser.cpp',
+  '../src/event_logger.cpp',
   '../vpdecc/vpdecc.c'
 ]
 
