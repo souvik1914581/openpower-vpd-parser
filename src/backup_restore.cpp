@@ -157,6 +157,17 @@ void BackupAndRestore::backupAndRestoreIpzVpd(types::IPZVpdMap& io_srcVpdMap,
         return;
     }
 
+    const std::string l_srcFruPath =
+        jsonUtility::getFruPathFromJson(m_sysCfgJsonObj, i_srcPath);
+    const std::string l_dstFruPath =
+        jsonUtility::getFruPathFromJson(m_sysCfgJsonObj, i_dstPath);
+    if (l_srcFruPath.empty() || l_dstFruPath.empty())
+    {
+        logging::logMessage(
+            "Couldn't find either source or destination FRU path.");
+        return;
+    }
+
     const std::string l_srcInvPath =
         jsonUtility::getInventoryObjPathFromJson(m_sysCfgJsonObj, i_srcPath);
     const std::string l_dstInvPath =
@@ -289,15 +300,18 @@ void BackupAndRestore::backupAndRestoreIpzVpd(types::IPZVpdMap& io_srcVpdMap,
             // restore config JSON.
             if (l_dstBinaryValue == l_defaultBinaryValue)
             {
-                // TODO: Write on hardware,
-                // Write on Dbus,
-                // To keep the data in sync between hardware and parsed map
-                // updating the io_dstVpdMap. This should only be done if write
-                // on hardware returns success. utils::writeKeyword(i_dstPath,
-                // types::IpzData(l_dstRecordName, l_dstKeywordName
-                // l_srcBinaryValue));
+                // Update keyword's value on hardware
+                auto l_vpdParser = std::make_shared<Parser>(l_dstFruPath,
+                                                            m_sysCfgJsonObj);
 
-                if (!io_dstVpdMap.empty())
+                auto l_bytesUpdatedOnHardware = l_vpdParser->updateVpdKeyword(
+                    types::IpzData(l_dstRecordName, l_dstKeywordName,
+                                   l_srcBinaryValue));
+
+                /* To keep the data in sync between hardware and parsed map
+                 updating the io_dstVpdMap. This should only be done if write
+                 on hardware returns success.*/
+                if (!io_dstVpdMap.empty() && l_bytesUpdatedOnHardware > 0)
                 {
                     io_dstVpdMap[l_dstRecordName][l_dstKeywordName] =
                         l_srcStrValue;
@@ -307,12 +321,18 @@ void BackupAndRestore::backupAndRestoreIpzVpd(types::IPZVpdMap& io_srcVpdMap,
 
             if (l_srcBinaryValue == l_defaultBinaryValue)
             {
-                // TODO: Write on hardware,
-                // Write on Dbus.
-                // utils::writeKeyword(i_srcPath,
-                // types::IpzData(l_srcRecordName, l_srcKeywordName,
-                // l_dstBinaryValue));
-                if (!io_srcVpdMap.empty())
+                // Update keyword's value on hardware
+                auto l_vpdParser = std::make_shared<Parser>(l_srcFruPath,
+                                                            m_sysCfgJsonObj);
+
+                auto l_bytesUpdatedOnHardware = l_vpdParser->updateVpdKeyword(
+                    types::IpzData(l_srcRecordName, l_srcKeywordName,
+                                   l_dstBinaryValue));
+
+                /* To keep the data in sync between hardware and parsed map
+                 updating the io_srcVpdMap. This should only be done if write
+                 on hardware returns success.*/
+                if (!io_srcVpdMap.empty() && l_bytesUpdatedOnHardware > 0)
                 {
                     io_srcVpdMap[l_srcRecordName][l_srcKeywordName] =
                         l_dstStrValue;
