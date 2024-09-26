@@ -871,5 +871,50 @@ inline std::string getServiceName(const nlohmann::json& i_sysCfgJsonObj,
     }
     return std::string{};
 }
+
+/** @brief API to check if an action is required for given EEPROM path.
+ *
+ * System config JSON can contain pre-action, post-action etc. like actions
+ * defined for an EEPROM path. The API will check if any such action is defined
+ * for the EEPROM.
+ *
+ * @param[in] i_sysCfgJsonObj - System config JSON object.
+ * @param[in] i_vpdFruPath - EEPROM path.
+ * @param[in] i_action - Action to be checked.
+ * @param[in] i_flowFlag - Denotes the flow w.r.t which the action should be
+ * triggered.
+ * @return - True if action is defined for the flow, false otherwise.
+ */
+inline bool isActionRequired(const nlohmann::json& i_sysCfgJsonObj,
+                             const std::string& i_vpdFruPath,
+                             const std::string& i_action,
+                             const std::string& i_flowFlag)
+{
+    if (i_vpdFruPath.empty() || i_action.empty() || i_flowFlag.empty())
+    {
+        logging::logMessage("Invalid parameters recieved.");
+        return false;
+    }
+
+    if (i_sysCfgJsonObj.empty() || i_sysCfgJsonObj.contains("frus"))
+    {
+        logging::logMessage("Invalid JSON object recieved.");
+        return false;
+    }
+
+    if ((i_sysCfgJsonObj["frus"][i_vpdFruPath].at(0)).contains(i_action))
+    {
+        if ((i_sysCfgJsonObj["frus"][i_vpdFruPath].at(0))[i_action].contains(
+                i_flowFlag))
+        {
+            return true;
+        }
+
+        logging::logMessage("Flow flag: [" + i_flowFlag +
+                            "], not found in JSON for path: " + i_vpdFruPath);
+        return false;
+    }
+    return false;
+}
 } // namespace jsonUtility
 } // namespace vpd

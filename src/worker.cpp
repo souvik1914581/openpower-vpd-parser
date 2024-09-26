@@ -1084,8 +1084,9 @@ types::VPDMapVariant Worker::parseVpdFile(const std::string& i_vpdFilePath)
 
     bool l_isPostFailActionRequired = false;
 
-    // check if the FRU qualifies for pre/post handling.
-    if ((m_parsedJson["frus"][i_vpdFilePath].at(0)).contains("preAction"))
+    // check if the FRU qualifies for pre action.
+    if (jsonUtility::isActionRequired(m_parsedJson, i_vpdFilePath, "preAction",
+                                      "collection"))
     {
         if (processPreAction(i_vpdFilePath, "collection"))
         {
@@ -1118,6 +1119,17 @@ types::VPDMapVariant Worker::parseVpdFile(const std::string& i_vpdFilePath)
 
     std::shared_ptr<Parser> vpdParser = std::make_shared<Parser>(i_vpdFilePath,
                                                                  m_parsedJson);
+
+    // Before returning, as collection is over, check if FRU qualifies for
+    // any post action in the flow of collection.
+    // Note: Don't change the order, post action needs to be processed only
+    // after collection for FRU is successfully done.
+    if (jsonUtility::isActionRequired(m_parsedJson, i_vpdFilePath, "postAction",
+                                      "collection"))
+    {
+        // TODO: Trigger post action if required from here.
+    }
+
     return vpdParser->parse();
 }
 
