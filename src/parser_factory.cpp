@@ -110,16 +110,16 @@ std::shared_ptr<ParserInterface>
     {
         case vpdType::IPZ_VPD:
         {
-            std::cout << "IPZ parser selected for VPD file path "
-                      << i_vpdFilePath << std::endl;
+            logging::logMessage("IPZ parser selected for VPD file path " +
+                                i_vpdFilePath);
             return std::make_shared<IpzVpdParser>(i_vpdVector, i_vpdFilePath,
                                                   i_vpdStartOffset);
         }
 
         case vpdType::KEYWORD_VPD:
         {
-            std::cout << "KWD vpd parser selected for VPD file path "
-                      << i_vpdFilePath << std::endl;
+            logging::logMessage("KWD vpd parser selected for VPD file path " +
+                                i_vpdFilePath);
             return std::make_shared<KeywordVpdParser>(i_vpdVector);
         }
 

@@ -123,8 +123,8 @@ void Manager::SetTimerToDetectSVPDOnDbus()
     // timer for 2 seconds
     auto asyncCancelled = timer.expires_after(std::chrono::seconds(2));
 
-    (asyncCancelled == 0) ? std::cout << "Timer started" << std::endl
-                          : std::cout << "Timer re-started" << std::endl;
+    (asyncCancelled == 0) ? logging::logMessage("Timer started")
+                          : logging::logMessage("Timer re-started");
 
     timer.async_wait([this](const boost::system::error_code& ec) {
         if (ec == boost::asio::error::operation_aborted)
@@ -162,8 +162,8 @@ void Manager::SetTimerToDetectVpdCollectionStatus()
     auto l_asyncCancelled = l_timer.expires_after(std::chrono::seconds(3));
 
     (l_asyncCancelled == 0)
-        ? std::cout << "Collection Timer started" << std::endl
-        : std::cout << "Collection Timer re-started" << std::endl;
+        ? logging::logMessage("Collection Timer started")
+        : logging::logMessage("Collection Timer re-started");
 
     l_timer.async_wait([this](const boost::system::error_code& ec) {
         if (ec == boost::asio::error::operation_aborted)
