@@ -1,5 +1,7 @@
 #pragma once
 
+#include "constants.hpp"
+#include "exceptions.hpp"
 #include "logger.hpp"
 #include "parser_interface.hpp"
 #include "types.hpp"
@@ -34,7 +36,13 @@ class DdimmVpdParser : public ParserInterface
      */
     DdimmVpdParser(const types::BinaryVector& i_vpdVector) :
         m_vpdVector(i_vpdVector)
-    {}
+    {
+        if ((constants::DDIMM_11S_BARCODE_START +
+             constants::DDIMM_11S_BARCODE_LEN) > m_vpdVector.size())
+        {
+            throw(DataException("Malformed DDIMM VPD"));
+        }
+    }
 
     /**
      * @brief API to parse DDIMM VPD file.
