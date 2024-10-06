@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "bios_handler.hpp"
 
 #include "constants.hpp"
@@ -283,7 +285,15 @@ void IbmBiosHandler::saveAmmToVpd(const std::string& i_memoryMirrorMode)
         (i_memoryMirrorMode == "Enabled" ? constants::AMM_ENABLED_IN_VPD
                                          : constants::AMM_DISABLED_IN_VPD)};
 
-    // TODO: Call write keyword API to update the value in VPD.
+    const auto l_retVal = m_manager->updateKeyword(
+        SYSTEM_VPD_FILE_PATH,
+        types::IpzData("UTIL", constants::kwdAMM, l_valToUpdateInVpd));
+
+    if (-1 == l_retVal)
+    {
+        logging::logMessage("Failed to update " +
+                            std::string(constants::kwdAMM) + " keyword to VPD");
+    }
 }
 
 void IbmBiosHandler::saveAmmToBios(const std::string& i_ammVal)
