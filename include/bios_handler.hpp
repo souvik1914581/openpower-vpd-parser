@@ -1,4 +1,5 @@
 #pragma once
+#include "manager.hpp"
 #include "types.hpp"
 
 #include <sdbusplus/asio/connection.hpp>
@@ -45,6 +46,16 @@ class BiosHandlerInterface
 class IbmBiosHandler : public BiosHandlerInterface
 {
   public:
+    /**
+     * @brief Construct a new IBM BIOS Handler object
+     *
+     * This constructor constructs a new IBM BIOS Handler object
+     * @param[in] i_manager - Manager object.
+     */
+    explicit IbmBiosHandler(const std::shared_ptr<Manager>& i_manager) :
+        m_manager(i_manager)
+    {}
+
     /**
      * @brief API to back up or restore BIOS attributes.
      *
@@ -185,6 +196,9 @@ class IbmBiosHandler : public BiosHandlerInterface
      * @param[in] i_KeepAndClearVal - Value to be saved.
      */
     void saveKeepAndClearToVpd(const std::string& i_KeepAndClearVal);
+
+    // const reference to shared pointer to Manager object.
+    const std::shared_ptr<Manager>& m_manager;
 };
 
 /**
@@ -219,13 +233,14 @@ class BiosHandler
     /**
      * @brief Constructor.
      *
-     * @param[in] connection - Asio connection object.
+     * @param[in] i_connection - Asio connection object.
+     * @param[in] i_manager - Manager object.
      */
     BiosHandler(
-        const std::shared_ptr<sdbusplus::asio::connection>& i_connection) :
-        m_asioConn(i_connection)
+        const std::shared_ptr<sdbusplus::asio::connection>& i_connection,
+        const std::shared_ptr<Manager>& i_manager) : m_asioConn(i_connection)
     {
-        m_specificBiosHandler = std::make_shared<T>();
+        m_specificBiosHandler = std::make_shared<T>(i_manager);
         checkAndListenPldmService();
     }
 

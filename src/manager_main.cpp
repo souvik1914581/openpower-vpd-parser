@@ -29,8 +29,10 @@ int main(int, char**)
         auto vpdManager = std::make_shared<vpd::Manager>(io_con, interface,
                                                          connection);
 
+        // TODO: Take this under conditional compilation for IBM
         auto biosHandler =
-            std::make_shared<vpd::BiosHandler<vpd::IbmBiosHandler>>(connection);
+            std::make_shared<vpd::BiosHandler<vpd::IbmBiosHandler>>(connection,
+                                                                    vpdManager);
 
         interface->initialize();
 

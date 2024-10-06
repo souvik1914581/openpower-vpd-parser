@@ -829,7 +829,7 @@ int IpzVpdParser::writeKeywordOnHardware(
                         std::get<2>(l_inputRecordDetails),
                         std::get<3>(l_inputRecordDetails), l_vpdVector);
 
-        logging::logMessage(l_sizeWritten +
+        logging::logMessage(std::to_string(l_sizeWritten) +
                             " bytes updated successfully on hardware for " +
                             l_recordName + ":" + l_keywordName);
     }
