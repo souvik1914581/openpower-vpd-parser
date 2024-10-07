@@ -78,6 +78,14 @@ TEST(DdimmVpdParserTest, InvalidVpdType)
     EXPECT_THROW(l_vpdParser.parse(), std::exception);
 }
 
+TEST(DdimmVpdParserTest, EmptyInputVector)
+{
+    // Blank VPD
+    types::BinaryVector emptyVector{};
+
+    EXPECT_THROW(DdimmVpdParser(std::move(emptyVector)), DataException);
+}
+
 int main(int i_argc, char** io_argv)
 {
     ::testing::InitGoogleTest(&i_argc, io_argv);
