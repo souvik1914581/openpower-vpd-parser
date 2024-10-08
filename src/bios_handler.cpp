@@ -238,7 +238,13 @@ void IbmBiosHandler::saveFcoToVpd(int64_t i_fcoInBios)
     types::BinaryVector l_biosValInVpdFormat = {
         0, 0, 0, static_cast<uint8_t>(i_fcoInBios)};
 
-    // TODO:  Call Manager API to write keyword data using inventory path.
+    if (-1 == m_manager->updateKeyword(SYSTEM_VPD_FILE_PATH,
+                                       types::IpzData("VSYS", constants::kwdRG,
+                                                      l_biosValInVpdFormat)))
+    {
+        logging::logMessage("Failed to update " +
+                            std::string(constants::kwdRG) + " keyword to VPD.");
+    }
 }
 
 void IbmBiosHandler::saveFcoToBios(const types::BinaryVector& i_fcoVal)
@@ -334,6 +340,8 @@ void IbmBiosHandler::processActiveMemoryMirror()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdAMM);
 
+    // TODO: l_kwdValueVariant should be checked for binary vector rather than a
+    // string
     if (auto pVal = std::get_if<std::string>(&l_kwdValueVariant))
     {
         auto l_ammValInVpd = *pVal;
@@ -445,6 +453,8 @@ void IbmBiosHandler::processCreateDefaultLpar()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
+    // TODO: l_kwdValueVariant should be checked for binary vector rather than
+    // string
     if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
     {
         saveCreateDefaultLparToBios(*l_pVal);
@@ -535,6 +545,8 @@ void IbmBiosHandler::processClearNvram()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
+    // TODO: l_kwdValueVariant should be checked for binary vector rather than
+    // string
     if (auto pVal = std::get_if<std::string>(&l_kwdValueVariant))
     {
         saveClearNvramToBios(*pVal);
@@ -624,6 +636,8 @@ void IbmBiosHandler::processKeepAndClear()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdKeepAndClear);
 
+    // TODO: l_kwdValueVariant should be checked for binary vector rather than
+    // string
     if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
     {
         saveKeepAndClearToBios(*l_pVal);
