@@ -896,7 +896,7 @@ inline bool isActionRequired(const nlohmann::json& i_sysCfgJsonObj,
         return false;
     }
 
-    if (i_sysCfgJsonObj.empty() || i_sysCfgJsonObj.contains("frus"))
+    if (i_sysCfgJsonObj.empty() || !(i_sysCfgJsonObj.contains("frus")))
     {
         logging::logMessage("Invalid JSON object recieved.");
         return false;
