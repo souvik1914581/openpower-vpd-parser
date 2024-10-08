@@ -238,7 +238,13 @@ void IbmBiosHandler::saveFcoToVpd(int64_t i_fcoInBios)
     types::BinaryVector l_biosValInVpdFormat = {
         0, 0, 0, static_cast<uint8_t>(i_fcoInBios)};
 
-    // TODO:  Call Manager API to write keyword data using inventory path.
+    if (-1 == m_manager->updateKeyword(SYSTEM_VPD_FILE_PATH,
+                                       types::IpzData("VSYS", constants::kwdRG,
+                                                      l_biosValInVpdFormat)))
+    {
+        logging::logMessage("Failed to update " +
+                            std::string(constants::kwdRG) + " keyword to VPD.");
+    }
 }
 
 void IbmBiosHandler::saveFcoToBios(const types::BinaryVector& i_fcoVal)
@@ -285,11 +291,9 @@ void IbmBiosHandler::saveAmmToVpd(const std::string& i_memoryMirrorMode)
         (i_memoryMirrorMode == "Enabled" ? constants::AMM_ENABLED_IN_VPD
                                          : constants::AMM_DISABLED_IN_VPD)};
 
-    const auto l_retVal = m_manager->updateKeyword(
-        SYSTEM_VPD_FILE_PATH,
-        types::IpzData("UTIL", constants::kwdAMM, l_valToUpdateInVpd));
-
-    if (-1 == l_retVal)
+    if (-1 == m_manager->updateKeyword(SYSTEM_VPD_FILE_PATH,
+                                       types::IpzData("UTIL", constants::kwdAMM,
+                                                      l_valToUpdateInVpd)))
     {
         logging::logMessage("Failed to update " +
                             std::string(constants::kwdAMM) + " keyword to VPD");
@@ -336,6 +340,8 @@ void IbmBiosHandler::processActiveMemoryMirror()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdAMM);
 
+    // TODO: l_kwdValueVariant should be checked for binary vector rather than a
+    // string
     if (auto pVal = std::get_if<std::string>(&l_kwdValueVariant))
     {
         auto l_ammValInVpd = *pVal;
@@ -380,7 +386,7 @@ void IbmBiosHandler::saveCreateDefaultLparToVpd(
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
-    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
         types::BinaryVector l_valToUpdateInVpd;
         if (i_createDefaultLparVal.compare("Enabled") ==
@@ -395,7 +401,18 @@ void IbmBiosHandler::saveCreateDefaultLparToVpd(
             l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) & ~(0x02));
         }
 
-        // TODO: Write API to be called to update in VPD.
+        if (-1 ==
+            m_manager->updateKeyword(
+                SYSTEM_VPD_FILE_PATH,
+                types::IpzData("UTIL", constants::kwdClearNVRAM_CreateLPAR,
+                               l_valToUpdateInVpd)))
+        {
+            logging::logMessage(
+                "Failed to update " +
+                std::string(constants::kwdClearNVRAM_CreateLPAR) +
+                " keyword to VPD.");
+        }
+
         return;
     }
     logging::logMessage(
@@ -447,6 +464,8 @@ void IbmBiosHandler::processCreateDefaultLpar()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
+    // TODO: l_kwdValueVariant should be checked for binary vector rather than
+    // string
     if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
     {
         saveCreateDefaultLparToBios(*l_pVal);
@@ -470,7 +489,7 @@ void IbmBiosHandler::saveClearNvramToVpd(const std::string& i_clearNvramVal)
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
-    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
         commonUtility::toLower(const_cast<std::string&>(i_clearNvramVal));
 
@@ -480,14 +499,28 @@ void IbmBiosHandler::saveClearNvramToVpd(const std::string& i_clearNvramVal)
             // 3rd bit is used to store the value.
             l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) |
                                             constants::VALUE_4);
+            l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) | 0x02);
         }
         else
         {
             // 3rd bit is used to store the value.
             l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) &
                                             ~(constants::VALUE_4));
+            l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) | 0x02);
         }
-        // TODO: Write API to be called to update in VPD.
+
+        if (-1 ==
+            m_manager->updateKeyword(
+                SYSTEM_VPD_FILE_PATH,
+                types::IpzData("UTIL", constants::kwdClearNVRAM_CreateLPAR,
+                               l_valToUpdateInVpd)))
+        {
+            logging::logMessage(
+                "Failed to update " +
+                std::string(constants::kwdClearNVRAM_CreateLPAR) +
+                " keyword to VPD.");
+        }
+
         return;
     }
     logging::logMessage("Invalid type recieved for clear NVRAM from VPD.");
@@ -537,6 +570,8 @@ void IbmBiosHandler::processClearNvram()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
+    // TODO: l_kwdValueVariant should be checked for binary vector rather than
+    // string
     if (auto pVal = std::get_if<std::string>(&l_kwdValueVariant))
     {
         saveClearNvramToBios(*pVal);
@@ -559,7 +594,7 @@ void IbmBiosHandler::saveKeepAndClearToVpd(const std::string& i_KeepAndClearVal)
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdKeepAndClear);
 
-    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
         commonUtility::toLower(const_cast<std::string&>(i_KeepAndClearVal));
 
@@ -576,7 +611,17 @@ void IbmBiosHandler::saveKeepAndClearToVpd(const std::string& i_KeepAndClearVal)
             l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) &
                                             ~(constants::VALUE_1));
         }
-        // TODO: Write API to be called to update in VPD.
+
+        if (-1 == m_manager->updateKeyword(
+                      SYSTEM_VPD_FILE_PATH,
+                      types::IpzData("UTIL", constants::kwdKeepAndClear,
+                                     l_valToUpdateInVpd)))
+        {
+            logging::logMessage("Failed to update " +
+                                std::string(constants::kwdKeepAndClear) +
+                                " keyword to VPD.");
+        }
+
         return;
     }
     logging::logMessage("Invalid type recieved for keep and clear from VPD.");
@@ -626,6 +671,8 @@ void IbmBiosHandler::processKeepAndClear()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdKeepAndClear);
 
+    // TODO: l_kwdValueVariant should be checked for binary vector rather than
+    // string
     if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
     {
         saveKeepAndClearToBios(*l_pVal);
