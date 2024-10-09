@@ -77,11 +77,11 @@ common_SOURCES = ['src/logger.cpp',
                   'src/worker.cpp',
                   'src/backup_restore.cpp',
                   'src/gpio_monitor.cpp',
-                  'src/bios_handler.cpp',
                   'src/event_logger.cpp']
 
 vpd_manager_SOURCES = ['src/manager_main.cpp',
                     'src/manager.cpp',
+                    'src/bios_handler.cpp',
                     ] + common_SOURCES
 
 parser_dependencies = [sdbusplus, libgpiodcxx, phosphor_logging, phosphor_dbus_interfaces]
