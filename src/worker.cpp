@@ -194,8 +194,8 @@ bool Worker::isSystemVPDOnDBus() const
     std::array<const char*, 1> interfaces = {
         "xyz.openbmc_project.Inventory.Item.Board.Motherboard"};
 
-    types::MapperGetObject objectMap =
-        dbusUtility::getObjectMap(PIM_PATH_PREFIX + mboardPath, interfaces);
+    const types::MapperGetObject& objectMap =
+        dbusUtility::getObjectMap(mboardPath, interfaces);
 
     if (objectMap.empty())
     {
