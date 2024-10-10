@@ -669,11 +669,9 @@ void IbmBiosHandler::processKeepAndClear()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdKeepAndClear);
 
-    // TODO: l_kwdValueVariant should be checked for binary vector rather than
-    // string
-    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
-        saveKeepAndClearToBios(*l_pVal);
+        saveKeepAndClearToBios(std::to_string(l_pVal->at(0)));
         return;
     }
     logging::logMessage("Invalid type recieved for keep and clear from VPD.");
