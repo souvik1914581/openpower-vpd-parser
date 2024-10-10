@@ -569,7 +569,7 @@ void IbmBiosHandler::saveKeepAndClearToVpd(const std::string& i_KeepAndClearVal)
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdKeepAndClear);
 
-    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
         commonUtility::toLower(const_cast<std::string&>(i_KeepAndClearVal));
 
@@ -586,7 +586,17 @@ void IbmBiosHandler::saveKeepAndClearToVpd(const std::string& i_KeepAndClearVal)
             l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) &
                                             ~(constants::VALUE_1));
         }
-        // TODO: Write API to be called to update in VPD.
+
+        if (-1 == m_manager->updateKeyword(
+                      SYSTEM_VPD_FILE_PATH,
+                      types::IpzData("UTIL", constants::kwdKeepAndClear,
+                                     l_valToUpdateInVpd)))
+        {
+            logging::logMessage("Failed to update " +
+                                std::string(constants::kwdKeepAndClear) +
+                                " keyword to VPD");
+        }
+
         return;
     }
     logging::logMessage("Invalid type recieved for keep and clear from VPD.");
