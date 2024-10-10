@@ -386,7 +386,7 @@ void IbmBiosHandler::saveCreateDefaultLparToVpd(
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
-    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
         types::BinaryVector l_valToUpdateInVpd;
         if (i_createDefaultLparVal.compare("Enabled") ==
@@ -401,7 +401,18 @@ void IbmBiosHandler::saveCreateDefaultLparToVpd(
             l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) & ~(0x02));
         }
 
-        // TODO: Write API to be called to update in VPD.
+        if (-1 ==
+            m_manager->updateKeyword(
+                SYSTEM_VPD_FILE_PATH,
+                types::IpzData("UTIL", constants::kwdClearNVRAM_CreateLPAR,
+                               l_valToUpdateInVpd)))
+        {
+            logging::logMessage(
+                "Failed to update " +
+                std::string(constants::kwdClearNVRAM_CreateLPAR) +
+                " keyword to VPD");
+        }
+
         return;
     }
     logging::logMessage(
