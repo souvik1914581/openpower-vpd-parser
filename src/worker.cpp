@@ -1282,13 +1282,13 @@ bool Worker::processPostAction(
     // Check if post action tag is to be triggered in the flow of collection
     // based on some CCIN value?
     if (m_parsedJson["frus"][i_vpdFruPath]
-            .at(0)["postAction"]["collection"]
+            .at(0)["postAction"][i_flagToProcess]
             .contains("ccin"))
     {
         if (!i_parsedVpd.has_value())
         {
-            throw std::runtime_error(
-                "Parsed VPD map parameter is mandatory for CCIN match");
+            logging::logMessage("Empty VPD Map");
+            return false;
         }
 
         // CCIN match is required to process post action for this FRU as it
@@ -1561,6 +1561,110 @@ void Worker::performBackupAndRestore(types::VPDMapVariant& io_srcVpdMap)
         createPEL(l_additionalData,
         PelSeverity::ERROR, errBackupAndRestore, nullptr);
         */
+    }
+}
+
+void Worker::deleteFruVpd(const std::string& i_dbusObjPath)
+{
+    if (i_dbusObjPath.empty())
+    {
+        throw std::runtime_error("Given DBus object path is empty.");
+    }
+
+    const std::string& l_fruPath =
+        jsonUtility::getFruPathFromJson(m_parsedJson, i_dbusObjPath);
+
+    try
+    {
+        auto l_presentPropValue = dbusUtility::readDbusProperty(
+            constants::pimServiceName, i_dbusObjPath,
+            constants::inventoryItemInf, "Present");
+
+        if (auto l_value = std::get_if<bool>(&l_presentPropValue))
+        {
+            if (!(*l_value))
+            {
+                throw std::runtime_error("Given FRU is not present");
+            }
+            else
+            {
+                if (jsonUtility::isActionRequired(m_parsedJson, l_fruPath,
+                                                  "preAction", "deletion"))
+                {
+                    if (!processPreAction(l_fruPath, "deletion"))
+                    {
+                        throw std::runtime_error("Pre action failed");
+                    }
+                }
+
+                std::vector<std::string> l_interfaceList{
+                    constants::operationalStatusInf};
+
+                types::MapperGetSubTree l_subTreeMap =
+                    dbusUtility::getObjectSubTree(i_dbusObjPath, 0,
+                                                  l_interfaceList);
+
+                types::ObjectMap l_objectMap;
+
+                // Updates VPD specific interfaces property value under PIM for
+                // sub FRUs.
+                for (const auto& [l_objectPath, l_serviceInterfaceMap] :
+                     l_subTreeMap)
+                {
+                    types::InterfaceMap l_interfaceMap;
+                    vpdSpecificUtility::resetDataUnderPIM(l_objectPath,
+                                                          l_interfaceMap);
+                    l_objectMap.emplace(l_objectPath,
+                                        std::move(l_interfaceMap));
+                }
+
+                types::InterfaceMap l_interfaceMap;
+                vpdSpecificUtility::resetDataUnderPIM(i_dbusObjPath,
+                                                      l_interfaceMap);
+
+                l_objectMap.emplace(i_dbusObjPath, std::move(l_interfaceMap));
+
+                if (!dbusUtility::callPIM(std::move(l_objectMap)))
+                {
+                    throw std::runtime_error(
+                        "Can't process delete VPD for FRU [" + i_dbusObjPath +
+                        "] as unable to read present property");
+                }
+
+                if (jsonUtility::isActionRequired(m_parsedJson, l_fruPath,
+                                                  "postAction", "deletion"))
+                {
+                    if (!processPostAction(l_fruPath, "deletion"))
+                    {
+                        throw std::runtime_error("Post action failed");
+                    }
+                }
+            }
+        }
+        else
+        {
+            logging::logMessage("DBus read failed");
+            return;
+        }
+
+        logging::logMessage("Successfully completed deletion of FRU VPD for " +
+                            i_dbusObjPath);
+    }
+    catch (const std::exception& l_ex)
+    {
+        if (jsonUtility::isActionRequired(m_parsedJson, l_fruPath,
+                                          "postFailAction", "deletion"))
+        {
+            if (!jsonUtility::executePostFailAction(m_parsedJson, l_fruPath,
+                                                    "deletion"))
+            {
+                logging::logMessage("Post fail action failed for: " +
+                                    i_dbusObjPath);
+            }
+        }
+
+        logging::logMessage("Failed to delete VPD for FRU : " + i_dbusObjPath +
+                            " error: " + std::string(l_ex.what()));
     }
 }
 } // namespace vpd

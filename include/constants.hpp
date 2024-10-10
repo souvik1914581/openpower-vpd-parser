@@ -145,6 +145,9 @@ constexpr auto biosConfigMgrObjPath =
 constexpr auto biosConfigMgrService = "xyz.openbmc_project.BIOSConfigManager";
 constexpr auto biosConfigMgrInterface =
     "xyz.openbmc_project.BIOSConfig.Manager";
+constexpr auto objectMapperService = "xyz.openbmc_project.ObjectMapper";
+constexpr auto objectMapperPath = "/xyz/openbmc_project/object_mapper";
+constexpr auto objectMapperInf = "xyz.openbmc_project.ObjectMapper";
 constexpr auto systemVpdInvPath =
     "/xyz/openbmc_project/inventory/system/chassis/motherboard";
 constexpr auto assetTagInf = "xyz.openbmc_project.Inventory.Decorator.AssetTag";
