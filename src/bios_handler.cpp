@@ -478,7 +478,7 @@ void IbmBiosHandler::saveClearNvramToVpd(const std::string& i_clearNvramVal)
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
-    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
         commonUtility::toLower(const_cast<std::string&>(i_clearNvramVal));
 
@@ -495,7 +495,19 @@ void IbmBiosHandler::saveClearNvramToVpd(const std::string& i_clearNvramVal)
             l_valToUpdateInVpd.emplace_back((*l_pVal).at(0) &
                                             ~(constants::VALUE_4));
         }
-        // TODO: Write API to be called to update in VPD.
+
+        if (-1 ==
+            m_manager->updateKeyword(
+                SYSTEM_VPD_FILE_PATH,
+                types::IpzData("UTIL", constants::kwdClearNVRAM_CreateLPAR,
+                               l_valToUpdateInVpd)))
+        {
+            logging::logMessage(
+                "Failed to update " +
+                std::string(constants::kwdClearNVRAM_CreateLPAR) +
+                " keyword to VPD");
+        }
+
         return;
     }
     logging::logMessage("Invalid type recieved for clear NVRAM from VPD.");
