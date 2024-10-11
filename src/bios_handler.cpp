@@ -466,8 +466,11 @@ void IbmBiosHandler::processCreateDefaultLpar()
 
     if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
-        const std::string l_valtoUpdate{l_pVal->at(0) & 0x02 ? std::to_string(constants::VALUE_2) : std::to_string(constants::VALUE_0)};
-        saveCreateDefaultLparToBios(*l_pVal);
+        // 2nd bit is used to store create default lpar value.
+        const std::string l_valToUpdate{
+            l_pVal->at(0) & 0x02 ? std::to_string(constants::VALUE_2)
+                                 : std::to_string(constants::VALUE_0)};
+        saveCreateDefaultLparToBios(l_valToUpdate);
         return;
     }
     logging::logMessage(
