@@ -567,11 +567,11 @@ void IbmBiosHandler::processClearNvram()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
-    // TODO: l_kwdValueVariant should be checked for binary vector rather than
-    // string
-    if (auto pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
-        saveClearNvramToBios(*pVal);
+        // 3rd bit is used to store clear NVRAM value.
+        const std::string l_valToUpdate{pVal->at(0) & 0x04 ? constants::VALUE_4 : constants::VALUE_0};
+        saveClearNvramToBios(l_valToUpdate);
         return;
     }
     logging::logMessage("Invalid type recieved for clear NVRAM from VPD.");
