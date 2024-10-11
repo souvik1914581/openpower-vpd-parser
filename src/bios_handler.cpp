@@ -464,11 +464,9 @@ void IbmBiosHandler::processCreateDefaultLpar()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdClearNVRAM_CreateLPAR);
 
-    // TODO: l_kwdValueVariant should be checked for binary vector rather than
-    // string
-    if (auto l_pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
-        saveCreateDefaultLparToBios(*l_pVal);
+        saveCreateDefaultLparToBios(std::to_string(l_pVal->at(0)));
         return;
     }
     logging::logMessage(
