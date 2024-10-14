@@ -260,7 +260,7 @@ void IbmBiosHandler::saveFcoToBios(const types::BinaryVector& i_fcoVal)
         "hb_field_core_override",
         std::make_tuple(
             "xyz.openbmc_project.BIOSConfig.Manager.AttributeType.Integer",
-            std::to_string(i_fcoVal.at(constants::VALUE_3)))));
+            i_fcoVal.at(constants::VALUE_3))));
 
     try
     {
