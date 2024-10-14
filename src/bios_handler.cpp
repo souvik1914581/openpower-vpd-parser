@@ -340,9 +340,7 @@ void IbmBiosHandler::processActiveMemoryMirror()
         constants::pimServiceName, constants::systemVpdInvPath,
         constants::utilInf, constants::kwdAMM);
 
-    // TODO: l_kwdValueVariant should be checked for binary vector rather than a
-    // string
-    if (auto pVal = std::get_if<std::string>(&l_kwdValueVariant))
+    if (auto pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
         auto l_ammValInVpd = *pVal;
 
@@ -363,7 +361,7 @@ void IbmBiosHandler::processActiveMemoryMirror()
         }
         else
         {
-            saveAmmToBios(l_ammValInVpd);
+            saveAmmToBios(std::to_string(l_ammValInVpd.at(0)));
         }
         return;
     }
