@@ -36,7 +36,7 @@ endif
 
 dependency_list = [gtest_dep, gmock_dep, sdbusplus, libgpiodcxx]
 
-configuration_inc = include_directories('..', '../include', '../vpdecc')
+configuration_inc = include_directories('..', '../include', '../vpdecc', '../configuration')
 
 test_sources = [
   '../src/logger.cpp',
@@ -47,14 +47,17 @@ test_sources = [
   '../src/ipz_parser.cpp',
   '../src/keyword_vpd_parser.cpp',
   '../src/event_logger.cpp',
-  '../vpdecc/vpdecc.c'
+  '../vpdecc/vpdecc.c',
+  '../src/worker.cpp',
+  '../src/backup_restore.cpp'
 ]
 
 tests = [
   'utest_utils.cpp',
   'utest_keyword_parser.cpp',
   'utest_ddimm_parser.cpp',
-  'utest_ipz_parser.cpp'
+  'utest_ipz_parser.cpp',
+  'utest_worker.cpp'
 ]
 
 foreach test_file : tests
