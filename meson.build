@@ -115,5 +115,13 @@ vpd_parser_exe = executable(
                 install : true,
                 )
 
+services = ['service_files/vpd-manager.service',
+            'service_files/system-vpd.service',
+            'service_files/wait-vpd-parsers.service']
+            
+systemd_system_unit_dir = dependency('systemd').get_variable(
+        'systemdsystemunitdir')
+install_data(services, install_dir: systemd_system_unit_dir)
+
 package_datadir = join_paths('share', 'vpd')
 install_subdir('configuration/ibm/', install_mode: 'rwxr-xr-x', install_dir: package_datadir, strip_directory: true)

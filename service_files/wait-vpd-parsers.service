@@ -1,0 +1,7 @@
+#currently these services are added just for backward compatibility.
+#It will perform no task in the system and will be eventually removed.
+
+[Unit]
+Description=Wait for VPD Collection Services to complete
+After=system-vpd.service
+After=set-spi-mux.service
