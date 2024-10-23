@@ -286,5 +286,40 @@ inline types::BiosAttributeCurrentValue
 
     return std::get<1>(l_attributeVal);
 }
+
+/**
+ * @brief API to check if Chassis is powered on.
+ *
+ * This API queries Phosphor Chassis State Manager to know whether
+ * Chassis is powered on.
+ *
+ * @return true if chassis is powered on, false otherwise
+ */
+inline bool isChassisPowerOn()
+{
+    auto powerState = dbusUtility::readDbusProperty(
+        "xyz.openbmc_project.State.Chassis",
+        "/xyz/openbmc_project/state/chassis0",
+        "xyz.openbmc_project.State.Chassis", "CurrentPowerState");
+
+    if (auto curPowerState = std::get_if<std::string>(&powerState))
+    {
+        if ("xyz.openbmc_project.State.Chassis.PowerState.On" == *curPowerState)
+        {
+            logging::logMessage("Chassis is in on state");
+            return true;
+        }
+        return false;
+    }
+
+    /*
+        TODO: Add PEL.
+        Callout: Firmware callout
+        Type: Informational
+        Description: Chassis state can't be determined, defaulting to chassis
+        off. : e.what()
+    */
+    return false;
+}
 } // namespace dbusUtility
 } // namespace vpd
