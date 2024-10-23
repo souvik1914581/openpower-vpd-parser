@@ -95,31 +95,11 @@ void Worker::enableMuxChips()
 }
 
 #ifdef IBM_SYSTEM
-static bool isChassisPowerOn()
-{
-    auto powerState = dbusUtility::readDbusProperty(
-        "xyz.openbmc_project.State.Chassis",
-        "/xyz/openbmc_project/state/chassis0",
-        "xyz.openbmc_project.State.Chassis", "CurrentPowerState");
-
-    if (auto curPowerState = std::get_if<std::string>(&powerState))
-    {
-        if ("xyz.openbmc_project.State.Chassis.PowerState.On" == *curPowerState)
-        {
-            logging::logMessage("VPD cannot be read in power on state.");
-            return true;
-        }
-        return false;
-    }
-
-    throw std::runtime_error("Dbus call to get chassis power state failed");
-}
-
 void Worker::performInitialSetup()
 {
     try
     {
-        if (!isChassisPowerOn())
+        if (!dbusUtility::isChassisPowerOn())
         {
             setDeviceTreeAndJson();
         }
