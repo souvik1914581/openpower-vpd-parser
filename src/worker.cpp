@@ -5,6 +5,7 @@
 #include "backup_restore.hpp"
 #include "configuration.hpp"
 #include "constants.hpp"
+#include "event_logger.hpp"
 #include "exceptions.hpp"
 #include "logger.hpp"
 #include "parser.hpp"
@@ -278,8 +279,6 @@ std::string Worker::getHWVersion(const types::IPZVpdMap& parsedVpd) const
 void Worker::fillVPDMap(const std::string& vpdFilePath,
                         types::VPDMapVariant& vpdMap)
 {
-    logging::logMessage(std::string("Parsing file = ") + vpdFilePath);
-
     if (vpdFilePath.empty())
     {
         throw std::runtime_error("Invalid file path passed to fillVPDMap API.");
@@ -312,6 +311,18 @@ void Worker::fillVPDMap(const std::string& vpdFilePath,
                                     INVENTORY_PATH + baseFruInventoryPath);
              createPEL(additionalData, pelSeverity, errIntfForInvalidVPD,
              nullptr);*/
+
+            const std::vector<types::InventoryCalloutData> l_callOuts{
+                types::InventoryCalloutData{vpdFilePath,
+                                            types::CalloutPriority::Medium}};
+
+            EventLogger::createAsyncPelWithInventoryCallout(
+                types::ErrorType::InvalidVpdMessage, types::SeverityType::Error,
+                l_callOuts, __FILE__, __FUNCTION__, 0,
+                std::string(
+                    "VPD file is either empty or invalid. Parser failed for [" +
+                    vpdFilePath + "], with error = \'" + ex.what() + "\'"),
+                std::nullopt, std::nullopt, std::nullopt, std::nullopt);
 
             // throw generic error from here to inform main caller about
             // failure.
