@@ -43,13 +43,13 @@ void BiosHandler<T>::checkAndListenPldmService()
             (l_name.compare(constants::pldmServiceName) ==
              constants::STR_CMP_SUCCESS))
         {
-            // TODO: Restore BIOS attribute from here.
-            //  We don't need the match anymore
-            l_nameOwnerMatch.reset();
             m_specificBiosHandler->backUpOrRestoreBiosAttributes();
 
             // Start listener now that we have done the restore.
             listenBiosAttributes();
+
+            //  We don't need the match anymore
+            l_nameOwnerMatch.reset();
         }
     });
 
