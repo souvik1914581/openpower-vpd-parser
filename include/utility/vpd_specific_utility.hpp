@@ -466,5 +466,89 @@ inline bool findCcinInVpd(const nlohmann::json& i_JsonObject,
     logging::logMessage("VPD type not supported. Can't find CCIN");
     return false;
 }
+
+/**
+ * @brief API to reset data of a FRU populated under PIM.
+ *
+ * This API resets the data for particular interfaces of a FRU under PIM.
+ *
+ * @param[in] i_objectPath - DBus object path of the FRU.
+ * @param[in] io_interfaceMap - Interface and its properties map.
+ */
+inline void resetDataUnderPIM(const std::string& i_objectPath,
+                              types::InterfaceMap& io_interfaceMap)
+{
+    try
+    {
+        std::array<const char*, 0> l_interfaces;
+        const types::MapperGetObject& l_getObjectMap =
+            dbusUtility::getObjectMap(i_objectPath, l_interfaces);
+
+        const std::vector<std::string>& l_vpdRelatedInterfaces{
+            constants::operationalStatusInf, constants::inventoryItemInf,
+            constants::assetInf};
+
+        for (const auto& [l_service, l_interfaceList] : l_getObjectMap)
+        {
+            if (l_service.compare(constants::pimServiceName) !=
+                constants::STR_CMP_SUCCESS)
+            {
+                continue;
+            }
+
+            for (const auto& l_interface : l_interfaceList)
+            {
+                if ((l_interface.find(constants::ipzVpdInf) !=
+                     std::string::npos) ||
+                    ((std::find(l_vpdRelatedInterfaces.begin(),
+                                l_vpdRelatedInterfaces.end(), l_interface)) !=
+                     l_vpdRelatedInterfaces.end()))
+                {
+                    const types::PropertyMap& l_propertyValueMap =
+                        dbusUtility::getPropertyMap(l_service, i_objectPath,
+                                                    l_interface);
+
+                    types::PropertyMap l_propertyMap;
+
+                    for (const auto& l_aProperty : l_propertyValueMap)
+                    {
+                        const std::string& l_propertyName = l_aProperty.first;
+                        const auto& l_propertyValue = l_aProperty.second;
+
+                        if (std::holds_alternative<types::BinaryVector>(
+                                l_propertyValue))
+                        {
+                            l_propertyMap.emplace(l_propertyName,
+                                                  types::BinaryVector{});
+                        }
+                        else if (std::holds_alternative<std::string>(
+                                     l_propertyValue))
+                        {
+                            l_propertyMap.emplace(l_propertyName,
+                                                  std::string{});
+                        }
+                        else if (std::holds_alternative<bool>(l_propertyValue))
+                        {
+                            // ToDo -- Update the functional status property
+                            // to true.
+                            if (l_propertyName.compare("Present") ==
+                                constants::STR_CMP_SUCCESS)
+                            {
+                                l_propertyMap.emplace(l_propertyName, false);
+                            }
+                        }
+                    }
+                    io_interfaceMap.emplace(l_interface,
+                                            std::move(l_propertyMap));
+                }
+            }
+        }
+    }
+    catch (const std::exception& l_ex)
+    {
+        logging::logMessage("Failed to remove VPD for FRU: " + i_objectPath +
+                            " with error: " + std::string(l_ex.what()));
+    }
+}
 } // namespace vpdSpecificUtility
 } // namespace vpd
