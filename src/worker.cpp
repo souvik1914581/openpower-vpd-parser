@@ -1118,7 +1118,12 @@ types::VPDMapVariant Worker::parseVpdFile(const std::string& i_vpdFilePath)
     if (jsonUtility::isActionRequired(m_parsedJson, i_vpdFilePath, "preAction",
                                       "collection"))
     {
-        if (processPreAction(i_vpdFilePath, "collection"))
+        // post fail action is required for a FRU if pre action is successful
+        // and some post fail action is defined for the FRU in the System Config
+        // JSON.
+        if (processPreAction(i_vpdFilePath, "collection") &&
+            jsonUtility::isActionRequired(m_parsedJson, i_vpdFilePath,
+                                          "PostFailAction", "collection"))
         {
             l_isPostFailActionRequired = true;
         }
