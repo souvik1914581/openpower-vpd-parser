@@ -1274,7 +1274,12 @@ void Worker::collectFrusFromJson()
         const std::string& vpdFilePath = itemFRUS.key();
 
         // skip processing of system VPD again as it has been already collected.
-        if (vpdFilePath == SYSTEM_VPD_FILE_PATH)
+        // Also, if chassis is powered on, skip collecting FRUs which are
+        // powerOffOnly.
+        // TODO: Need to revisit for P-Future to reduce code update time.
+        if (vpdFilePath == SYSTEM_VPD_FILE_PATH ||
+            (jsonUtility::isFruPowerOffOnly(m_parsedJson, vpdFilePath) &&
+             dbusUtility::isChassisPowerOn()))
         {
             continue;
         }
