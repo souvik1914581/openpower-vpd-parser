@@ -428,6 +428,9 @@ void Worker::setDeviceTreeAndJson()
     types::VPDMapVariant parsedVpdMap;
     fillVPDMap(SYSTEM_VPD_FILE_PATH, parsedVpdMap);
 
+    // ToDo: Need to check is INVENTORY_JSON_SYM_LINK pointing to correct system
+    // JSON or not, if the sym link exists already.
+
     // Do we have the entry for device tree in parsed JSON?
     if (m_parsedJson.find("devTree") == m_parsedJson.end())
     {
@@ -446,14 +449,46 @@ void Worker::setDeviceTreeAndJson()
                                         ec);
         if (ec)
         {
-            throw std::runtime_error(
-                "create_symlink system call failed with error" + ec.message());
+            if (ec.value() == EEXIST)
+            {
+                ec.clear();
+                logging::logMessage(
+                    "Sym link already exists, file [" +
+                    std::string(INVENTORY_JSON_SYM_LINK) +
+                    "] deleting and creating sym link again, target file: " +
+                    systemJson);
+
+                if (std::filesystem::remove(INVENTORY_JSON_SYM_LINK, ec))
+                {
+                    std::filesystem::create_symlink(
+                        systemJson, INVENTORY_JSON_SYM_LINK, ec);
+                    if (ec)
+                    {
+                        throw std::runtime_error(
+                            "create_symlink system call failed when deleting existing link and recreating it again, error: " +
+                            ec.message());
+                    }
+                }
+                else
+                {
+                    logging::logMessage(
+                        "remove system call failed for file[" +
+                        std::string(INVENTORY_JSON_SYM_LINK) + "], error[" +
+                        ec.message() + "], continuing with existing sym link.");
+                }
+            }
+            else
+            {
+                throw std::runtime_error(
+                    "create_symlink system call failed with error: " +
+                    ec.message());
+            }
         }
 
         // re-parse the JSON once appropriate JSON has been selected.
         try
         {
-            m_parsedJson = nlohmann::json::parse(INVENTORY_JSON_SYM_LINK);
+            m_parsedJson = jsonUtility::getParsedJson(INVENTORY_JSON_SYM_LINK);
         }
         catch (const nlohmann::json::parse_error& ex)
         {
@@ -461,17 +496,26 @@ void Worker::setDeviceTreeAndJson()
         }
     }
 
-    auto devTreeFromJson = m_parsedJson["devTree"];
-    if (devTreeFromJson.empty())
+    std::string devTreeFromJson;
+    if (m_parsedJson.contains("devTree"))
     {
-        throw JsonException("Mandatory value for device tree missing from JSON",
-                            INVENTORY_JSON_SYM_LINK);
+        devTreeFromJson = m_parsedJson["devTree"];
+
+        if (devTreeFromJson.empty())
+        {
+            // TODO:: Log a predictive PEL
+            logging::logMessage(
+                "Mandatory value for device tree missing from JSON[" +
+                std::string(INVENTORY_JSON_SYM_LINK) + "]");
+        }
     }
 
     auto fitConfigVal = readFitConfigValue();
 
-    if (fitConfigVal.find(devTreeFromJson) != std::string::npos)
-    { // fitconfig is updated and correct JSON is set.
+    if (devTreeFromJson.empty() ||
+        fitConfigVal.find(devTreeFromJson) != std::string::npos)
+    { // Skipping setting device tree as either devtree info is missing from
+      // Json or it is rightly set.
 
         if (isSystemVPDOnDBus() &&
             jsonUtility::isBackupAndRestoreRequired(m_parsedJson))
@@ -484,7 +528,6 @@ void Worker::setDeviceTreeAndJson()
         return;
     }
 
-    // Set fitconfig even if it is read as empty.
     setEnvAndReboot("fitconfig", devTreeFromJson);
     exit(EXIT_SUCCESS);
 }
