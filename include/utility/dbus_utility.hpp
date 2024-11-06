@@ -59,6 +59,51 @@ inline types::MapperGetObject getObjectMap(const std::string& objectPath,
 }
 
 /**
+ * @brief An API to get property map for an interface.
+ *
+ * This API returns a map of property and its value with respect to a particular
+ * interface.
+ *
+ * Note: It will be caller's responsibility to check for empty map returned and
+ * generate appropriate error.
+ *
+ * @param[in] i_service - Service name.
+ * @param[in] i_objectPath - object path.
+ * @param[in] i_interface - Interface, for the properties to be listed.
+ *
+ * @return - A map of property and value of an interface, if success.
+ *           if failed, empty map.
+ */
+inline types::PropertyMap getPropertyMap(const std::string& i_service,
+                                         const std::string& i_objectPath,
+                                         const std::string& i_interface)
+{
+    types::PropertyMap l_propertyValueMap;
+    if (i_service.empty() || i_objectPath.empty() || i_interface.empty())
+    {
+        logging::logMessage("Invalid parameters to get property map");
+        return l_propertyValueMap;
+    }
+
+    try
+    {
+        auto l_bus = sdbusplus::bus::new_default();
+        auto l_method =
+            l_bus.new_method_call(i_service.c_str(), i_objectPath.c_str(),
+                                  "org.freedesktop.DBus.Properties", "GetAll");
+        l_method.append(i_interface);
+        auto l_result = l_bus.call(l_method);
+        l_result.read(l_propertyValueMap);
+    }
+    catch (const sdbusplus::exception::SdBusError& l_ex)
+    {
+        logging::logMessage(l_ex.what());
+    }
+
+    return l_propertyValueMap;
+}
+
+/**
  * @brief An API to read property from Dbus.
  *
  * The caller of the API needs to validate the validatity and correctness of the

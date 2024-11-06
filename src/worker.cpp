@@ -742,6 +742,10 @@ bool Worker::primeInventory(const std::string& i_vpdFilePath)
             continue;
         }
 
+        // Clear data under PIM if already exists.
+        vpdSpecificUtility::resetDataUnderPIM(
+            std::string(l_Fru["inventoryPath"]), l_interfaces);
+
         // Add extra interfaces mentioned in the Json config file
         if (l_Fru.contains("extraInterfaces"))
         {
