@@ -49,7 +49,7 @@ class DdimmVpdParser : public ParserInterface
      *
      * @return parsed VPD data
      */
-    virtual types::VPDMapVariant parse() override;
+    virtual types::VpdMapVariant parse() override;
 
   private:
     /**

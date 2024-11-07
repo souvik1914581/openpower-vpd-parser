@@ -18,7 +18,7 @@ void GpioEventHandler::handleChangeInGpioPin(const bool& i_isFruPresent)
     {
         if (i_isFruPresent)
         {
-            types::VPDMapVariant l_parsedVpd =
+            types::VpdMapVariant l_parsedVpd =
                 m_worker->parseVpdFile(m_fruPath);
 
             if (std::holds_alternative<std::monostate>(l_parsedVpd))

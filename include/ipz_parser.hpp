@@ -64,7 +64,7 @@ class IpzVpdParser : public ParserInterface
      *
      * @return parsed VPD data.
      */
-    virtual types::VPDMapVariant parse() override;
+    virtual types::VpdMapVariant parse() override;
 
     /**
      * @brief API to check validity of VPD header.

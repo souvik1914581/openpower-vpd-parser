@@ -408,7 +408,7 @@ void IpzVpdParser::processRecord(auto recordOffset)
                            std::move(readKeywords(itrToVPDStart)));
 }
 
-types::VPDMapVariant IpzVpdParser::parse()
+types::VpdMapVariant IpzVpdParser::parse()
 {
     try
     {

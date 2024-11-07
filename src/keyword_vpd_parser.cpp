@@ -11,7 +11,7 @@
 namespace vpd
 {
 
-types::VPDMapVariant KeywordVpdParser::parse()
+types::VpdMapVariant KeywordVpdParser::parse()
 {
     if (m_keywordVpdVector.empty())
     {

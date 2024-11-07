@@ -67,7 +67,7 @@ class BackupAndRestore
      *
      * @return Tuple of updated source and destination VPD map variant.
      */
-    std::tuple<types::VPDMapVariant, types::VPDMapVariant> backupAndRestore();
+    std::tuple<types::VpdMapVariant, types::VpdMapVariant> backupAndRestore();
 
     /**
      * @brief An API to set backup and restore status.

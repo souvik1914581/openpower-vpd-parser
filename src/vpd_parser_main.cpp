@@ -28,7 +28,7 @@
  * - b) Implement a custom parser class.
  * - c) Override parse API in the newly added parser class.
  * - d) Add type of parsed data returned by parse API into types.hpp,
- * "VPDMapVariant".
+ * "VpdMapVariant".
  *
  */
 
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
         }
 
         nlohmann::json json;
-        vpd::types::VPDMapVariant parsedVpdDataMap;
+        vpd::types::VpdMapVariant parsedVpdDataMap;
 
         // Below are two different ways of parsing the VPD.
         if (!configFilePath.empty())

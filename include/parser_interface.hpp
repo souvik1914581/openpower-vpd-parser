@@ -24,7 +24,7 @@ class ParserInterface
      * @return parsed format for VPD data, depending upon the
      * parsing logic.
      */
-    virtual types::VPDMapVariant parse() = 0;
+    virtual types::VpdMapVariant parse() = 0;
 
     /**
      * @brief Read keyword's value from hardware

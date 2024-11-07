@@ -256,7 +256,7 @@ std::string Worker::getHWVersion(const types::IPZVpdMap& parsedVpd) const
 }
 
 void Worker::fillVPDMap(const std::string& vpdFilePath,
-                        types::VPDMapVariant& vpdMap)
+                        types::VpdMapVariant& vpdMap)
 {
     logging::logMessage(std::string("Parsing file = ") + vpdFilePath);
 
@@ -324,7 +324,7 @@ void Worker::fillVPDMap(const std::string& vpdFilePath,
 }
 
 void Worker::getSystemJson(std::string& systemJson,
-                           const types::VPDMapVariant& parsedVpdMap)
+                           const types::VpdMapVariant& parsedVpdMap)
 {
     if (auto pVal = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
     {
@@ -425,7 +425,7 @@ void Worker::setDeviceTreeAndJson()
         throw std::runtime_error("JSON is empty");
     }
 
-    types::VPDMapVariant parsedVpdMap;
+    types::VpdMapVariant parsedVpdMap;
     fillVPDMap(SYSTEM_VPD_FILE_PATH, parsedVpdMap);
 
     // ToDo: Need to check is INVENTORY_JSON_SYM_LINK pointing to correct system
@@ -623,7 +623,7 @@ void Worker::populateKwdVPDpropertyMap(const types::KeywordVpdMap& keyordVPDMap,
 
 void Worker::populateInterfaces(const nlohmann::json& interfaceJson,
                                 types::InterfaceMap& interfaceMap,
-                                const types::VPDMapVariant& parsedVpdMap)
+                                const types::VpdMapVariant& parsedVpdMap)
 {
     for (const auto& interfacesPropPair : interfaceJson.items())
     {
@@ -855,7 +855,7 @@ void Worker::processEmbeddedAndSynthesizedFrus(const nlohmann::json& singleFru,
 
 void Worker::processExtraInterfaces(const nlohmann::json& singleFru,
                                     types::InterfaceMap& interfaces,
-                                    const types::VPDMapVariant& parsedVpdMap)
+                                    const types::VpdMapVariant& parsedVpdMap)
 {
     populateInterfaces(singleFru["extraInterfaces"], interfaces, parsedVpdMap);
     if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
@@ -885,7 +885,7 @@ void Worker::processExtraInterfaces(const nlohmann::json& singleFru,
 }
 
 void Worker::processCopyRecordFlag(const nlohmann::json& singleFru,
-                                   const types::VPDMapVariant& parsedVpdMap,
+                                   const types::VpdMapVariant& parsedVpdMap,
                                    types::InterfaceMap& interfaces)
 {
     if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
@@ -903,7 +903,7 @@ void Worker::processCopyRecordFlag(const nlohmann::json& singleFru,
     }
 }
 
-void Worker::processInheritFlag(const types::VPDMapVariant& parsedVpdMap,
+void Worker::processInheritFlag(const types::VpdMapVariant& parsedVpdMap,
                                 types::InterfaceMap& interfaces)
 {
     if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
@@ -927,7 +927,7 @@ void Worker::processInheritFlag(const types::VPDMapVariant& parsedVpdMap,
 }
 
 bool Worker::processFruWithCCIN(const nlohmann::json& singleFru,
-                                const types::VPDMapVariant& parsedVpdMap)
+                                const types::VpdMapVariant& parsedVpdMap)
 {
     if (auto ipzVPDMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
     {
@@ -968,7 +968,7 @@ bool Worker::processFruWithCCIN(const nlohmann::json& singleFru,
     return true;
 }
 
-void Worker::populateDbus(const types::VPDMapVariant& parsedVpdMap,
+void Worker::populateDbus(const types::VpdMapVariant& parsedVpdMap,
                           types::ObjectMap& objectInterfaceMap,
                           const std::string& vpdFilePath)
 {
@@ -1027,7 +1027,7 @@ void Worker::populateDbus(const types::VPDMapVariant& parsedVpdMap,
     }
 }
 
-void Worker::publishSystemVPD(const types::VPDMapVariant& parsedVpdMap)
+void Worker::publishSystemVPD(const types::VpdMapVariant& parsedVpdMap)
 {
     types::ObjectMap objectInterfaceMap;
 
@@ -1103,7 +1103,7 @@ bool Worker::processPreAction(const std::string& i_vpdFilePath,
 
 bool Worker::processPostAction(
     const std::string& i_vpdFruPath, const std::string& i_flagToProcess,
-    const std::optional<types::VPDMapVariant> i_parsedVpd)
+    const std::optional<types::VpdMapVariant> i_parsedVpd)
 {
     if (i_vpdFruPath.empty() || i_flagToProcess.empty())
     {
@@ -1151,7 +1151,7 @@ bool Worker::processPostAction(
     return true;
 }
 
-types::VPDMapVariant Worker::parseVpdFile(const std::string& i_vpdFilePath)
+types::VpdMapVariant Worker::parseVpdFile(const std::string& i_vpdFilePath)
 {
     if (i_vpdFilePath.empty())
     {
@@ -1203,7 +1203,7 @@ types::VPDMapVariant Worker::parseVpdFile(const std::string& i_vpdFilePath)
                                                                  m_parsedJson);
     try
     {
-        types::VPDMapVariant l_parsedVpd = vpdParser->parse();
+        types::VpdMapVariant l_parsedVpd = vpdParser->parse();
 
         // Before returning, as collection is over, check if FRU qualifies for
         // any post action in the flow of collection.
@@ -1249,7 +1249,7 @@ std::tuple<bool, std::string>
 {
     try
     {
-        const types::VPDMapVariant& parsedVpdMap = parseVpdFile(i_vpdFilePath);
+        const types::VpdMapVariant& parsedVpdMap = parseVpdFile(i_vpdFilePath);
 
         types::ObjectMap objectInterfaceMap;
         populateDbus(parsedVpdMap, objectInterfaceMap, i_vpdFilePath);
@@ -1370,7 +1370,7 @@ void Worker::collectFrusFromJson()
 }
 
 // ToDo: Move the API under IBM_SYSTEM
-void Worker::performBackupAndRestore(types::VPDMapVariant& io_srcVpdMap)
+void Worker::performBackupAndRestore(types::VpdMapVariant& io_srcVpdMap)
 {
     try
     {

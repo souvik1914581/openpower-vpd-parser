@@ -34,7 +34,7 @@ BackupAndRestore::BackupAndRestore(const nlohmann::json& i_sysCfgJsonObj) :
     }
 }
 
-std::tuple<types::VPDMapVariant, types::VPDMapVariant>
+std::tuple<types::VpdMapVariant, types::VpdMapVariant>
     BackupAndRestore::backupAndRestore()
 {
     auto l_emptyVariantPair = std::make_tuple(std::monostate{},
@@ -61,7 +61,7 @@ std::tuple<types::VPDMapVariant, types::VPDMapVariant>
         }
 
         std::string l_srcVpdPath;
-        types::VPDMapVariant l_srcVpdVariant;
+        types::VpdMapVariant l_srcVpdVariant;
         if (l_srcVpdPath = m_backupAndRestoreCfgJsonObj["source"].value(
                 "hardwarePath", "");
             !l_srcVpdPath.empty() && std::filesystem::exists(l_srcVpdPath))
@@ -80,7 +80,7 @@ std::tuple<types::VPDMapVariant, types::VPDMapVariant>
         }
 
         std::string l_dstVpdPath;
-        types::VPDMapVariant l_dstVpdVariant;
+        types::VpdMapVariant l_dstVpdVariant;
         if (l_dstVpdPath = m_backupAndRestoreCfgJsonObj["destination"].value(
                 "hardwarePath", "");
             !l_dstVpdPath.empty() && std::filesystem::exists(l_dstVpdPath))

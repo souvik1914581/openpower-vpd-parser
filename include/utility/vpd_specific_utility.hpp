@@ -214,7 +214,7 @@ inline void insertOrMerge(types::InterfaceMap& map,
  */
 inline std::string
     getExpandedLocationCode(const std::string& unexpandedLocationCode,
-                            const types::VPDMapVariant& parsedVpdMap)
+                            const types::VpdMapVariant& parsedVpdMap)
 {
     auto expanded{unexpandedLocationCode};
     if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
@@ -420,7 +420,7 @@ inline std::string getDbusPropNameForGivenKw(const std::string& i_keywordName)
  * @return True if found, false otherwise.
  */
 inline bool findCcinInVpd(const nlohmann::json& i_JsonObject,
-                          const types::VPDMapVariant& i_parsedVpdMap)
+                          const types::VpdMapVariant& i_parsedVpdMap)
 {
     if (i_JsonObject.empty())
     {

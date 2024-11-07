@@ -302,7 +302,7 @@ types::JedecSpdMap JedecSpdParser::readKeywords(
     return l_keywordValueMap;
 }
 
-types::VPDMapVariant JedecSpdParser::parse()
+types::VpdMapVariant JedecSpdParser::parse()
 {
     // Read the data and return the map
     auto l_iterator = m_memSpd.cbegin();

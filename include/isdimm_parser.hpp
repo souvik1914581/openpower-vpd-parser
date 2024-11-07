@@ -40,7 +40,7 @@ class JedecSpdParser : public ParserInterface
      *
      * @return map of keyword:value
      */
-    types::VPDMapVariant parse();
+    types::VpdMapVariant parse();
 
   private:
     /**

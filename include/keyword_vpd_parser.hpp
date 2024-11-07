@@ -39,7 +39,7 @@ class KeywordVpdParser : public ParserInterface
      * @throw DataException - VPD is not valid
      * @return map of keyword:value
      */
-    types::VPDMapVariant parse();
+    types::VpdMapVariant parse();
 
   private:
     /**

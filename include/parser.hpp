@@ -37,7 +37,7 @@ class Parser
      * It further parses the data based on the parser selected and returned
      * parsed map to the caller.
      */
-    types::VPDMapVariant parse();
+    types::VpdMapVariant parse();
 
     /**
      * @brief API to get parser instance based on VPD type.

@@ -350,7 +350,7 @@ void Manager::collectSingleFruVpd(
         }
 
         // Parse VPD
-        types::VPDMapVariant l_parsedVpd = m_worker->parseVpdFile(l_fruPath);
+        types::VpdMapVariant l_parsedVpd = m_worker->parseVpdFile(l_fruPath);
 
         // If l_parsedVpd is pointing to std::monostate
         if (l_parsedVpd.index() == 0)

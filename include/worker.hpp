@@ -86,7 +86,7 @@ class Worker
      *
      * @param[in] i_vpdFilePath - Path to the VPD file.
      */
-    types::VPDMapVariant parseVpdFile(const std::string& i_vpdFilePath);
+    types::VpdMapVariant parseVpdFile(const std::string& i_vpdFilePath);
 
     /**
      * @brief An API to populate DBus interfaces for a FRU.
@@ -98,7 +98,7 @@ class Worker
      * @param[out] objectInterfaceMap - Object and its interfaces map.
      * @param[in] vpdFilePath - EEPROM path of FRU.
      */
-    void populateDbus(const types::VPDMapVariant& parsedVpdMap,
+    void populateDbus(const types::VpdMapVariant& parsedVpdMap,
                       types::ObjectMap& objectInterfaceMap,
                       const std::string& vpdFilePath);
 
@@ -158,7 +158,7 @@ class Worker
      * @param[in] parsedVpdMap - Parsed VPD map.
      */
     void getSystemJson(std::string& systemJson,
-                       const types::VPDMapVariant& parsedVpdMap);
+                       const types::VpdMapVariant& parsedVpdMap);
 
     /**
      * @brief An API to read IM value from VPD.
@@ -185,7 +185,7 @@ class Worker
      * @param[out] parsedVpd - Parsed VPD as a map.
      */
     void fillVPDMap(const std::string& vpdFilePath,
-                    types::VPDMapVariant& parsedVpd);
+                    types::VpdMapVariant& parsedVpd);
 
     /**
      * @brief An API to parse and publish system VPD on D-Bus.
@@ -194,7 +194,7 @@ class Worker
      *
      * @param[in] parsedVpdMap - Parsed VPD as a map.
      */
-    void publishSystemVPD(const types::VPDMapVariant& parsedVpdMap);
+    void publishSystemVPD(const types::VpdMapVariant& parsedVpdMap);
 
     /**
      * @brief An API to process extrainterfaces w.r.t a FRU.
@@ -205,7 +205,7 @@ class Worker
      */
     void processExtraInterfaces(const nlohmann::json& singleFru,
                                 types::InterfaceMap& interfaces,
-                                const types::VPDMapVariant& parsedVpdMap);
+                                const types::VpdMapVariant& parsedVpdMap);
 
     /**
      * @brief An API to process embedded and synthesized FRUs.
@@ -227,7 +227,7 @@ class Worker
      * @param[in] parsedVpdMap - Parsed VPD map.
      */
     bool processFruWithCCIN(const nlohmann::json& singleFru,
-                            const types::VPDMapVariant& parsedVpdMap);
+                            const types::VpdMapVariant& parsedVpdMap);
 
     /**
      * @brief API to process json's inherit flag.
@@ -238,7 +238,7 @@ class Worker
      * @param[in] parsedVpdMap - Parsed VPD as a map.
      * @param[out] interfaces - Map to hold interface along with its properties.
      */
-    void processInheritFlag(const types::VPDMapVariant& parsedVpdMap,
+    void processInheritFlag(const types::VpdMapVariant& parsedVpdMap,
                             types::InterfaceMap& interfaces);
 
     /**
@@ -252,7 +252,7 @@ class Worker
      * @param[out] interfaces - Map to hold interface along with its properties.
      */
     void processCopyRecordFlag(const nlohmann::json& singleFru,
-                               const types::VPDMapVariant& parsedVpdMap,
+                               const types::VpdMapVariant& parsedVpdMap,
                                types::InterfaceMap& interfaces);
 
     /**
@@ -284,7 +284,7 @@ class Worker
      */
     void populateInterfaces(const nlohmann::json& interfaceJson,
                             types::InterfaceMap& interfaceMap,
-                            const types::VPDMapVariant& parsedVpdMap);
+                            const types::VpdMapVariant& parsedVpdMap);
 
     /**
      * @brief Helper function to insert or merge in map.
@@ -396,7 +396,7 @@ class Worker
      */
     bool processPostAction(
         const std::string& i_vpdFruPath, const std::string& i_flagToProcess,
-        const std::optional<types::VPDMapVariant> i_parsedVpd = std::nullopt);
+        const std::optional<types::VpdMapVariant> i_parsedVpd = std::nullopt);
 
     /**
      * @brief Function to enable and bring MUX out of idle state.
@@ -413,7 +413,7 @@ class Worker
      *
      * @param[in,out] io_srcVpdMap - Source VPD map.
      */
-    void performBackupAndRestore(types::VPDMapVariant& io_srcVpdMap);
+    void performBackupAndRestore(types::VpdMapVariant& io_srcVpdMap);
 
     // Parsed JSON file.
     nlohmann::json m_parsedJson{};

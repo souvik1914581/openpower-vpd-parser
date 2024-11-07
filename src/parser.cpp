@@ -31,7 +31,7 @@ std::shared_ptr<vpd::ParserInterface> Parser::getVpdParserInstance()
     return l_parser;
 }
 
-types::VPDMapVariant Parser::parse()
+types::VpdMapVariant Parser::parse()
 {
     std::shared_ptr<vpd::ParserInterface> l_parser = getVpdParserInstance();
     return l_parser->parse();

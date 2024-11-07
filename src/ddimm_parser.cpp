@@ -248,7 +248,7 @@ void DdimmVpdParser::readKeywords(
     m_parsedVpdMap.emplace("CC", move(l_ccin));
 }
 
-types::VPDMapVariant DdimmVpdParser::parse()
+types::VpdMapVariant DdimmVpdParser::parse()
 {
     try
     {
