@@ -106,11 +106,17 @@ constexpr auto ipzVpdInf = "com.ibm.ipzvpd.";
 constexpr auto kwdVpdInf = "com.ibm.ipzvpd.VINI";
 constexpr auto vsysInf = "com.ibm.ipzvpd.VSYS";
 constexpr auto utilInf = "com.ibm.ipzvpd.UTIL";
+constexpr auto vcenInf = "com.ibm.ipzvpd.VCEN";
 constexpr auto kwdCCIN = "CC";
 constexpr auto kwdRG = "RG";
 constexpr auto kwdAMM = "D0";
 constexpr auto kwdClearNVRAM_CreateLPAR = "D1";
 constexpr auto kwdKeepAndClear = "D1";
+constexpr auto kwdFC = "FC";
+constexpr auto kwdTM = "TM";
+constexpr auto kwdSE = "SE";
+constexpr auto recVSYS = "VSYS";
+constexpr auto recVCEN = "VCEN";
 constexpr auto locationCodeInf = "com.ibm.ipzvpd.Location";
 constexpr auto xyzLocationCodeInf =
     "xyz.openbmc_project.Inventory.Decorator.LocationCode";

@@ -217,127 +217,117 @@ inline std::string
                             const types::VPDMapVariant& parsedVpdMap)
 {
     auto expanded{unexpandedLocationCode};
-    if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap))
+
+    try
     {
-        try
+        // Expanded location code is formed by combining two keywords
+        // depending on type in unexpanded one. Second one is always "SE".
+        std::string kwd1, kwd2{constants::kwdSE};
+
+        // interface to search for required keywords;
+        std::string kwdInterface;
+
+        // record which holds the required keywords.
+        std::string recordName;
+
+        auto pos = unexpandedLocationCode.find("fcs");
+        if (pos != std::string::npos)
         {
-            // Expanded location code is formaed by combining two keywords
-            // depending on type in unexpanded one. Second one is always "SE".
-            std::string kwd1, kwd2{"SE"};
-
-            // interface to search for required keywords;
-            std::string kwdInterface;
-
-            // record which holds the required keywords.
-            std::string recordName;
-
-            auto pos = unexpandedLocationCode.find("fcs");
+            kwd1 = constants::kwdFC;
+            kwdInterface = constants::vcenInf;
+            recordName = constants::recVCEN;
+        }
+        else
+        {
+            pos = unexpandedLocationCode.find("mts");
             if (pos != std::string::npos)
             {
-                kwd1 = "FC";
-                kwdInterface = "com.ibm.ipzvpd.VCEN";
-                recordName = "VCEN";
+                kwd1 = constants::kwdTM;
+                kwdInterface = constants::vsysInf;
+                recordName = constants::recVSYS;
             }
             else
             {
-                pos = unexpandedLocationCode.find("mts");
-                if (pos != std::string::npos)
-                {
-                    kwd1 = "TM";
-                    kwdInterface = "com.ibm.ipzvpd.VSYS";
-                    recordName = "VSYS";
-                }
-                else
-                {
-                    throw std::runtime_error(
-                        "Error detecting type of unexpanded location code.");
-                }
-            }
-
-            std::string firstKwdValue, secondKwdValue;
-            auto itrToVCEN = (*ipzVpdMap).find(recordName);
-            if (itrToVCEN != (*ipzVpdMap).end())
-            {
-                // The exceptions will be cautght at end.
-                getKwVal(itrToVCEN->second, kwd1, firstKwdValue);
-                getKwVal(itrToVCEN->second, kwd2, secondKwdValue);
-            }
-            else
-            {
-                std::array<const char*, 1> interfaceList = {
-                    kwdInterface.c_str()};
-
-                types::MapperGetObject mapperRetValue =
-                    dbusUtility::getObjectMap(
-                        "/xyz/openbmc_project/inventory/system/"
-                        "chassis/motherboard",
-                        interfaceList);
-
-                if (mapperRetValue.empty())
-                {
-                    throw std::runtime_error("Mapper failed to get service");
-                }
-
-                const std::string& serviceName =
-                    std::get<0>(mapperRetValue.at(0));
-
-                auto retVal = dbusUtility::readDbusProperty(
-                    serviceName,
-                    "/xyz/openbmc_project/inventory/system/"
-                    "chassis/motherboard",
-                    kwdInterface, kwd1);
-
-                if (auto kwdVal = std::get_if<types::BinaryVector>(&retVal))
-                {
-                    firstKwdValue.assign(
-                        reinterpret_cast<const char*>(kwdVal->data()),
-                        kwdVal->size());
-                }
-                else
-                {
-                    throw std::runtime_error("Failed to read value of " + kwd1 +
-                                             " from Bus");
-                }
-
-                retVal = dbusUtility::readDbusProperty(
-                    serviceName,
-                    "/xyz/openbmc_project/inventory/system/"
-                    "chassis/motherboard",
-                    kwdInterface, kwd2);
-
-                if (auto kwdVal = std::get_if<types::BinaryVector>(&retVal))
-                {
-                    secondKwdValue.assign(
-                        reinterpret_cast<const char*>(kwdVal->data()),
-                        kwdVal->size());
-                }
-                else
-                {
-                    throw std::runtime_error("Failed to read value of " + kwd2 +
-                                             " from Bus");
-                }
-            }
-
-            if (unexpandedLocationCode.find("fcs") != std::string::npos)
-            {
-                // TODO: See if ND0 can be placed in the JSON
-                expanded.replace(pos, 3,
-                                 firstKwdValue.substr(0, 4) + ".ND0." +
-                                     secondKwdValue);
-            }
-            else
-            {
-                replace(firstKwdValue.begin(), firstKwdValue.end(), '-', '.');
-                expanded.replace(pos, 3, firstKwdValue + "." + secondKwdValue);
+                throw std::runtime_error(
+                    "Error detecting type of unexpanded location code.");
             }
         }
-        catch (const std::exception& ex)
+
+        std::string firstKwdValue, secondKwdValue;
+
+        if (auto ipzVpdMap = std::get_if<types::IPZVpdMap>(&parsedVpdMap);
+            ipzVpdMap && (*ipzVpdMap).find(recordName) != (*ipzVpdMap).end())
         {
-            logging::logMessage(
-                "Failed to expand location code with exception: " +
-                std::string(ex.what()));
+            auto itrToVCEN = (*ipzVpdMap).find(recordName);
+            // The exceptions will be cautght at end.
+            getKwVal(itrToVCEN->second, kwd1, firstKwdValue);
+            getKwVal(itrToVCEN->second, kwd2, secondKwdValue);
+        }
+        else
+        {
+            std::array<const char*, 1> interfaceList = {kwdInterface.c_str()};
+
+            types::MapperGetObject mapperRetValue = dbusUtility::getObjectMap(
+                std::string(constants::systemVpdInvPath), interfaceList);
+
+            if (mapperRetValue.empty())
+            {
+                throw std::runtime_error("Mapper failed to get service");
+            }
+
+            const std::string& serviceName = std::get<0>(mapperRetValue.at(0));
+
+            auto retVal = dbusUtility::readDbusProperty(
+                serviceName, std::string(constants::systemVpdInvPath),
+                kwdInterface, kwd1);
+
+            if (auto kwdVal = std::get_if<types::BinaryVector>(&retVal))
+            {
+                firstKwdValue.assign(
+                    reinterpret_cast<const char*>(kwdVal->data()),
+                    kwdVal->size());
+            }
+            else
+            {
+                throw std::runtime_error("Failed to read value of " + kwd1 +
+                                         " from Bus");
+            }
+
+            retVal = dbusUtility::readDbusProperty(
+                serviceName, std::string(constants::systemVpdInvPath),
+                kwdInterface, kwd2);
+
+            if (auto kwdVal = std::get_if<types::BinaryVector>(&retVal))
+            {
+                secondKwdValue.assign(
+                    reinterpret_cast<const char*>(kwdVal->data()),
+                    kwdVal->size());
+            }
+            else
+            {
+                throw std::runtime_error("Failed to read value of " + kwd2 +
+                                         " from Bus");
+            }
+        }
+
+        if (unexpandedLocationCode.find("fcs") != std::string::npos)
+        {
+            // TODO: See if ND0 can be placed in the JSON
+            expanded.replace(
+                pos, 3, firstKwdValue.substr(0, 4) + ".ND0." + secondKwdValue);
+        }
+        else
+        {
+            replace(firstKwdValue.begin(), firstKwdValue.end(), '-', '.');
+            expanded.replace(pos, 3, firstKwdValue + "." + secondKwdValue);
         }
     }
+    catch (const std::exception& ex)
+    {
+        logging::logMessage("Failed to expand location code with exception: " +
+                            std::string(ex.what()));
+    }
+
     return expanded;
 }
 
