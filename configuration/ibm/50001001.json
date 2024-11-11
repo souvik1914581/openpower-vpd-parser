@@ -38,7 +38,7 @@
                         "LocationCode": "Ufcs-P0"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "System Backplane"
+                        "PrettyName": "System backplane"
                     }
                 }
             },
@@ -111,7 +111,7 @@
                         "LocationCode": "Ufcs-P0-C0"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe4 x16 or PCIe5 x8 adapter"
                     }
                 }
             },
@@ -129,7 +129,7 @@
                         "LocationCode": "Ufcs-P0-C1"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe4 x8 adapter"
                     }
                 }
             },
@@ -165,7 +165,7 @@
                         "LocationCode": "Ufcs-P0-C3"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe5 x8 adapter"
                     }
                 }
             },
@@ -183,7 +183,7 @@
                         "LocationCode": "Ufcs-P0-C4"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe4 x16 or PCIe5 x8 adapter"
                     }
                 }
             },
@@ -201,7 +201,7 @@
                         "LocationCode": "Ufcs-P0-C6"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "OpenCAPI adapter"
                     }
                 }
             },
@@ -219,7 +219,7 @@
                         "LocationCode": "Ufcs-P0-C7"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe5 x8 adapter"
                     }
                 }
             },
@@ -237,7 +237,7 @@
                         "LocationCode": "Ufcs-P0-C8"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe4 x8 adapter"
                     }
                 }
             },
@@ -255,7 +255,7 @@
                         "LocationCode": "Ufcs-P0-C9"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe5 x8 adapter"
                     }
                 }
             },
@@ -273,7 +273,7 @@
                         "LocationCode": "Ufcs-P0-C10"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe4 x16 or PCIe5 x8 adapter"
                     }
                 }
             },
@@ -291,7 +291,7 @@
                         "LocationCode": "Ufcs-P0-C11"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Slot"
+                        "PrettyName": "PCIe5 x8 adapter"
                     }
                 }
             },
@@ -308,7 +308,7 @@
                         "LocationCode": "Ufcs-P0-T18"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Dummy PCIe USB Adapter Slot"
+                        "PrettyName": "USB 3.0 port (front)"
                     }
                 }
             },
@@ -325,7 +325,7 @@
                         "SlotNumber": 12
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Dummy PCIe USB Adapter"
+                        "PrettyName": "USB 3.0 port (front)"
                     }
                 }
             },
@@ -548,7 +548,7 @@
                         "LocationCode": "Ufcs-P0-E0"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Time Of Day Battery"
+                        "PrettyName": "Time-of-day battery"
                     }
                 }
             },
@@ -562,7 +562,7 @@
                         "LocationCode": "Ufcs-P0-T0"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "OpenCAPI Port Connector"
+                        "PrettyName": "Connector for OpenCAPI Port DCM-0 P0 OP3B"
                     }
                 }
             },
@@ -576,7 +576,7 @@
                         "LocationCode": "Ufcs-P0-T1"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "OpenCAPI Port Connector"
+                        "PrettyName": "Connector for OpenCAPI Port DCM-0 P0 OP3A"
                     }
                 }
             },
@@ -590,7 +590,7 @@
                         "LocationCode": "Ufcs-P0-T2"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "OpenCAPI Port Connector"
+                        "PrettyName": "Connector for OpenCAPI Port DCM-0 P1 OP0B"
                     }
                 }
             },
@@ -604,7 +604,7 @@
                         "LocationCode": "Ufcs-P0-T3"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "OpenCAPI Port Connector"
+                        "PrettyName": "Connector for OpenCAPI Port DCM-0 P1 OP0A"
                     }
                 }
             },
@@ -618,7 +618,7 @@
                         "LocationCode": "Ufcs-P0-T4"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Power Distribution Board Signals Cable Connector"
+                        "PrettyName": "Power signal cable port"
                     }
                 }
             },
@@ -632,7 +632,7 @@
                         "LocationCode": "Ufcs-P0-T5"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "OpenCAPI Port Connector"
+                        "PrettyName": "Connector for OpenCAPI Port DCM-1 P0 OP3A"
                     }
                 }
             },
@@ -646,7 +646,7 @@
                         "LocationCode": "Ufcs-P0-T6"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "OpenCAPI Port Connector"
+                        "PrettyName": "Connector for OpenCAPI Port DCM-1 P1 OP0B"
                     }
                 }
             },
@@ -660,7 +660,7 @@
                         "LocationCode": "Ufcs-P0-T7"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Front Host USB 3.0 Connector"
+                        "PrettyName": "USB 3.0 port"
                     }
                 }
             },
@@ -674,7 +674,7 @@
                         "LocationCode": "Ufcs-P0-T8"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Backplane Signal Cable Connector"
+                        "PrettyName": "Drive backplane signal cable port"
                     }
                 }
             },
@@ -688,7 +688,7 @@
                         "LocationCode": "Ufcs-P0-T9"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Backplane Signal Cable Connector"
+                        "PrettyName": "Drive backplane signal cable port"
                     }
                 }
             },
@@ -702,7 +702,7 @@
                         "LocationCode": "Ufcs-P0-T11"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Op Panel Cable Connector"
+                        "PrettyName": "Control panel cable port"
                     }
                 }
             },
@@ -716,7 +716,7 @@
                         "LocationCode": "Ufcs-P0-T12"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Fan Card Signal Cable Connector"
+                        "PrettyName": "Fan signal cable port"
                     }
                 }
             },
@@ -730,7 +730,7 @@
                         "LocationCode": "Ufcs-P0-T13"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Op Panel LCD Display cable Connector"
+                        "PrettyName": "Control panel display cable port"
                     }
                 }
             },
@@ -744,7 +744,7 @@
                         "LocationCode": "Ufcs-P0-T14"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Backplane Power Cable Connector"
+                        "PrettyName": "Drive backplane power cable port"
                     }
                 }
             },
@@ -758,7 +758,7 @@
                         "LocationCode": "Ufcs-P0-T15"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Backplane Power Cable Connector"
+                        "PrettyName": "Drive backplane power cable port"
                     }
                 }
             },
@@ -772,7 +772,7 @@
                         "LocationCode": "Ufcs-P0-T17"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Fan Card Signal Cable Connector"
+                        "PrettyName": "Fan signal cable port"
                     }
                 }
             },
@@ -786,7 +786,7 @@
                         "LocationCode": "Ufcs-P0-T18"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Front USB Connector"
+                        "PrettyName": "USB 3.0 port (front)"
                     }
                 }
             }
@@ -801,7 +801,7 @@
                         "LocationCode": "Ufcs-P0-C5"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "BMC Card"
+                        "PrettyName": "eBMC Card"
                     }
                 }
             },
@@ -824,7 +824,7 @@
                         }
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "HMC Ethernet Connector"
+                        "PrettyName": "HMC port 0"
                     }
                 }
             },
@@ -847,7 +847,7 @@
                         }
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "HMC Ethernet Connector"
+                        "PrettyName": "HMC port 1"
                     }
                 }
             },
@@ -861,7 +861,7 @@
                         "LocationCode": "Ufcs-P0-C5-T2"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "BMC USB Connector"
+                        "PrettyName": "USB 3.0 port (rear)"
                     }
                 }
             },
@@ -875,7 +875,7 @@
                         "LocationCode": "Ufcs-P0-C5-T3"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Display Port Connector"
+                        "PrettyName": "Display Port"
                     }
                 }
             },
@@ -889,7 +889,7 @@
                         "LocationCode": "Ufcs-P0-C5-T4"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "BMC USB Connector"
+                        "PrettyName": "USB 2.0 port (rear)"
                     }
                 }
             }
@@ -898,13 +898,21 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/tpm_wilson",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "preAction": {
+                    "collection": {
+                        "gpioPresence": {
+                            "pin": "CPU_TPM_CARD_PRESENT_N",
+                            "value": 0
+                        }
+                    }
+                },
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.Tpm": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P0-C22"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "TPM Card"
+                        "PrettyName": "Trusted platform module card"
                     }
                 }
             }
@@ -914,13 +922,21 @@
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/base_op_panel_blyth",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "essentialFru": true,
+                "preAction": {
+                    "collection": {
+                        "gpioPresence": {
+                            "pin": "BLYTH_OPPANEL_PRESENCE_N",
+                            "value": 0
+                        }
+                    }
+                },
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.Panel": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-D0"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Operator Panel Base"
+                        "PrettyName": "Control panel"
                     }
                 }
             }
@@ -966,7 +982,7 @@
                         "LocationCode": "Ufcs-D1"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Operator Panel LCD"
+                        "PrettyName": "Control panel display"
                     }
                 }
             }
@@ -981,7 +997,7 @@
                         "LocationCode": "Ufcs-P0-C14"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Voltage Regulator Module"
+                        "PrettyName": "Voltage regulator module for system processor module 0"
                     }
                 }
             }
@@ -996,7 +1012,7 @@
                         "LocationCode": "Ufcs-P0-C23"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Voltage Regulator Module"
+                        "PrettyName": "Voltage regulator module for system processor module 1"
                     }
                 }
             }
@@ -1016,7 +1032,7 @@
                         "LocationCode": "Ufcs-P0-C15"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Processor Module"
+                        "PrettyName": "System processor module 0"
                     }
                 }
             },
@@ -1185,7 +1201,7 @@
                         "LocationCode": "Ufcs-P0-C15"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Processor Module"
+                        "PrettyName": "System processor module 0"
                     }
                 }
             },
@@ -1354,7 +1370,7 @@
                         "LocationCode": "Ufcs-P0-C24"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Processor Module"
+                        "PrettyName": "System processor module 1"
                     }
                 }
             },
@@ -1523,7 +1539,7 @@
                         "LocationCode": "Ufcs-P0-C24"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Processor Module"
+                        "PrettyName": "System processor module 1"
                     }
                 }
             },
@@ -1682,11 +1698,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot0/pcie_card0",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "4-0060",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT0_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT0_PRSNT_EN_RSVD",
                             "value": 1
@@ -1726,7 +1745,7 @@
                         "SlotNumber": 0
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe4 x16 or PCIe5 x8 adapter"
                     }
                 }
             },
@@ -1767,11 +1786,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot3/pcie_card3",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "5-0060",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT3_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT3_PRSNT_EN_RSVD",
                             "value": 1
@@ -1811,7 +1833,7 @@
                         "SlotNumber": 3
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe4 x16 or PCIe5 x8 adapter"
                     }
                 }
             },
@@ -1852,11 +1874,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot4/pcie_card4",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "5-0061",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT4_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT4_PRSNT_EN_RSVD",
                             "value": 1
@@ -1896,7 +1921,7 @@
                         "SlotNumber": 4
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe4 x16 or PCIe5 x8 adapter"
                     }
                 }
             },
@@ -1937,11 +1962,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot10/pcie_card10",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "11-0060",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT10_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT10_PRSNT_EN_RSVD",
                             "value": 1
@@ -1981,7 +2009,7 @@
                         "SlotNumber": 10
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe4 x16 or PCIe5 x8 adapter"
                     }
                 }
             },
@@ -2086,11 +2114,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot2/pcie_card2",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "4-0062",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT2_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT2_PRSNT_EN_RSVD",
                             "value": 1
@@ -2121,7 +2152,7 @@
                         "SlotNumber": 2
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe5 x8 adapter"
                     }
                 }
             }
@@ -2134,6 +2165,10 @@
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT6_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT6_PRSNT_EN_RSVD",
                             "value": 1
@@ -2157,7 +2192,7 @@
                         "LocationCode": "Ufcs-P0-C6"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "OpenCAPI adapter"
                     }
                 }
             }
@@ -2166,11 +2201,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot7/pcie_card7",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "6-0062",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT7_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT7_PRSNT_EN_RSVD",
                             "value": 1
@@ -2201,7 +2239,7 @@
                         "SlotNumber": 7
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe5 x8 adapter"
                     }
                 }
             }
@@ -2210,11 +2248,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot9/pcie_card9",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "6-0060",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT9_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT9_PRSNT_EN_RSVD",
                             "value": 1
@@ -2245,7 +2286,7 @@
                         "SlotNumber": 9
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe5 x8 adapter"
                     }
                 }
             }
@@ -2254,11 +2295,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot11/pcie_card11",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "11-0061",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT11_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT11_PRSNT_EN_RSVD",
                             "value": 1
@@ -2290,7 +2334,7 @@
                         "SlotNumber": 11
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe5 x8 adapter"
                     }
                 }
             },
@@ -2363,11 +2407,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot1/pcie_card1",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "4-0061",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT1_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT1_PRSNT_EN_RSVD",
                             "value": 1
@@ -2398,7 +2445,7 @@
                         "SlotNumber": 1
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe4 x8 adapter"
                     }
                 }
             }
@@ -2407,11 +2454,14 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/pcieslot8/pcie_card8",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
-                "pcaChipAddress": "6-0061",
                 "replaceableAtStandby": true,
                 "concurrentlyMaintainable": true,
                 "preAction": {
                     "collection": {
+                        "gpioPresence": {
+                            "pin": "SLOT8_EXPANDER_PRSNT_N",
+                            "value": 0
+                        },
                         "setGpio": {
                             "pin": "SLOT8_PRSNT_EN_RSVD",
                             "value": 1
@@ -2443,7 +2493,7 @@
                         "SlotNumber": 8
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "PCIe Card"
+                        "PrettyName": "PCIe4 x8 adapter"
                     }
                 }
             },
@@ -2523,7 +2573,7 @@
                         "LocationCode": "Ufcs-P1"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Backplane"
+                        "PrettyName": "Drive backplane 0"
                     }
                 }
             },
@@ -2541,7 +2591,7 @@
                         "LocationCode": "Ufcs-P1-C2"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "U.2 PCIe Slot"
+                        "PrettyName": "NVMe U.2 drive 0"
                     }
                 }
             },
@@ -2550,17 +2600,17 @@
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "embedded": false,
-                "devAddress": "13-0050",
-                "busType": "i2c",
-                "driverType": "at24",
                 "concurrentlyMaintainable": true,
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.PCIeDevice": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P1-C2"
                     },
+                    "xyz.openbmc_project.Inventory.Decorator.Slot": {
+                        "SlotNumber": 1
+                    },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Drive"
+                        "PrettyName": "NVMe U.2 drive 0"
                     }
                 }
             },
@@ -2578,7 +2628,7 @@
                         "LocationCode": "Ufcs-P1-C3"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "U.2 PCIe Slot"
+                        "PrettyName": "NVMe U.2 drive 1"
                     }
                 }
             },
@@ -2587,17 +2637,17 @@
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "embedded": false,
-                "devAddress": "13-0050",
-                "busType": "i2c",
-                "driverType": "at24",
                 "concurrentlyMaintainable": true,
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.PCIeDevice": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P1-C3"
                     },
+                    "xyz.openbmc_project.Inventory.Decorator.Slot": {
+                        "SlotNumber": 2
+                    },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Drive"
+                        "PrettyName": "NVMe U.2 drive 1"
                     }
                 }
             },
@@ -2615,7 +2665,7 @@
                         "LocationCode": "Ufcs-P1-C4"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "U.2 PCIe Slot"
+                        "PrettyName": "NVMe U.2 drive 2"
                     }
                 }
             },
@@ -2624,17 +2674,17 @@
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "embedded": false,
-                "devAddress": "13-0050",
-                "busType": "i2c",
-                "driverType": "at24",
                 "concurrentlyMaintainable": true,
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.PCIeDevice": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P1-C4"
                     },
+                    "xyz.openbmc_project.Inventory.Decorator.Slot": {
+                        "SlotNumber": 3
+                    },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Drive"
+                        "PrettyName": "NVMe U.2 drive 2"
                     }
                 }
             },
@@ -2652,7 +2702,7 @@
                         "LocationCode": "Ufcs-P1-C5"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "U.2 PCIe Slot"
+                        "PrettyName": "NVMe U.2 drive 3"
                     }
                 }
             },
@@ -2661,17 +2711,17 @@
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "embedded": false,
-                "devAddress": "13-0050",
-                "busType": "i2c",
-                "driverType": "at24",
                 "concurrentlyMaintainable": true,
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.PCIeDevice": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P1-C5"
                     },
+                    "xyz.openbmc_project.Inventory.Decorator.Slot": {
+                        "SlotNumber": 4
+                    },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Drive"
+                        "PrettyName": "NVMe U.2 drive 3"
                     }
                 }
             },
@@ -2685,7 +2735,7 @@
                         "LocationCode": "Ufcs-P1-T1"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Internal Connector"
+                        "PrettyName": "Drive cable port"
                     }
                 }
             },
@@ -2699,7 +2749,7 @@
                         "LocationCode": "Ufcs-P1-T2"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Internal Connector"
+                        "PrettyName": "Drive cable port"
                     }
                 }
             },
@@ -2713,7 +2763,7 @@
                         "LocationCode": "Ufcs-P1-T4"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Internal Connector"
+                        "PrettyName": "Drive backplane signal cable port"
                     }
                 }
             },
@@ -2727,7 +2777,7 @@
                         "LocationCode": "Ufcs-P1-T5"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Internal Connector"
+                        "PrettyName": "Drive backplane power cable port"
                     }
                 }
             },
@@ -2767,7 +2817,7 @@
                         "LocationCode": "Ufcs-P2"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Backplane"
+                        "PrettyName": "Drive backplane 1"
                     }
                 }
             },
@@ -2785,7 +2835,7 @@
                         "LocationCode": "Ufcs-P2-C10"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "U.2 PCIe Slot"
+                        "PrettyName": "NVMe U.2 drive 4"
                     }
                 }
             },
@@ -2794,17 +2844,17 @@
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "embedded": false,
-                "devAddress": "14-0050",
-                "busType": "i2c",
-                "driverType": "at24",
                 "concurrentlyMaintainable": true,
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.PCIeDevice": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P2-C10"
                     },
+                    "xyz.openbmc_project.Inventory.Decorator.Slot": {
+                        "SlotNumber": 5
+                    },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Drive"
+                        "PrettyName": "NVMe U.2 drive 4"
                     }
                 }
             },
@@ -2822,7 +2872,7 @@
                         "LocationCode": "Ufcs-P2-C11"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "U.2 PCIe Slot"
+                        "PrettyName": "NVMe U.2 drive 5"
                     }
                 }
             },
@@ -2831,17 +2881,17 @@
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "embedded": false,
-                "devAddress": "14-0050",
-                "busType": "i2c",
-                "driverType": "at24",
                 "concurrentlyMaintainable": true,
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.PCIeDevice": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P2-C11"
                     },
+                    "xyz.openbmc_project.Inventory.Decorator.Slot": {
+                        "SlotNumber": 6
+                    },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Drive"
+                        "PrettyName": "NVMe U.2 drive 5"
                     }
                 }
             },
@@ -2859,7 +2909,7 @@
                         "LocationCode": "Ufcs-P2-C12"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "U.2 PCIe Slot"
+                        "PrettyName": "NVMe U.2 drive 6"
                     }
                 }
             },
@@ -2868,17 +2918,17 @@
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "embedded": false,
-                "devAddress": "14-0050",
-                "busType": "i2c",
-                "driverType": "at24",
                 "concurrentlyMaintainable": true,
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.PCIeDevice": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P2-C12"
                     },
+                    "xyz.openbmc_project.Inventory.Decorator.Slot": {
+                        "SlotNumber": 7
+                    },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Drive"
+                        "PrettyName": "NVMe U.2 drive 6"
                     }
                 }
             },
@@ -2896,7 +2946,7 @@
                         "LocationCode": "Ufcs-P2-C13"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "U.2 PCIe Slot"
+                        "PrettyName": "NVMe U.2 drive 7"
                     }
                 }
             },
@@ -2905,17 +2955,17 @@
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "embedded": false,
-                "devAddress": "14-0050",
-                "busType": "i2c",
-                "driverType": "at24",
                 "concurrentlyMaintainable": true,
                 "extraInterfaces": {
                     "xyz.openbmc_project.Inventory.Item.PCIeDevice": null,
                     "com.ibm.ipzvpd.Location": {
                         "LocationCode": "Ufcs-P2-C13"
                     },
+                    "xyz.openbmc_project.Inventory.Decorator.Slot": {
+                        "SlotNumber": 8
+                    },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Drive"
+                        "PrettyName": "NVMe U.2 drive 7"
                     }
                 }
             },
@@ -2929,7 +2979,7 @@
                         "LocationCode": "Ufcs-P2-T1"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Internal Connector"
+                        "PrettyName": "Drive cable port"
                     }
                 }
             },
@@ -2943,7 +2993,7 @@
                         "LocationCode": "Ufcs-P2-T2"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Internal Connector"
+                        "PrettyName": "Drive cable port"
                     }
                 }
             },
@@ -2957,7 +3007,7 @@
                         "LocationCode": "Ufcs-P2-T4"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Internal Connector"
+                        "PrettyName": "Drive backplane signal cable port"
                     }
                 }
             },
@@ -2971,7 +3021,7 @@
                         "LocationCode": "Ufcs-P2-T5"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "NVMe Internal Connector"
+                        "PrettyName": "Drive backplane power cable port"
                     }
                 }
             },
@@ -3004,6 +3054,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm0",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3017,7 +3068,7 @@
                         "LocationCode": "Ufcs-P0-C12"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 0"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3069,6 +3120,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm1",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3082,7 +3134,7 @@
                         "LocationCode": "Ufcs-P0-C13"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 1"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3134,6 +3186,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm10",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3147,7 +3200,7 @@
                         "LocationCode": "Ufcs-P0-C16"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 2"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3199,6 +3252,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm9",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3212,7 +3266,7 @@
                         "LocationCode": "Ufcs-P0-C17"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 3"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3264,6 +3318,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm8",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3277,7 +3332,7 @@
                         "LocationCode": "Ufcs-P0-C18"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 4"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3329,6 +3384,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm16",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3342,7 +3398,7 @@
                         "LocationCode": "Ufcs-P0-C19"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 5"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3394,6 +3450,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm17",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3407,7 +3464,7 @@
                         "LocationCode": "Ufcs-P0-C20"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 6"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3459,6 +3516,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm18",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3472,7 +3530,7 @@
                         "LocationCode": "Ufcs-P0-C21"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 7"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3524,6 +3582,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm24",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3537,7 +3596,7 @@
                         "LocationCode": "Ufcs-P0-C25"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 8"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3589,6 +3648,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm25",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3602,7 +3662,7 @@
                         "LocationCode": "Ufcs-P0-C26"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 9"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3654,6 +3714,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm2",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3667,7 +3728,7 @@
                         "LocationCode": "Ufcs-P0-C27"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 10"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3719,6 +3780,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm4",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3732,7 +3794,7 @@
                         "LocationCode": "Ufcs-P0-C28"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 11"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3784,6 +3846,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm5",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3797,7 +3860,7 @@
                         "LocationCode": "Ufcs-P0-C29"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 12"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3849,6 +3912,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm7",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3862,7 +3926,7 @@
                         "LocationCode": "Ufcs-P0-C30"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 13"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3914,6 +3978,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm6",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3927,7 +3992,7 @@
                         "LocationCode": "Ufcs-P0-C31"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 14"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -3979,6 +4044,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm3",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -3992,7 +4058,7 @@
                         "LocationCode": "Ufcs-P0-C32"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 15"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4044,6 +4110,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm15",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4057,7 +4124,7 @@
                         "LocationCode": "Ufcs-P0-C33"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 16"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4109,6 +4176,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm14",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4122,7 +4190,7 @@
                         "LocationCode": "Ufcs-P0-C34"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 17"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4174,6 +4242,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm11",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4187,7 +4256,7 @@
                         "LocationCode": "Ufcs-P0-C35"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 18"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4239,6 +4308,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm13",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4252,7 +4322,7 @@
                         "LocationCode": "Ufcs-P0-C36"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 19"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4304,6 +4374,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm12",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4317,7 +4388,7 @@
                         "LocationCode": "Ufcs-P0-C37"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 20"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4369,6 +4440,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm20",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4382,7 +4454,7 @@
                         "LocationCode": "Ufcs-P0-C38"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 21"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4434,6 +4506,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm21",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4447,7 +4520,7 @@
                         "LocationCode": "Ufcs-P0-C39"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 22"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4499,6 +4572,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm19",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4512,7 +4586,7 @@
                         "LocationCode": "Ufcs-P0-C40"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 23"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4564,6 +4638,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm22",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4577,7 +4652,7 @@
                         "LocationCode": "Ufcs-P0-C41"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 24"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4629,6 +4704,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm23",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4642,7 +4718,7 @@
                         "LocationCode": "Ufcs-P0-C42"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 25"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4694,6 +4770,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm27",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4707,7 +4784,7 @@
                         "LocationCode": "Ufcs-P0-C43"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 26"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4759,6 +4836,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm30",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4772,7 +4850,7 @@
                         "LocationCode": "Ufcs-P0-C44"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 27"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4824,6 +4902,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm31",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4837,7 +4916,7 @@
                         "LocationCode": "Ufcs-P0-C45"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 28"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4889,6 +4968,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm29",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4902,7 +4982,7 @@
                         "LocationCode": "Ufcs-P0-C46"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 29"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -4954,6 +5034,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm28",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -4967,7 +5048,7 @@
                         "LocationCode": "Ufcs-P0-C47"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 30"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
@@ -5019,6 +5100,7 @@
             {
                 "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/dimm26",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
+                "powerOffOnly": true,
                 "preAction": {
                     "collection": {
                         "systemCmd": {
@@ -5032,7 +5114,7 @@
                         "LocationCode": "Ufcs-P0-C48"
                     },
                     "xyz.openbmc_project.Inventory.Item": {
-                        "PrettyName": "Memory DIMM"
+                        "PrettyName": "Memory module 31"
                     },
                     "xyz.openbmc_project.State.Decorator.Availability": {
                         "Available": false
