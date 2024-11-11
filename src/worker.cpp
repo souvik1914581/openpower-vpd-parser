@@ -1026,11 +1026,10 @@ void Worker::processEnabledProperty(const std::string& i_inventoryObjPath,
         {
             // Implies value is not there in D-Bus. Populate it with default
             // value "true".
-            types::PropertyMap l_functionalProp;
-            l_functionalProp.emplace("Enabled", true);
-            vpdSpecificUtility::insertOrMerge(io_interfaces,
-                                              constants::operationalStatusInf,
-                                              move(l_functionalProp));
+            types::PropertyMap l_enabledProp;
+            l_enabledProp.emplace("Enabled", true);
+            vpdSpecificUtility::insertOrMerge(
+                io_interfaces, constants::enableInf, move(l_enabledProp));
         }
     }
 
