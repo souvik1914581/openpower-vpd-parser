@@ -189,6 +189,7 @@ void Manager::SetTimerToDetectVpdCollectionStatus()
                 m_worker->getSysCfgJsonObj();
             if (jsonUtility::isBackupAndRestoreRequired(l_sysCfgJsonObj))
             {
+                logging::logMessage("_SR FRU collection done");
                 BackupAndRestore l_backupAndRestoreObj(l_sysCfgJsonObj);
                 l_backupAndRestoreObj.backupAndRestore();
             }

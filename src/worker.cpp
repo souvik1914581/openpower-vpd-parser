@@ -181,6 +181,7 @@ bool Worker::isSystemVPDOnDBus() const
     {
         return false;
     }
+    logging::logMessage("_SR SVPD on Dbus");
     return true;
 }
 
@@ -1358,6 +1359,7 @@ void Worker::performBackupAndRestore(types::VPDMapVariant& io_srcVpdMap)
 {
     try
     {
+        logging::logMessage("_SR perform BnR");
         std::string l_backupAndRestoreCfgFilePath =
             m_parsedJson.value("backupRestoreConfigPath", "");
 

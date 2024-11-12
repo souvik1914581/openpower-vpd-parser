@@ -22,6 +22,7 @@ BackupAndRestore::BackupAndRestore(const nlohmann::json& i_sysCfgJsonObj) :
     {
         m_backupAndRestoreCfgJsonObj =
             jsonUtility::getParsedJson(l_backupAndRestoreCfgFilePath);
+        logging::logMessage("_SR BnR prevState " + std::to_string(int(m_backupAndRestoreStatus)));
         m_backupAndRestoreStatus = BackupAndRestoreStatus::Instantiated;
     }
     catch (const std::exception& ex)
@@ -40,6 +41,7 @@ std::tuple<types::VPDMapVariant, types::VPDMapVariant>
     auto l_emptyVariantPair = std::make_tuple(std::monostate{},
                                               std::monostate{});
 
+    std::cout << "_SR BnR stat: " << static_cast<int>(m_backupAndRestoreStatus) << std::endl;
     if (m_backupAndRestoreStatus >= BackupAndRestoreStatus::Invoked)
     {
         logging::logMessage("Backup and restore invoked already.");
@@ -156,7 +158,7 @@ void BackupAndRestore::backupAndRestoreIpzVpd(types::IPZVpdMap& io_srcVpdMap,
             "Invalid value found for tag backupMap, in backup and restore config JSON.");
         return;
     }
-
+    logging::logMessage("_SR BnR IPZ");
     const std::string l_srcFruPath =
         jsonUtility::getFruPathFromJson(m_sysCfgJsonObj, i_srcPath);
     const std::string l_dstFruPath =
