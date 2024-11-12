@@ -6,6 +6,9 @@ namespace vpd
 {
 namespace constants
 {
+static constexpr auto KEYWORD_SIZE = 2;
+static constexpr auto RECORD_SIZE = 4;
+
 static constexpr uint8_t IPZ_DATA_START = 11;
 static constexpr uint8_t IPZ_DATA_START_TAG = 0x84;
 static constexpr uint8_t IPZ_RECORD_END_TAG = 0x78;

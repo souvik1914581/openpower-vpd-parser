@@ -5,11 +5,13 @@ else
     CLI11_dep = dependency('CLI11')
 endif
 
+dependency_list = [CLI11_dep, sdbusplus]
+
 sources = ['src/vpd_tool_main.cpp']
 
 vpd_tool_exe = executable('vpd-tool',
                           sources,
                           include_directories : ['../include/'],
-                          dependencies: [CLI11_dep],
+                          dependencies: dependency_list,
                           install: true
                         )
