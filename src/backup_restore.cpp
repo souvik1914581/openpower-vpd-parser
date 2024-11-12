@@ -22,11 +22,9 @@ BackupAndRestore::BackupAndRestore(const nlohmann::json& i_sysCfgJsonObj) :
     {
         m_backupAndRestoreCfgJsonObj =
             jsonUtility::getParsedJson(l_backupAndRestoreCfgFilePath);
-        m_backupAndRestoreStatus = BackupAndRestoreStatus::Instantiated;
     }
     catch (const std::exception& ex)
     {
-        m_backupAndRestoreStatus = BackupAndRestoreStatus::InstantiationFailed;
         logging::logMessage(
             "Failed to intialize backup and restore object for file = " +
             l_backupAndRestoreCfgFilePath);
@@ -138,7 +136,6 @@ std::tuple<types::VPDMapVariant, types::VPDMapVariant>
     }
     catch (const std::exception& ex)
     {
-        m_backupAndRestoreStatus = BackupAndRestoreStatus::InvokeFailed;
         logging::logMessage("Back up and restore failed with exception: " +
                             std::string(ex.what()));
     }

@@ -1432,6 +1432,9 @@ void Worker::performBackupAndRestore(types::VPDMapVariant& io_srcVpdMap)
         nlohmann::json l_backupAndRestoreCfgJsonObj =
             jsonUtility::getParsedJson(l_backupAndRestoreCfgFilePath);
 
+        // check if either of "source" or "destination" has inventory path.
+        // this indicates that this sytem has System VPD on hardware
+        // and other copy on D-Bus (BMC cache).
         if (!l_backupAndRestoreCfgJsonObj.empty() &&
             ((l_backupAndRestoreCfgJsonObj.contains("source") &&
               l_backupAndRestoreCfgJsonObj["source"].contains(
