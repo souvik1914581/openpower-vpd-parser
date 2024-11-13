@@ -1,4 +1,5 @@
 #include "constants.hpp"
+#include "vpd_tool.hpp"
 
 #include <CLI/CLI.hpp>
 
@@ -67,18 +68,22 @@ int main(int argc, char** argv)
         return l_rc;
     }
 
-    if (*l_hardwareFlag && !std::filesystem::exists(l_vpdPath))
-    {
-        std::cerr << "Given EEPROM file path doesn't exist : " + l_vpdPath
-                  << std::endl;
-        return l_rc;
-    }
-
     (void)l_fileOption;
 
     if (*l_readFlag)
     {
-        // TODO: call read keyword implementation from here.
+        if (*l_hardwareFlag && !std::filesystem::exists(l_vpdPath))
+        {
+            std::cerr << "Given EEPROM file path doesn't exist : " + l_vpdPath
+                      << std::endl;
+            return l_rc;
+        }
+
+        bool l_isHardwareOperation = ((*l_hardwareFlag) ? true : false);
+        vpd::VpdTool l_vpdToolObj;
+
+        l_rc = l_vpdToolObj.readKeyword(l_vpdPath, l_recordName, l_keywordName,
+                                        l_isHardwareOperation, l_filePath);
     }
     else
     {
