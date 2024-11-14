@@ -125,5 +125,51 @@ inline std::string getPrintableValue(const types::BinaryVector& i_keywordValue)
 
     return l_oss.str();
 }
+
+/**
+ * @brief API to read keyword's value from hardware.
+ *
+ * This API reads keyword's value by requesting DBus service(vpd-manager) who
+ * hosts the 'ReadKeyword' method to read keyword's value.
+ *
+ * @param[in] i_eepromPath - EEPROM file path.
+ * @param[in] i_paramsToReadData - Property whose value has to be read.
+ *
+ * @return - Value read from Dbus
+ *
+ * @throw std::runtime_error
+ */
+inline types::DbusVariantType
+    readKeywordFromHardware(const std::string& i_eepromPath,
+                            const types::ReadVpdParams i_paramsToReadData)
+{
+    if (i_eepromPath.empty())
+    {
+        throw std::runtime_error("Empty EEPROM path");
+    }
+
+    try
+    {
+        types::DbusVariantType l_propertyValue;
+
+        auto l_bus = sdbusplus::bus::new_default();
+
+        auto l_method = l_bus.new_method_call(
+            std::string(constants::vpdManagerService).c_str(),
+            std::string(constants::vpdManagerObjectPath).c_str(),
+            std::string(constants::vpdManagerInfName).c_str(), "ReadKeyword");
+
+        l_method.append(i_eepromPath, i_paramsToReadData);
+        auto l_result = l_bus.call(l_method);
+
+        l_result.read(l_propertyValue);
+
+        return l_propertyValue;
+    }
+    catch (const sdbusplus::exception::SdBusError& l_error)
+    {
+        throw std::runtime_error(std::string(l_error.what()));
+    }
+}
 } // namespace utils
 } // namespace vpd
