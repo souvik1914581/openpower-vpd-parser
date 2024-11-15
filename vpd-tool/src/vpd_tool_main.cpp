@@ -26,7 +26,10 @@ int main(int argc, char** argv)
         "        From hardware to console: "
         "vpd-tool -r -H -O <DBus Object Path> -R <Record Name> -K <Keyword Name>\n"
         "        From hardware to file: "
-        "vpd-tool -r -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> --file <File Path>");
+        "vpd-tool -r -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> --file <File Path>"
+        "Dump Object:\n"
+        "        From DBus to console: "
+        "vpd-tool --dumpObject/-o --object/-O <DBus Object Path>");
 
     auto l_objectOption = l_app.add_option("--object, -O", l_vpdPath,
                                            "File path");
@@ -45,6 +48,9 @@ int main(int argc, char** argv)
 
     auto l_hardwareFlag = l_app.add_flag("--Hardware, -H",
                                          "CAUTION: Developer only option.");
+
+    auto l_dumpObjFlag = l_app.add_flag("--dumpObject, -o", "Dump Object")
+                             ->needs(l_objectOption);
 
     CLI11_PARSE(l_app, argc, argv);
 
@@ -88,6 +94,21 @@ int main(int argc, char** argv)
 
         l_rc = l_vpdToolObj.readKeyword(l_vpdPath, l_recordName, l_keywordName,
                                         l_isHardwareOperation, l_filePath);
+    }
+    else if (l_dumpObjFlag->count() > 0)
+    {
+        if (l_objectOption->count() > 0)
+        {
+            vpd::VpdTool l_vpdToolObj;
+
+            nlohmann::json l_resultInJson = nlohmann::json::array({});
+            l_rc = l_vpdToolObj.dumpObject(l_vpdPath, l_resultInJson);
+
+            if (0 == l_rc)
+            {
+                vpd::utils::printJson(l_resultInJson);
+            }
+        }
     }
     else
     {
