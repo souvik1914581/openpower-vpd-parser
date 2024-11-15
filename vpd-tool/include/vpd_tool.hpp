@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils.hpp"
+
 #include <string>
 
 namespace vpd
@@ -17,6 +19,50 @@ namespace vpd
  */
 class VpdTool
 {
+    /**
+     * @brief Get Present property in JSON.
+     *
+     * API to get the Present property of a FRU in JSON format.
+     *
+     * @param[in] i_fruPath - DBus object path
+     * @return On success, returns the Present property in JSON format,
+     * otherwise return empty JSON
+     *
+     * @throw Does not throw
+     */
+    nlohmann::json
+        getPresentPropertyJson(const std::string& i_fruPath) const noexcept;
+
+    /**
+     * @brief Get Pretty Name property in JSON.
+     *
+     * API to get the Pretty Name property of a FRU in JSON format.
+     *
+     * @param[in] i_fruPath - DBus object path.
+     * @return On success, returns the Pretty Name property in JSON format,
+     * otherwise return empty JSON.
+     *
+     * @throw Does not throw.
+     */
+    nlohmann::json
+        getPrettyNameJson(const std::string& i_fruPath) const noexcept;
+
+    /**
+     * @brief Get VINI properties.
+     *
+     * API to get properties [SN, PN, CC, FN, DR] under VINI interface in JSON
+     * format.
+     *
+     * @param[in] i_fruPath - DBus object path.
+     *
+     * @return On success, returns JSON output with the above properties under
+     * VINI interface, otherwise returns empty JSON.
+     *
+     * @throw Does not throw.
+     */
+    nlohmann::json
+        getVINIPropertiesJson(const std::string& i_fruPath) const noexcept;
+
   public:
     /**
      * @brief Read keyword value.
@@ -42,5 +88,21 @@ class VpdTool
                     const std::string& i_recordName,
                     const std::string& i_keywordName, const bool i_onHardware,
                     const std::string& i_fileToSave = {});
+
+    /**
+     * @brief Dump the given inventory object in JSON format.
+     *
+     * For a given Object Path of a FRU, this API dumps the following properties
+     * of the FRU in JSON format: Present property, Pretty Name, SN, PN, CC, FN,
+     * DR keywords under VINI record.
+     *
+     * @param[in] i_fruPath - DBus object path.
+     *
+     * @param[in] io_resultJson - JSON object which holds the result.
+     *
+     * @return On success returns 0, otherwise returns -1.
+     */
+    int dumpObject(const std::string& i_fruPath,
+                   nlohmann::json::object_t& io_resultJson) const noexcept;
 };
 } // namespace vpd

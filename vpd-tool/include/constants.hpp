@@ -17,5 +17,7 @@ constexpr auto inventoryManagerService =
     "xyz.openbmc_project.Inventory.Manager";
 constexpr auto baseInventoryPath = "/xyz/openbmc_project/inventory";
 constexpr auto ipzVpdInf = "com.ibm.ipzvpd.";
+constexpr auto inventoryItemInf = "xyz.openbmc_project.Inventory.Item";
+constexpr auto kwdVpdInf = "com.ibm.ipzvpd.VINI";
 } // namespace constants
 } // namespace vpd
