@@ -1,6 +1,6 @@
 #pragma once
 
-#include "types.hpp"
+#include "tool_types.hpp"
 
 #include <nlohmann/json.hpp>
 #include <sdbusplus/bus.hpp>
