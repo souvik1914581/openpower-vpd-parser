@@ -223,7 +223,7 @@ class Manager
     /**
      * @brief API to register callback for "AssetTag" property change.
      */
-    void registerAssetChangeCallback();
+    void registerAssetTagChangeCallback();
 
     /**
      * @brief Callback API to be triggered on "AssetTag" property change.
