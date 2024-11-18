@@ -35,7 +35,7 @@ Manager::Manager(
         m_worker->performInitialSetup();
 
         // set callback to detect any asset tag change
-        registerAssetChangeCallback();
+        registerAssetTagChangeCallback();
 
         // set async timer to detect if system VPD is published on D-Bus.
         SetTimerToDetectSVPDOnDbus();
