@@ -128,7 +128,7 @@ void Manager::registerAssetTagChangeCallback()
             sdbusplus::bus::match::rules::propertiesChanged(
                 constants::systemInvPath, constants::assetTagInf),
             [this](sdbusplus::message_t& l_msg) {
-        processAssetTagChangeCallback(l_msg)
+        processAssetTagChangeCallback(l_msg);
     });
 }
 
