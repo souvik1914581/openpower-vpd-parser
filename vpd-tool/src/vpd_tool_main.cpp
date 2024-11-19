@@ -52,6 +52,9 @@ int main(int argc, char** argv)
     auto l_dumpObjFlag = l_app.add_flag("--dumpObject, -o", "Dump Object")
                              ->needs(l_objectOption);
 
+    auto l_dumpInventoryFlag = l_app.add_flag("--dumpInventory, -i",
+                                              "Dump inventory");
+
     CLI11_PARSE(l_app, argc, argv);
 
     if (*l_objectOption && l_vpdPath.empty())
@@ -105,6 +108,10 @@ int main(int argc, char** argv)
                 vpd::utils::printJson(l_resultInJson);
             }
         }
+    }
+    else if (*l_dumpInventoryFlag)
+    {
+        l_rc = l_vpdToolObj.dumpInventory();
     }
     else
     {

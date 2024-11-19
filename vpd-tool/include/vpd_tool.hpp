@@ -104,5 +104,16 @@ class VpdTool
      */
     int dumpObject(const std::string& i_fruPath,
                    nlohmann::json::object_t& io_resultJson) const noexcept;
+
+    /**
+     * @brief Dump all the objects in Inventory in JSON format.
+     *
+     * This API dumps the following properties
+     * of all the FRUs in the Inventory in JSON format: Present property, Pretty
+     * Name, SN, PN, CC, FN, DR keywords under VINI record.
+     *
+     * @return On success returns 0, otherwise returns -1.
+     */
+    int dumpInventory() const noexcept;
 };
 } // namespace vpd
