@@ -1,6 +1,9 @@
+#include "config.h"
+
 #include "vpd_tool.hpp"
 
 #include "tool_constants.hpp"
+#include "tool_json_utility.hpp"
 #include "tool_types.hpp"
 #include "utils.hpp"
 
@@ -80,9 +83,7 @@ int VpdTool::dumpObject(const std::string& i_fruPath,
         nlohmann::json l_fruJson = nlohmann::json::object_t({});
         l_fruJson.emplace(i_fruPath, nlohmann::json::object_t({}));
 
-        io_resultJson += l_fruJson;
-
-        auto& l_fruObject = io_resultJson.at(0)[i_fruPath];
+        auto& l_fruObject = l_fruJson[i_fruPath];
 
         // if input FRU path contains base inventory path prefix, strip it.
         const std::string l_effFruPath =
@@ -135,6 +136,15 @@ int VpdTool::dumpObject(const std::string& i_fruPath,
             l_fruObject.insert(l_viniPropertiesInJson.cbegin(),
                                l_viniPropertiesInJson.cend());
             l_rc = 0;
+        }
+
+        if (io_resultJson.empty())
+        {
+            io_resultJson += l_fruJson;
+        }
+        else
+        {
+            io_resultJson.at(0).insert(l_fruJson.cbegin(), l_fruJson.cend());
         }
 
         // TODO: Insert "type" and "TYPE" once Inventory JSON parsing is added.
@@ -218,6 +228,51 @@ nlohmann::json VpdTool::getInventoryPropertyJson(
                   << ", failed with exception: " << l_ex.what() << std::endl;*/
     }
     return l_resultInJson;
+}
+
+int VpdTool::dumpInventory() const noexcept
+{
+    int l_rc{-1};
+    try
+    {
+        nlohmann::json l_resultInJson = nlohmann::json::array({});
+
+        const nlohmann::json l_parsedJson =
+            vpd::jsonUtility::getParsedJson(INVENTORY_JSON_SYM_LINK);
+
+        if (l_parsedJson.contains("frus"))
+        {
+            const nlohmann::json& l_listOfFrus =
+                l_parsedJson["frus"].get_ref<const nlohmann::json::object_t&>();
+
+            for (const auto& l_frus : l_listOfFrus.items())
+            {
+                for (const auto& l_aFru : l_frus.value())
+                {
+                    if (l_aFru.contains("inventoryPath"))
+                    {
+                        const std::string& l_inventoryPath =
+                            l_aFru.value("inventoryPath", "");
+
+                        l_rc = dumpObject(l_inventoryPath, l_resultInJson);
+                    }
+                }
+            }
+            vpd::utils::printJson(l_resultInJson);
+        }
+        else
+        {
+            // TODO: Enable logging when verbose is enabled.
+            // std::cerr << "Inventory JSON doesn't have frus" << std::endl;
+        }
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << "Dump Inventory failed with error :" << l_ex.what()
+                  << std::endl;
+    }
+    return l_rc;
 }
 
 } // namespace vpd
