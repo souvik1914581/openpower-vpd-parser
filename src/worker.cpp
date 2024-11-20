@@ -752,10 +752,23 @@ void Worker::populateInterfaces(const nlohmann::json& interfaceJson,
     }
 }
 
-bool Worker::isCPUIOGoodOnly(const std::string& pgKeyword)
+bool Worker::isCPUIOGoodOnly(const std::string& i_pgKeyword)
 {
-    // TODO implementation
-    (void)pgKeyword;
+    const unsigned char l_io[] = {
+        0xE7, 0xF9, 0xFF, 0xE7, 0xF9, 0xFF, 0xE7, 0xF9, 0xFF, 0xE7, 0xF9, 0xFF,
+        0xE7, 0xF9, 0xFF, 0xE7, 0xF9, 0xFF, 0xE7, 0xF9, 0xFF, 0xE7, 0xF9, 0xFF};
+
+    // EQ0 index (in PG keyword) starts at 97 (with offset starting from 0).
+    // Each EQ carries 3 bytes of data. Totally there are 8 EQs. If all EQs'
+    // value equals 0xE7F9FF, then the cpu has no good cores and its treated as
+    // IO.
+    if (memcmp(l_io, i_pgKeyword.data() + constants::INDEX_OF_EQ0_IN_PG,
+               constants::SIZE_OF_8EQ_IN_PG) == 0)
+    {
+        return true;
+    }
+
+    // The CPU is not an IO
     return false;
 }
 
@@ -876,7 +889,7 @@ void Worker::processExtraInterfaces(const nlohmann::json& singleFru,
                 "xyz.openbmc_project.Inventory.Item.Cpu"))
         {
             auto itrToRec = (*ipzVpdMap).find("CP00");
-            if (itrToRec != (*ipzVpdMap).end())
+            if (itrToRec == (*ipzVpdMap).end())
             {
                 return;
             }

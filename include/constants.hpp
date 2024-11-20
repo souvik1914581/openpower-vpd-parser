@@ -106,6 +106,12 @@ static constexpr auto SHIFT_BITS_5 = 5;
 
 static constexpr auto ASCII_OF_SPACE = 32;
 
+// Size of 8 EQs' in CP00's PG keyword
+static constexpr auto SIZE_OF_8EQ_IN_PG = 24;
+
+// Zero based index position of first EQ in CP00's PG keyword
+static constexpr auto INDEX_OF_EQ0_IN_PG = 97;
+
 constexpr auto systemInvPath = "/xyz/openbmc_project/inventory/system";
 constexpr auto pimPath = "/xyz/openbmc_project/inventory";
 constexpr auto pimIntf = "xyz.openbmc_project.Inventory.Manager";
