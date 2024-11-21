@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include <optional>
 #include <string>
 
 namespace vpd
@@ -88,5 +89,33 @@ class VpdTool
      * @return On success returns 0, otherwise returns -1.
      */
     int fixSystemVpd() noexcept;
+
+    /**
+     * @brief Write keyword's value.
+     *
+     * API to update VPD keyword's value to the given input path.
+     * If i_onHardware value in true, i_vpdPath is considered has hardware path
+     * otherwise it will be considered as DBus object path.
+     *
+     * For provided DBus object path both primary path or secondary path will
+     * get updated, also redundant EEPROM(if any) path with new keyword's value.
+     *
+     * In case of hardware path, only given hardware path gets updated with new
+     * keyword’s value, any backup or redundant EEPROM (if exists) paths won't
+     * get updated.
+     *
+     * @param[in] i_vpdPath - DBus object path or EEPROM path.
+     * @param[in] i_recordName - Record name.
+     * @param[in] i_keywordName - Keyword name.
+     * @param[in] i_keywordValue - Keyword value.
+     * @param[in] i_onHardware - True if i_vpdPath is EEPROM path, false
+     * otherwise.
+     *
+     * @return On success returns 0, otherwise returns -1.
+     */
+    int writeKeyword(std::string i_vpdPath, const std::string& i_recordName,
+                     const std::string& i_keywordName,
+                     const std::string& i_keywordValue,
+                     const bool i_onHardware) noexcept;
 };
 } // namespace vpd
