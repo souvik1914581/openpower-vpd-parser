@@ -41,11 +41,16 @@ using DbusVariantType = std::variant<
                            std::string, std::string>>
  >;
 
-//IpzType contains tuple of <Record, Keyword>
-using IpzType = std::tuple<std::string, std::string>;
 
-//ReadVpdParams either of IPZ or keyword format
-using ReadVpdParams = std::variant<IpzType, std::string>;
+using Record = std::string;
+using Keyword = std::string;
+
+using KwData = std::tuple<Keyword, BinaryVector>;
+using IpzData = std::tuple<Record, Keyword, BinaryVector>;
+using WriteVpdParams = std::variant<IpzData, KwData>;
+
+using IpzType = std::tuple<Record, Keyword>;
+using ReadVpdParams = std::variant<IpzType, Keyword>;
 
 } // namespace types
 } // namespace vpd
