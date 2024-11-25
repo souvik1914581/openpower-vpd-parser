@@ -3091,7 +3091,7 @@
                 }
             },
             {
-                "inventoryPath": "/cables/dp0_cable0",
+                "inventoryPath": "/xyz/openbmc_project/inventory/cables/dp0_cable0",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "noprime": true,
@@ -3103,7 +3103,7 @@
                 }
             },
             {
-                "inventoryPath": "/cables/dp0_cable1",
+                "inventoryPath": "/xyz/openbmc_project/inventory/cables/dp0_cable1",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "noprime": true,
@@ -3115,7 +3115,7 @@
                 }
             },
             {
-                "inventoryPath": "/cables/dp0_cable2",
+                "inventoryPath": "/xyz/openbmc_project/inventory/cables/dp0_cable2",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "noprime": true,
@@ -3127,7 +3127,7 @@
                 }
             },
             {
-                "inventoryPath": "/cables/dp0_cable3",
+                "inventoryPath": "/xyz/openbmc_project/inventory/cables/dp0_cable3",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "noprime": true,
@@ -3533,7 +3533,7 @@
                 }
             },
             {
-                "inventoryPath": "/cables/dp1_cable0",
+                "inventoryPath": "/xyz/openbmc_project/inventory/cables/dp1_cable0",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "noprime": true,
@@ -3545,7 +3545,7 @@
                 }
             },
             {
-                "inventoryPath": "/cables/dp1_cable1",
+                "inventoryPath": "/xyz/openbmc_project/inventory/cables/dp1_cable1",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "noprime": true,
@@ -3557,7 +3557,7 @@
                 }
             },
             {
-                "inventoryPath": "/cables/dp1_cable2",
+                "inventoryPath": "/xyz/openbmc_project/inventory/cables/dp1_cable2",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "noprime": true,
@@ -3569,7 +3569,7 @@
                 }
             },
             {
-                "inventoryPath": "/cables/dp1_cable3",
+                "inventoryPath": "/xyz/openbmc_project/inventory/cables/dp1_cable3",
                 "serviceName": "xyz.openbmc_project.Inventory.Manager",
                 "inherit": false,
                 "noprime": true,
