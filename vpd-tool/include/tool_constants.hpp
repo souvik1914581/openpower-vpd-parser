@@ -24,5 +24,8 @@ constexpr auto inventoryItemInf = "xyz.openbmc_project.Inventory.Item";
 constexpr auto kwdVpdInf = "com.ibm.ipzvpd.VINI";
 constexpr auto locationCodeInf = "com.ibm.ipzvpd.Location";
 constexpr auto assetInf = "xyz.openbmc_project.Inventory.Decorator.Asset";
+constexpr auto powerSupplyInterface =
+    "xyz.openbmc_project.Inventory.Item.PowerSupply";
+constexpr auto fanInterface = "xyz.openbmc_project.Inventory.Item.Fan";
 } // namespace constants
 } // namespace vpd
