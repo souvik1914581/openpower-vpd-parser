@@ -10,14 +10,11 @@ namespace vpd
 {
 
 // Backup and restore operation status.
-enum BackupAndRestoreStatus
+enum class BackupAndRestoreStatus : uint8_t
 {
-    NotStarted = 0,
-    Instantiated = 1,
-    InstantiationFailed = 2,
-    Invoked = 3,
-    InvokeFailed = 4,
-    Completed = 5
+    NotStarted,
+    Invoked,
+    Completed
 };
 
 /**
