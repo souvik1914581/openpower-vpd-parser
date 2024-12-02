@@ -372,7 +372,11 @@ inline bool processGpioPresenceTag(const nlohmann::json& i_parsedConfigJson,
             std::nullopt, std::nullopt, std::nullopt, std::nullopt);
 
         logging::logMessage(l_errMsg);
-        return false;
+
+        // Except when GPIO pin value is false, we go and try collecting the
+        // FRU VPD as we couldn't able to read GPIO pin value due to some
+        // error/exception. So returning true in error scenario.
+        return true;
     }
 }
 
