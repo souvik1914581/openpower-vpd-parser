@@ -42,7 +42,10 @@ int main(int argc, char** argv)
         "    From DBus to console: "
         "vpd-tool -o -O <DBus Object Path>\n"
         "Fix System VPD:\n"
-        "    vpd-tool --fixSystemVPD");
+        "    vpd-tool --fixSystemVPD\n"
+        "MfgClean:\n"
+        "        Flag to clean and reset specific keywords on system VPD to its default value.\n"
+        "        vpd-tool --mfgClean\n");
 
     auto l_objectOption = l_app.add_option("--object, -O", l_vpdPath,
                                            "File path");
@@ -87,6 +90,13 @@ int main(int argc, char** argv)
     auto l_fixSystemVpdFlag = l_app.add_flag(
         "--fixSystemVPD",
         "Use this option to interactively fix critical system VPD keywords");
+
+    auto l_mfgCleanFlag = l_app.add_flag(
+        "--mfgClean", "Manufacturing clean on system VPD keyword");
+
+    auto l_mfgCleanConfirmFlag = l_app.add_flag(
+        "--yes", "Using this flag with --mfgClean option, assumes "
+                 "yes to proceed without confirmation.");
 
     CLI11_PARSE(l_app, argc, argv);
 
@@ -186,6 +196,31 @@ int main(int argc, char** argv)
     {
         vpd::VpdTool l_vpdToolObj;
         l_rc = l_vpdToolObj.fixSystemVpd();
+    }
+    else if (!l_mfgCleanFlag->empty())
+    {
+        bool l_shouldCleanSystemVpd{true};
+        if (l_mfgCleanConfirmFlag->empty())
+        {
+            constexpr auto MAX_CONFIRMATION_STR_LENGTH{3};
+            std::string l_confirmation{};
+            std::cout
+                << "This option resets some of the system VPD keywords to their default values. Do you really wish to proceed further?[yes/no]:";
+            std::cin >> std::setw(MAX_CONFIRMATION_STR_LENGTH) >>
+                l_confirmation;
+
+            if (l_confirmation != "yes")
+            {
+                l_shouldCleanSystemVpd = false;
+                l_rc = vpd::constants::SUCCESS;
+            }
+        }
+
+        if (l_shouldCleanSystemVpd)
+        {
+            vpd::VpdTool l_vpdToolObj;
+            l_rc = l_vpdToolObj.cleanSystemVpd();
+        }
     }
     else
     {
