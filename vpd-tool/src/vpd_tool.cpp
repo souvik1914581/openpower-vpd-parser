@@ -9,6 +9,48 @@
 
 namespace vpd
 {
+
+// Map of system backplane records to list of keywords and its related data. {
+//  Record : { Keyword, Default value, Is MFG
+//  reset required, Backup Record, Backup Keyword }}
+const types::SystemKeywordsMap VpdTool::g_systemVpdKeywordMap{
+    {"VSYS",
+     {types::SystemKeywordInfo("BR", types::BinaryVector{2, 0x20}, true, "VSBK",
+                               "BR"),
+      types::SystemKeywordInfo("TM", types::BinaryVector{8, 0x20}, true, "VSBK",
+                               "TM"),
+      types::SystemKeywordInfo("SE", types::BinaryVector{7, 0x20}, true, "VSBK",
+                               "SE"),
+      types::SystemKeywordInfo("SU", types::BinaryVector{6, 0x20}, true, "VSBK",
+                               "SU"),
+      types::SystemKeywordInfo("RB", types::BinaryVector{4, 0x20}, true, "VSBK",
+                               "RB"),
+      types::SystemKeywordInfo("WN", types::BinaryVector{12, 0x20}, true,
+                               "VSBK", "WN"),
+      types::SystemKeywordInfo("RG", types::BinaryVector{4, 0x20}, true, "VSBK",
+                               "RG"),
+      types::SystemKeywordInfo("FV", types::BinaryVector{32, 0x20}, true,
+                               "VSBK", "FV")}},
+    {"VCEN",
+     {types::SystemKeywordInfo("FC", types::BinaryVector{8, 0x20}, false,
+                               "VSBK", "FC"),
+      types::SystemKeywordInfo("SE", types::BinaryVector{7, 0x20}, true, "VSBK",
+                               "ES")}},
+    {"LXR0",
+     {types::SystemKeywordInfo("LX", types::BinaryVector{8, 0x00}, false,
+                               "VSBK", "LX")}},
+    {"UTIL",
+     {types::SystemKeywordInfo("D0", types::BinaryVector{1, 0x00}, true, "VSBK",
+                               "D0"),
+      types::SystemKeywordInfo("D1", types::BinaryVector{1, 0x00}, true, "VSBK",
+                               "D1"),
+      types::SystemKeywordInfo("F0", types::BinaryVector{8, 0x00}, true, "VSBK",
+                               "F0"),
+      types::SystemKeywordInfo("F5", types::BinaryVector{16, 0x00}, true,
+                               "VSBK", "F5"),
+      types::SystemKeywordInfo("F6", types::BinaryVector{16, 0x00}, true,
+                               "VSBK", "F6")}}};
+
 int VpdTool::readKeyword(const std::string& i_vpdPath,
                          const std::string& i_recordName,
                          const std::string& i_keywordName,
@@ -161,4 +203,31 @@ int VpdTool::writeKeyword(std::string i_vpdPath,
     }
     return l_rc;
 }
+int VpdTool::cleanSystemVpd() const noexcept
+{
+    int l_rc{constants::FAILURE};
+    try
+    {
+        // TODO:
+        //     iterate through the keyword map get default value of
+        //     l_keywordName.
+        //     use readKeyword API to read hardware value from hardware.
+        //     if hardware value != default value,
+        //     use writeKeyword API to update default value on hardware,
+        //     backup and D - Bus.
+        (void)g_systemVpdKeywordMap;
+
+        l_rc = constants::SUCCESS;
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        // std::cerr << "Manufacturing clean failed for " << i_recordName << ":"
+        //           << i_keywordName << ". Error : " << l_ex.what() <<
+        //           std::endl;
+    }
+
+    return l_rc;
+}
+
 } // namespace vpd

@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <tuple>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -55,5 +56,15 @@ using IpzData = std::tuple<std::string, std::string, BinaryVector>;
 
 //WriteVpdParams either of IPZ or keyword format
 using WriteVpdParams = std::variant<IpzData, KwData>;
+using SystemKeywordInfo =
+    std::tuple<std::string, BinaryVector,
+               bool, std::string, std::string>;
+
+// Map of system backplane records to list of keywords and its related data. {
+//  Record : { Keyword, Default value, Is MFG
+//  reset required, Backup Record, Backup Keyword }}
+using SystemKeywordsMap =
+    std::unordered_map<std::string, std::vector<SystemKeywordInfo>>;
+
 } // namespace types
 } // namespace vpd
