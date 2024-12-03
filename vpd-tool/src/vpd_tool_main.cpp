@@ -1,4 +1,5 @@
 #include "tool_constants.hpp"
+#include "tool_utils.hpp"
 #include "vpd_tool.hpp"
 
 #include <CLI/CLI.hpp>
@@ -37,7 +38,11 @@ int main(int argc, char** argv)
         "        On hardware: "
         "vpd-tool -w -H -O <DBus Object Path> -R <Record Name> -K <Keyword Name> -V <Keyword Value>\n"
         "        On hardware, Take keyword value from file:\n"
-        "              vpd-tool -w -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> --file <File Path>");
+        "              vpd-tool -w -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> --file <File Path>\n"
+        "MfgClean:\n"
+        "        Flag to clean and reset specific keywords on system VPD to its default value.\n"
+        "        Needs: --record --keyword\n"
+        "        vpd-tool --mfgClean -R <Record Name> -K <Keyword Name>");
 
     auto l_objectOption = l_app.add_option("--object, -O", l_vpdPath,
                                            "File path");
@@ -66,6 +71,10 @@ int main(int argc, char** argv)
                            ->needs(l_objectOption)
                            ->needs(l_recordOption)
                            ->needs(l_keywordOption);
+
+    auto l_mfgCleanFlag = l_app.add_flag("--mfgClean", "Manufacturing clean")
+                              ->needs(l_recordOption)
+                              ->needs(l_keywordOption);
 
     // ToDo: Take offset value from user for hardware path.
 
@@ -164,6 +173,25 @@ int main(int argc, char** argv)
         l_vpdToolObj.writeKeyword(l_vpdPath, l_recordName, l_keywordName,
                                   l_keywordValue, l_isHardwareOperation,
                                   l_filePath);
+    }
+    else if (!l_mfgCleanFlag->empty())
+    {
+        constexpr auto MAX_CONFIRMATION_STR_LENGTH{3};
+        std::string l_confirmation{};
+        std::cout
+            << "This option resets some of the system VPD keywords to their default values. Do you really wish to proceed further?[yes/no]:";
+        std::cin >> std::setw(MAX_CONFIRMATION_STR_LENGTH) >> l_confirmation;
+
+        if (vpd::utils::equalStrings(l_confirmation, "yes", false) ||
+            vpd::utils::equalStrings(l_confirmation, "y", false))
+        {
+            vpd::VpdTool l_vpdToolObj;
+            l_rc = l_vpdToolObj.cleanSystemVpd(l_recordName, l_keywordName);
+        }
+        else
+        {
+            l_rc = 0;
+        }
     }
     else
     {

@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <tuple>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
@@ -52,5 +53,8 @@ using WriteVpdParams = std::variant<IpzData, KwData>;
 using IpzType = std::tuple<Record, Keyword>;
 using ReadVpdParams = std::variant<IpzType, Keyword>;
 
+using KeywordDefaultValue = BinaryVector;
+using MfgCleanKeywordMap = std::unordered_map<Keyword,KeywordDefaultValue>;
+using MfgCleanRecordMap = std::unordered_map<Record,MfgCleanKeywordMap>;
 } // namespace types
 } // namespace vpd

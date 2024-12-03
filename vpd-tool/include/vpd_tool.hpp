@@ -65,5 +65,22 @@ class VpdTool
                      const std::string& i_keywordName,
                      const std::string& i_keywordValue, const bool i_onHardware,
                      const std::string& i_filePath = {});
+
+    /**
+     * @brief Reset specific keywords on System VPD to default value.
+     *
+     * This API resets specific System VPD keywords to default value. The
+     * keyword values are reset on:
+     * 1. Primary EEPROM path.
+     * 2. Secondary EEPROM path.
+     * 3. D-Bus cache.
+     *
+     * @param[in] i_recordName - Record name.
+     * @param[in] i_keywordName - Keyword name.
+     *
+     * @return On success returns 0, otherwise returns -1.
+     */
+    int cleanSystemVpd(const std::string& i_recordName,
+                       const std::string& i_keywordName) const noexcept;
 };
 } // namespace vpd

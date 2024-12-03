@@ -271,5 +271,35 @@ inline types::BinaryVector convertToBinary(const std::string& i_value)
     }
     return l_binaryValue;
 }
+
+/** @brief An API to compare two strings
+ *
+ * This API compares two strings. The comparison can be case sensitive or
+ * insensitive.
+ * @param[in] i_str1 - String 1
+ * @param[in] i_str2 - String 2
+ * @param[in] i_caseSensitive - Flag which indicates comparison should be case
+ * sensitive or not.
+ *
+ * @return true if strings are equal, false otherwise.
+ */
+inline bool equalStrings(const std::string& i_str1, const std::string& i_str2,
+                         const bool i_caseSensitive = true)
+{
+    const auto compareChar = [](const char i_ch1, const char i_ch2) {
+        return std::tolower(i_ch1) == std::tolower(i_ch2);
+    };
+
+    if (i_caseSensitive)
+    {
+        return i_str1.compare(i_str2) == constants::STR_CMP_SUCCESS;
+    }
+    else
+    {
+        return std::equal(i_str1.begin(), i_str1.end(), i_str2.begin(),
+                          i_str2.end(), compareChar);
+    }
+}
+
 } // namespace utils
 } // namespace vpd

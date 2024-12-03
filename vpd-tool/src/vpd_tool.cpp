@@ -119,4 +119,47 @@ int VpdTool::writeKeyword(const std::string& i_vpdPath,
     }
     return l_rc;
 }
+
+int VpdTool::cleanSystemVpd(const std::string& i_recordName,
+                            const std::string& i_keywordName) const noexcept
+{
+    int l_rc{-1};
+
+    // Map of Keywords which can be reset by vpd-tool manufacturing clean
+    // option
+    // {Record1 : {{Keyword1, Default value1},{Keyword2, Default value2} }},
+    // {Record2 : {{Keyword1, Default value1},{Keyword2, Default value2} }}
+    static const types::MfgCleanRecordMap l_mfgCleanKeywordMap{
+        {"UTIL",
+         {{"D0", types::BinaryVector{1, 0x00}},
+          {"D1", types::BinaryVector{1, 0x00}},
+          {"F0", types::BinaryVector{8, 0x00}},
+          {"F5", types::BinaryVector{16, 0x00}},
+          {"F6", types::BinaryVector{16, 0x00}}}},
+        {"VSYS",
+         {{"BR", types::BinaryVector{2, 0x20}},
+          {"TM", types::BinaryVector{8, 0x20}},
+          {"RG", types::BinaryVector{4, 0x20}},
+          {"SE", types::BinaryVector{7, 0x20}},
+          {"SU", types::BinaryVector{6, 0x20}},
+          {"RB", types::BinaryVector{4, 0x20}},
+          {"WN", types::BinaryVector{12, 0x20}},
+          {"FV", types::BinaryVector{32, 0x20}}}},
+        {"VCEN", {{"SE", types::BinaryVector{7, 0x20}}}}};
+
+    /* TODO:
+        search l_recordName in map
+       search l_keywordName in map
+       get default value of l_keywordName
+       use readKeyword API to read hardware value from hardware
+       if hardware value != default value,
+        use writeKeyword API to update default value on hardware, backup and
+       D-Bus*/
+
+    (void)i_recordName;
+    (void)i_keywordName;
+
+    return l_rc;
+}
+
 } // namespace vpd

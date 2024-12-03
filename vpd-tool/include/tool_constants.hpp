@@ -24,5 +24,8 @@ constexpr auto inventoryItemInf = "xyz.openbmc_project.Inventory.Item";
 constexpr auto kwdVpdInf = "com.ibm.ipzvpd.VINI";
 constexpr auto locationCodeInf = "com.ibm.ipzvpd.Location";
 constexpr auto assetInf = "xyz.openbmc_project.Inventory.Decorator.Asset";
+
+// To be explicitly used for string comparision.
+static constexpr auto STR_CMP_SUCCESS = 0;
 } // namespace constants
 } // namespace vpd
