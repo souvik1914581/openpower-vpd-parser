@@ -38,7 +38,7 @@ class VpdTool
     int readKeyword(const std::string& i_vpdPath,
                     const std::string& i_recordName,
                     const std::string& i_keywordName, const bool i_onHardware,
-                    const std::string& i_fileToSave = {});
+                    const std::string& i_fileToSave = {}) const noexcept;
 
     /**
      * @brief Write keyword's value.
@@ -64,7 +64,7 @@ class VpdTool
                      const std::string& i_recordName,
                      const std::string& i_keywordName,
                      const std::string& i_keywordValue, const bool i_onHardware,
-                     const std::string& i_filePath = {});
+                     const std::string& i_filePath = {}) const noexcept;
 
     /**
      * @brief Reset specific keywords on System VPD to default value.
