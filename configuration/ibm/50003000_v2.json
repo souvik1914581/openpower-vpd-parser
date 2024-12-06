@@ -2871,6 +2871,11 @@
                         "systemCmd": {
                             "cmd": "echo 16-0052 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 16-0062 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -2879,10 +2884,25 @@
                         "systemCmd": {
                             "cmd": "echo 16-0062 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 16-0052 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card1",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card1",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card1",
                             "value": 0
@@ -2959,6 +2979,11 @@
                         "systemCmd": {
                             "cmd": "echo 17-0050 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 17-0060 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -2967,10 +2992,25 @@
                         "systemCmd": {
                             "cmd": "echo 17-0060 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 17-0050 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card2",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card2",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card2",
                             "value": 0
@@ -3049,6 +3089,11 @@
                         "systemCmd": {
                             "cmd": "echo 18-0051 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 18-0061 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -3057,10 +3102,25 @@
                         "systemCmd": {
                             "cmd": "echo 18-0061 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 18-0051 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card3",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card3",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card3",
                             "value": 0
@@ -3139,6 +3199,11 @@
                         "systemCmd": {
                             "cmd": "echo 19-0050 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 19-0060 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -3147,10 +3212,25 @@
                         "systemCmd": {
                             "cmd": "echo 19-0060 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 19-0050 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card4",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card4",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card4",
                             "value": 0
@@ -3229,6 +3309,11 @@
                         "systemCmd": {
                             "cmd": "echo 20-0051 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 20-0061 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -3237,10 +3322,25 @@
                         "systemCmd": {
                             "cmd": "echo 20-0061 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 20-0051 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card5",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card5",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card5",
                             "value": 0
@@ -3321,8 +3421,25 @@
                         }
                     }
                 },
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 21-0051 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card6",
+                            "value": 0
+                        }
+                    }
+                },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card6",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card6",
                             "value": 0
@@ -3366,6 +3483,11 @@
                         "systemCmd": {
                             "cmd": "echo 22-0053 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 22-0063 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -3374,10 +3496,25 @@
                         "systemCmd": {
                             "cmd": "echo 22-0063 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 22-0053 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card7",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card7",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card7",
                             "value": 0
@@ -3456,6 +3593,11 @@
                         "systemCmd": {
                             "cmd": "echo 23-0050 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 23-0060 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -3464,10 +3606,25 @@
                         "systemCmd": {
                             "cmd": "echo 23-0060 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 23-0050 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card8",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card8",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card8",
                             "value": 0
@@ -3548,8 +3705,25 @@
                         }
                     }
                 },
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 24-0052 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card9",
+                            "value": 0
+                        }
+                    }
+                },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card9",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card9",
                             "value": 0
@@ -3593,6 +3767,11 @@
                         "systemCmd": {
                             "cmd": "echo 25-0053 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 25-0063 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -3601,10 +3780,25 @@
                         "systemCmd": {
                             "cmd": "echo 25-0063 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 25-0053 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card10",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card10",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card10",
                             "value": 0
@@ -3683,6 +3877,11 @@
                         "systemCmd": {
                             "cmd": "echo 26-0051 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 26-0061 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -3691,10 +3890,25 @@
                         "systemCmd": {
                             "cmd": "echo 26-0061 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 26-0051 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "presence-cable-card11",
+                            "value": 0
+                        }
                     }
                 },
                 "PostFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "presence-cable-card11",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "presence-cable-card11",
                             "value": 0

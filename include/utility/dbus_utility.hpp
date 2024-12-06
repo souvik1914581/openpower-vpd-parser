@@ -104,6 +104,56 @@ inline types::PropertyMap getPropertyMap(const std::string& i_service,
 }
 
 /**
+ * @brief API to get object subtree from D-bus.
+ *
+ * The API returns the map of object, services and interfaces in the
+ * subtree that implement a certain interface. If no interfaces are provided
+ * then all the objects, services and interfaces under the subtree will
+ * be returned.
+ *
+ * Note: Depth can be 0 and interfaces can be null.
+ * It will be caller's responsibility to check for empty vector returned
+ * and generate appropriate error.
+ *
+ * @param[in] i_objectPath - Path to search for an interface.
+ * @param[in] i_depth - Maximum depth of the tree to search.
+ * @param[in] i_interfaces - List of interfaces to search.
+ *
+ * @return - A map of object and its related services and interfaces, if
+ *           success. If failed, empty map.
+ */
+
+inline types::MapperGetSubTree
+    getObjectSubTree(const std::string& i_objectPath, const int& i_depth,
+                     const std::vector<std::string>& i_interfaces)
+{
+    types::MapperGetSubTree l_subTreeMap;
+
+    if (i_objectPath.empty())
+    {
+        logging::logMessage("Object path is empty.");
+        return l_subTreeMap;
+    }
+
+    try
+    {
+        auto l_bus = sdbusplus::bus::new_default();
+        auto l_method = l_bus.new_method_call(
+            constants::objectMapperService, constants::objectMapperPath,
+            constants::objectMapperInf, "GetSubTree");
+        l_method.append(i_objectPath, i_depth, i_interfaces);
+        auto l_result = l_bus.call(l_method);
+        l_result.read(l_subTreeMap);
+    }
+    catch (const sdbusplus::exception::SdBusError& l_ex)
+    {
+        logging::logMessage(l_ex.what());
+    }
+
+    return l_subTreeMap;
+}
+
+/**
  * @brief An API to read property from Dbus.
  *
  * The caller of the API needs to validate the validatity and correctness of the

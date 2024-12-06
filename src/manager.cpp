@@ -480,8 +480,28 @@ void Manager::collectSingleFruVpd(
 void Manager::deleteSingleFruVpd(
     const sdbusplus::message::object_path& i_dbusObjPath)
 {
-    // Dummy code to supress unused variable warning. To be removed.
-    logging::logMessage(std::string(i_dbusObjPath));
+    try
+    {
+        if (std::string(i_dbusObjPath).empty())
+        {
+            throw std::runtime_error(
+                "Given DBus object path is empty. Aborting FRU VPD deletion.");
+        }
+
+        if (m_worker.get() == nullptr)
+        {
+            throw std::runtime_error(
+                "Worker object not found, can't perform FRU VPD deletion for: " +
+                std::string(i_dbusObjPath));
+        }
+
+        m_worker->deleteFruVpd(std::string(i_dbusObjPath));
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Log PEL
+        logging::logMessage(l_ex.what());
+    }
 }
 
 bool Manager::isValidUnexpandedLocationCode(

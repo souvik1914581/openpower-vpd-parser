@@ -103,6 +103,15 @@ class Worker
                       const std::string& vpdFilePath);
 
     /**
+     * @brief An API to delete FRU VPD over DBus.
+     *
+     * @param[in] i_dbusObjPath - Dbus object path of the FRU.
+     *
+     * @throw std::runtime_error if given input path is empty.
+     */
+    void deleteFruVpd(const std::string& i_dbusObjPath);
+
+    /**
      * @brief API to get status of VPD collection process.
      *
      * @return - True when done, false otherwise.

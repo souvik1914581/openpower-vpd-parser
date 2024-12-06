@@ -991,8 +991,25 @@
                         }
                     }
                 },
-                "PostFailAction": {
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 7-0051 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "RUSSEL_FW_I2C_ENABLE_N",
+                            "value": 1
+                        }
+                    }
+                },
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "RUSSEL_FW_I2C_ENABLE_N",
+                            "value": 1
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "RUSSEL_FW_I2C_ENABLE_N",
                             "value": 1
@@ -1736,6 +1753,11 @@
                         "systemCmd": {
                             "cmd": "echo 20-0050 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 20-0060 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -1744,10 +1766,25 @@
                         "systemCmd": {
                             "cmd": "echo 20-0060 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 20-0050 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT0_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
                     }
                 },
-                "PostFailAction": {
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT0_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT0_PRSNT_EN_RSVD",
                             "value": 0
@@ -1826,6 +1863,11 @@
                         "systemCmd": {
                             "cmd": "echo 23-0050 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 23-0060 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -1834,10 +1876,25 @@
                         "systemCmd": {
                             "cmd": "echo 23-0060 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 23-0050 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT3_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
                     }
                 },
-                "PostFailAction": {
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT3_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT3_PRSNT_EN_RSVD",
                             "value": 0
@@ -1916,6 +1973,11 @@
                         "systemCmd": {
                             "cmd": "echo 24-0051 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 24-0061 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -1924,12 +1986,27 @@
                         "systemCmd": {
                             "cmd": "echo 24-0061 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 24-0051 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT4_EXPANDER_PRSNT_N",
+                            "value": 0
+                        }
                     }
                 },
-                "PostFailAction": {
+                "postFailAction": {
                     "collection": {
                         "setGpio": {
-                            "pin": "SLOT4_PRSNT_EN_RSVD",
+                            "pin": "SLOT4_EXPANDER_PRSNT_N",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
+                        "setGpio": {
+                            "pin": "SLOT4_EXPANDER_PRSNT_N",
                             "value": 0
                         }
                     }
@@ -2006,6 +2083,11 @@
                         "systemCmd": {
                             "cmd": "echo 29-0050 > /sys/bus/i2c/drivers/at24/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 29-0060 > /sys/bus/i2c/drivers/leds-pca955x/unbind"
+                        }
                     }
                 },
                 "postAction": {
@@ -2014,10 +2096,25 @@
                         "systemCmd": {
                             "cmd": "echo 29-0060 > /sys/bus/i2c/drivers/leds-pca955x/bind"
                         }
+                    },
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 29-0050 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT10_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
                     }
                 },
-                "PostFailAction": {
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT10_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT10_PRSNT_EN_RSVD",
                             "value": 0
@@ -2166,8 +2263,25 @@
                         }
                     }
                 },
-                "PostFailAction": {
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 22-0052 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT2_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    }
+                },
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT2_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT2_PRSNT_EN_RSVD",
                             "value": 0
@@ -2213,8 +2327,25 @@
                         }
                     }
                 },
-                "PostFailAction": {
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 25-0053 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT6_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    }
+                },
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT6_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT6_PRSNT_EN_RSVD",
                             "value": 0
@@ -2253,8 +2384,25 @@
                         }
                     }
                 },
-                "PostFailAction": {
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 26-0052 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT7_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    }
+                },
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT7_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT7_PRSNT_EN_RSVD",
                             "value": 0
@@ -2300,8 +2448,25 @@
                         }
                     }
                 },
-                "PostFailAction": {
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 27-0050 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT9_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    }
+                },
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT9_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT9_PRSNT_EN_RSVD",
                             "value": 0
@@ -2347,8 +2512,25 @@
                         }
                     }
                 },
-                "PostFailAction": {
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 30-0051 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT11_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    }
+                },
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT11_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT11_PRSNT_EN_RSVD",
                             "value": 0
@@ -2463,8 +2645,25 @@
                         }
                     }
                 },
-                "PostFailAction": {
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 21-0051 /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT1_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    }
+                },
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT1_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT1_PRSNT_EN_RSVD",
                             "value": 0
@@ -2510,8 +2709,25 @@
                         }
                     }
                 },
-                "PostFailAction": {
+                "postAction": {
+                    "deletion": {
+                        "systemCmd": {
+                            "cmd": "echo 28-0051 > /sys/bus/i2c/drivers/at24/unbind"
+                        },
+                        "setGpio": {
+                            "pin": "SLOT8_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    }
+                },
+                "postFailAction": {
                     "collection": {
+                        "setGpio": {
+                            "pin": "SLOT8_PRSNT_EN_RSVD",
+                            "value": 0
+                        }
+                    },
+                    "deletion": {
                         "setGpio": {
                             "pin": "SLOT8_PRSNT_EN_RSVD",
                             "value": 0
