@@ -36,17 +36,17 @@ endif
 
 dependency_list = [gtest_dep, gmock_dep, sdbusplus, libgpiodcxx]
 
-configuration_inc = include_directories('..', '../include', '../vpdecc')
+configuration_inc = include_directories('..', '../vpd-manager/include', '../vpdecc')
 
 test_sources = [
-  '../src/logger.cpp',
-  '../src/ddimm_parser.cpp',
-  '../src/parser.cpp',
-  '../src/parser_factory.cpp',
-  '../src/isdimm_parser.cpp',
-  '../src/ipz_parser.cpp',
-  '../src/keyword_vpd_parser.cpp',
-  '../src/event_logger.cpp',
+  '../vpd-manager/src/logger.cpp',
+  '../vpd-manager/src/ddimm_parser.cpp',
+  '../vpd-manager/src/parser.cpp',
+  '../vpd-manager/src/parser_factory.cpp',
+  '../vpd-manager/src/isdimm_parser.cpp',
+  '../vpd-manager/src/ipz_parser.cpp',
+  '../vpd-manager/src/keyword_vpd_parser.cpp',
+  '../vpd-manager/src/event_logger.cpp',
   '../vpdecc/vpdecc.c'
 ]
 
