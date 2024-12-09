@@ -1502,6 +1502,9 @@ void Worker::collectFrusFromJson()
 
             if (!m_activeCollectionThreadCount)
             {
+                logging::logMessage(
+                    "Active threads = " +
+                    std::to_string(m_activeCollectionThreadCount));
                 m_isAllFruCollected = true;
             }
             else

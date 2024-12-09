@@ -224,7 +224,9 @@ void Manager::SetTimerToDetectSVPDOnDbus()
 
 void Manager::SetTimerToDetectVpdCollectionStatus()
 {
-    static constexpr auto MAX_RETRY = 5;
+    // Keeping max retry for 2 minutes. TODO: Make it cinfigurable based on
+    // system type.
+    static constexpr auto MAX_RETRY = 40;
 
     static boost::asio::steady_timer l_timer(*m_ioContext);
     static uint8_t l_timerRetry = 0;
