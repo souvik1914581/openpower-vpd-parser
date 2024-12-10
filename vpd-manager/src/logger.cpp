@@ -9,7 +9,7 @@ namespace logging
 void logMessage(std::string_view message, const std::source_location& location)
 {
     std::ostringstream log;
-    log << "FileName: " << location.file_name() << message;
+    log << "FileName: " << location.file_name() << " " << message;
 
     /* TODO: Check on this later.
     log << "FileName: " << location.file_name() << ","
