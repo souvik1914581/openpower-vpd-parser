@@ -1489,12 +1489,7 @@ void Worker::collectFrusFromJson()
             m_activeCollectionThreadCount--;
             m_mutex.unlock();
 
-            if (std::get<0>(l_threadInfo))
-            {
-                logging::logMessage("Processing passed for = " +
-                                    std::get<1>(l_threadInfo));
-            }
-            else
+            if (!std::get<0>(l_threadInfo))
             {
                 logging::logMessage("Processing failed for = " +
                                     std::get<1>(l_threadInfo));
