@@ -436,7 +436,7 @@ class Worker
      * @param[in] i_inventoryObjPath - Inventory path as read from config JSON.
      * @param[in] io_interfaces - Map to hold all the interfaces for the FRU.
      */
-    void processFunctionalPorperty(const std::string& i_inventoryObjPath,
+    void processFunctionalProperty(const std::string& i_inventoryObjPath,
                                    types::InterfaceMap& io_interfaces);
 
     /**
