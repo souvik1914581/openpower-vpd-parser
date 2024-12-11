@@ -19,8 +19,6 @@ int main(int, char**)
         auto io_con = std::make_shared<boost::asio::io_context>();
         auto connection =
             std::make_shared<sdbusplus::asio::connection>(*io_con);
-        connection->request_name(BUSNAME);
-
         auto server = sdbusplus::asio::object_server(connection);
 
         std::shared_ptr<sdbusplus::asio::dbus_interface> interface =
@@ -37,6 +35,9 @@ int main(int, char**)
         interface->initialize();
 
         vpd::logging::logMessage("Start VPD-Manager event loop");
+
+        // Grab the bus name
+        connection->request_name(BUSNAME);
 
         // Start event loop.
         io_con->run();
