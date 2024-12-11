@@ -774,8 +774,6 @@ bool Worker::isCPUIOGoodOnly(const std::string& i_pgKeyword)
 
 bool Worker::primeInventory(const std::string& i_vpdFilePath)
 {
-    logging::logMessage("primeInventory called for FRU " + i_vpdFilePath);
-
     if (i_vpdFilePath.empty())
     {
         logging::logMessage("Empty VPD file path given");
@@ -1512,16 +1510,7 @@ void Worker::collectFrusFromJson()
 
             if (!m_activeCollectionThreadCount)
             {
-                logging::logMessage(
-                    "Active threads = " +
-                    std::to_string(m_activeCollectionThreadCount));
                 m_isAllFruCollected = true;
-            }
-            else
-            {
-                logging::logMessage(
-                    "Active threads = " +
-                    std::to_string(m_activeCollectionThreadCount));
             }
         }}.detach();
     }

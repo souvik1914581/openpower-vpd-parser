@@ -267,16 +267,20 @@ void Manager::SetTimerToDetectVpdCollectionStatus()
         }
         else
         {
+            auto l_threadCount = m_worker->getActiveThreadCount();
             if (l_timerRetry == MAX_RETRY)
             {
                 l_timer.cancel();
-                logging::logMessage("Taking too long. Some logic needed here?");
+                logging::logMessage("Taking too long. Active thread = " +
+                                    std::to_string(l_threadCount));
             }
             else
             {
                 l_timerRetry++;
-                logging::logMessage(
-                    "Waiting... FRU VPD collection is in progress");
+                logging::logMessage("Waiting... active thread = " +
+                                    std::to_string(l_threadCount) + "After " +
+                                    std::to_string(l_timerRetry) + " re-tries");
+
                 SetTimerToDetectVpdCollectionStatus();
             }
         }

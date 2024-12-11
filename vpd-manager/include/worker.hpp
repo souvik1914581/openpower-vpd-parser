@@ -131,6 +131,19 @@ class Worker
         return m_parsedJson;
     }
 
+    /**
+     * @brief API to get active thread count.
+     *
+     * Each FRU is collected in a separate thread. This API gives the active
+     * thread collecting FRU's VPD at any given time.
+     *
+     * @return Count of active threads.
+     */
+    size_t getActiveThreadCount() const
+    {
+        return m_activeCollectionThreadCount;
+    }
+
   private:
     /**
      * @brief An API to parse and publish a FRU VPD over D-Bus.
