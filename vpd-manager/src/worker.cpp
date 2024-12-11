@@ -1407,6 +1407,13 @@ std::tuple<bool, std::string>
 {
     try
     {
+        m_semaphore.acquire();
+
+        // Thread launched.
+        m_mutex.lock();
+        m_activeCollectionThreadCount++;
+        m_mutex.unlock();
+
         const types::VPDMapVariant& parsedVpdMap = parseVpdFile(i_vpdFilePath);
 
         types::ObjectMap objectInterfaceMap;
@@ -1452,9 +1459,10 @@ std::tuple<bool, std::string>
             logging::logMessage("Priming of inventory failed for FRU " +
                                 i_vpdFilePath);
         }
-
+        m_semaphore.release();
         return std::make_tuple(false, i_vpdFilePath);
     }
+    m_semaphore.release();
     return std::make_tuple(true, i_vpdFilePath);
 }
 
@@ -1490,10 +1498,6 @@ void Worker::collectFrusFromJson()
         std::thread{[vpdFilePath, this]() {
             auto l_futureObject = std::async(&Worker::parseAndPublishVPD, this,
                                              vpdFilePath);
-            // Thread launched.
-            m_mutex.lock();
-            m_activeCollectionThreadCount++;
-            m_mutex.unlock();
 
             std::tuple<bool, std::string> l_threadInfo = l_futureObject.get();
 

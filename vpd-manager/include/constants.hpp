@@ -171,6 +171,9 @@ static constexpr auto CMD_BUFFER_LENGTH = 256;
 // To be explicitly used for string comparision.
 static constexpr auto STR_CMP_SUCCESS = 0;
 
+// Just a random value. Can be adjusted as required.
+static constexpr uint8_t MAX_THREADS = 30;
+
 constexpr auto bmcStateService = "xyz.openbmc_project.State.BMC";
 constexpr auto bmcZeroStateObject = "/xyz/openbmc_project/state/bmc0";
 constexpr auto bmcStateInterface = "xyz.openbmc_project.State.BMC";

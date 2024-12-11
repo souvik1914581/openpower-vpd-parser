@@ -1,11 +1,13 @@
 #pragma once
 
+#include "constants.hpp"
 #include "types.hpp"
 
 #include <nlohmann/json.hpp>
 
 #include <mutex>
 #include <optional>
+#include <semaphore>
 #include <tuple>
 
 namespace vpd
@@ -498,5 +500,9 @@ class Worker
 
     // Mutex to guard critical resource m_activeCollectionThreadCount.
     std::mutex m_mutex;
+
+    // Counting semaphore to limit the number of threads.
+    std::counting_semaphore<constants::MAX_THREADS> m_semaphore{
+        constants::MAX_THREADS};
 };
 } // namespace vpd
