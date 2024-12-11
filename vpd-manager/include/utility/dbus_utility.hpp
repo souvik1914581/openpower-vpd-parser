@@ -52,7 +52,8 @@ inline types::MapperGetObject getObjectMap(const std::string& objectPath,
     }
     catch (const sdbusplus::exception::SdBusError& e)
     {
-        logging::logMessage(e.what());
+        // logging::logMessage(e.what());
+        return getObjectMap;
     }
 
     return getObjectMap;
@@ -199,7 +200,7 @@ inline types::DbusVariantType readDbusProperty(const std::string& serviceName,
     }
     catch (const sdbusplus::exception::SdBusError& e)
     {
-        logging::logMessage(e.what());
+        return propertyValue;
     }
     return propertyValue;
 }
