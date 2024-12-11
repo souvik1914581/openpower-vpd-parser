@@ -277,7 +277,6 @@ inline bool processSystemCmdTag(const nlohmann::json& i_parsedConfigJson,
             i_parsedConfigJson["frus"][i_vpdFilePath].at(
                 0)[i_baseAction][i_flagToProcess]["systemCmd"]["cmd"];
 
-        logging::logMessage("Command = " + l_systemCommand);
         commonUtility::executeCmd(l_systemCommand);
         return true;
     }
