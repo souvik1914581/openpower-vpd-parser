@@ -93,12 +93,150 @@ int VpdTool::dumpObject(const std::string& i_fruPath) const noexcept
     return l_rc;
 }
 
-nlohmann::json VpdTool::getFruProperties(const std::string& i_fruPath) const
+nlohmann::json VpdTool::getFruProperties(const std::string& i_objectPath) const
 {
     nlohmann::json l_resultInJson = nlohmann::json::array({});
 
-    // TODO: Implement getFruProperties
-    (void)i_fruPath;
+    nlohmann::json l_fruJson = nlohmann::json::object_t({});
+    l_fruJson.emplace(i_objectPath, nlohmann::json::object_t({}));
+
+    auto& l_fruObject = l_fruJson[i_objectPath];
+
+    const auto l_presentPropertyInJson = getInventoryPropertyJson<bool>(
+        i_objectPath, constants::inventoryItemInf, "Present");
+    if (!l_presentPropertyInJson.empty())
+    {
+        l_fruObject.insert(l_presentPropertyInJson.cbegin(),
+                           l_presentPropertyInJson.cend());
+    }
+
+    const auto l_prettyNameInJson = getInventoryPropertyJson<std::string>(
+        i_objectPath, constants::inventoryItemInf, "PrettyName");
+    if (!l_prettyNameInJson.empty())
+    {
+        l_fruObject.insert(l_prettyNameInJson.cbegin(),
+                           l_prettyNameInJson.cend());
+    }
+
+    const auto l_locationCodeInJson = getInventoryPropertyJson<std::string>(
+        i_objectPath, constants::locationCodeInf, "LocationCode");
+    if (!l_locationCodeInJson.empty())
+    {
+        l_fruObject.insert(l_locationCodeInJson.cbegin(),
+                           l_locationCodeInJson.cend());
+    }
+
+    const auto l_subModelInJson = getInventoryPropertyJson<std::string>(
+        i_objectPath, constants::assetInf, "SubModel");
+
+    if (!l_subModelInJson.empty() &&
+        !l_subModelInJson.value("SubModel", "").empty())
+    {
+        l_fruObject.insert(l_subModelInJson.cbegin(), l_subModelInJson.cend());
+    }
+
+    const auto l_viniPropertiesInJson = getVINIPropertiesJson(i_objectPath);
+    if (!l_viniPropertiesInJson.empty())
+    {
+        l_fruObject.insert(l_viniPropertiesInJson.cbegin(),
+                           l_viniPropertiesInJson.cend());
+    }
+
+    const auto l_typePropertyJson = getFruTypeProperty(i_objectPath);
+    if (!l_typePropertyJson.empty())
+    {
+        l_fruObject.insert(l_typePropertyJson.cbegin(),
+                           l_typePropertyJson.cend());
+    }
+
+    if (l_resultInJson.empty())
+    {
+        l_resultInJson += l_fruJson;
+    }
+    else
+    {
+        l_resultInJson.at(0).insert(l_fruJson.cbegin(), l_fruJson.cend());
+    }
+    return l_resultInJson;
+}
+
+nlohmann::json VpdTool::getVINIPropertiesJson(
+    const std::string& i_objectPath) const noexcept
+{
+    nlohmann::json l_resultInJson = nlohmann::json::object({});
+
+    const std::array<std::string, 5> l_viniKeyWords{"SN", "PN", "CC", "FN",
+                                                    "DR"};
+
+    auto l_readKeyWord = [i_objectPath, &l_resultInJson,
+                          this](const std::string& i_keyWord) {
+        nlohmann::json l_keyWordJson =
+            getInventoryPropertyJson<vpd::types::BinaryVector>(
+                i_objectPath, constants::kwdVpdInf, i_keyWord);
+        l_resultInJson.insert(l_keyWordJson.cbegin(), l_keyWordJson.cend());
+    };
+
+    std::for_each(l_viniKeyWords.cbegin(), l_viniKeyWords.cend(),
+                  l_readKeyWord);
+    return l_resultInJson;
+}
+
+template <typename PropertyType>
+nlohmann::json VpdTool::getInventoryPropertyJson(
+    const std::string& i_objectPath, const std::string& i_interface,
+    const std::string& i_propertyName) const noexcept
+{
+    nlohmann::json l_resultInJson = nlohmann::json::object({});
+    try
+    {
+        types::DbusVariantType l_keyWordValue;
+
+        l_keyWordValue =
+            utils::readDbusProperty(constants::inventoryManagerService,
+                                    i_objectPath, i_interface, i_propertyName);
+
+        if (const auto l_value = std::get_if<PropertyType>(&l_keyWordValue))
+        {
+            if constexpr (std::is_same<PropertyType, std::string>::value)
+            {
+                l_resultInJson.emplace(i_propertyName, *l_value);
+            }
+            else if constexpr (std::is_same<PropertyType, bool>::value)
+            {
+                l_resultInJson.emplace(i_propertyName,
+                                       *l_value ? "true" : "false");
+            }
+            else if constexpr (std::is_same<PropertyType,
+                                            types::BinaryVector>::value)
+            {
+                const std::string& l_keywordStrValue =
+                    vpd::utils::getPrintableValue(*l_value);
+
+                l_resultInJson.emplace(i_propertyName, l_keywordStrValue);
+            }
+        }
+        else
+        {
+            // TODO: Enable logging when verbose is enabled.
+            // std::cout << "Invalid data type received." << std::endl;
+        }
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        /*std::cerr << "Read " << i_propertyName << " value for FRU path: " <<
+           i_objectPath
+                  << ", failed with exception: " << l_ex.what() << std::endl;*/
+    }
+    return l_resultInJson;
+}
+
+nlohmann::json
+    VpdTool::getFruTypeProperty(const std::string& i_objectPath) const noexcept
+{
+    nlohmann::json l_resultInJson = nlohmann::json::object({});
+    // TODO: Get "TYPE" from PIM
+    (void)i_objectPath;
     return l_resultInJson;
 }
 
