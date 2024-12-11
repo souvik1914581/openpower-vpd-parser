@@ -281,28 +281,15 @@ inline bool callPIM(types::ObjectMap&& objectMap)
             }
         }
 
-        std::array<const char*, 1> pimInterface = {constants::pimIntf};
-
-        auto mapperObjectMap = getObjectMap(constants::pimPath, pimInterface);
-
-        if (!mapperObjectMap.empty())
-        {
-            auto bus = sdbusplus::bus::new_default();
-            auto pimMsg = bus.new_method_call(
-                mapperObjectMap.begin()->first.c_str(), constants::pimPath,
-                constants::pimIntf, "Notify");
-            pimMsg.append(std::move(objectMap));
-            bus.call(pimMsg);
-        }
-        else
-        {
-            logging::logMessage("Mapper returned empty object map for PIM");
-            return false;
-        }
+        auto bus = sdbusplus::bus::new_default();
+        auto pimMsg = bus.new_method_call(constants::pimServiceName,
+                                          constants::pimPath,
+                                          constants::pimIntf, "Notify");
+        pimMsg.append(std::move(objectMap));
+        bus.call(pimMsg);
     }
     catch (const sdbusplus::exception::SdBusError& e)
     {
-        logging::logMessage(e.what());
         return false;
     }
     return true;
