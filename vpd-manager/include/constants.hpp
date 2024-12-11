@@ -172,7 +172,7 @@ static constexpr auto CMD_BUFFER_LENGTH = 256;
 static constexpr auto STR_CMP_SUCCESS = 0;
 
 // Just a random value. Can be adjusted as required.
-static constexpr uint8_t MAX_THREADS = 30;
+static constexpr uint8_t MAX_THREADS = 10;
 
 constexpr auto bmcStateService = "xyz.openbmc_project.State.BMC";
 constexpr auto bmcZeroStateObject = "/xyz/openbmc_project/state/bmc0";

@@ -800,8 +800,6 @@ bool Worker::primeInventory(const std::string& i_vpdFilePath)
 
         if (l_Fru.contains("ccin"))
         {
-            logging::logMessage(
-                "Skipping priming for FRUs that needs CCIN check.");
             continue;
         }
 
@@ -1419,8 +1417,9 @@ std::tuple<bool, std::string>
         types::ObjectMap objectInterfaceMap;
         populateDbus(parsedVpdMap, objectInterfaceMap, i_vpdFilePath);
 
-        logging::logMessage("Dbus sucessfully populated for FRU " +
-                            i_vpdFilePath);
+        // logging::logMessage("Dbus sucessfully populated for FRU " +
+        //                     i_vpdFilePath);
+
         // Notify PIM
         if (!dbusUtility::callPIM(move(objectInterfaceMap)))
         {
@@ -1492,8 +1491,6 @@ void Worker::collectFrusFromJson()
         {
             continue;
         }
-
-        logging::logMessage("Parsing triggered for FRU = " + vpdFilePath);
 
         std::thread{[vpdFilePath, this]() {
             auto l_futureObject = std::async(&Worker::parseAndPublishVPD, this,
