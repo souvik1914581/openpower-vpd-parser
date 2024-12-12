@@ -478,6 +478,14 @@ class Worker
     std::string
         createAssetTagString(const types::VPDMapVariant& i_parsedVpdMap);
 
+    /**
+     * @brief API to prime system blueprint.
+     *
+     * The API will traverse the system config JSON and will prime all the FRU
+     * paths which qualifies for priming.
+     */
+    void primeSystemBlueprint();
+
     // Parsed JSON file.
     nlohmann::json m_parsedJson{};
 
