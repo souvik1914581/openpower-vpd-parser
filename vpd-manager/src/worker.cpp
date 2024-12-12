@@ -95,6 +95,35 @@ void Worker::enableMuxChips()
 }
 
 #ifdef IBM_SYSTEM
+void Worker::primeSystemBlueprint()
+{
+    if (m_parsedJson.empty())
+    {
+        return;
+    }
+
+    const nlohmann::json& l_listOfFrus =
+        m_parsedJson["frus"].get_ref<const nlohmann::json::object_t&>();
+
+    for (const auto& l_itemFRUS : l_listOfFrus.items())
+    {
+        const std::string& l_vpdFilePath = l_itemFRUS.key();
+
+        if (l_vpdFilePath == SYSTEM_VPD_FILE_PATH)
+        {
+            continue;
+        }
+
+        // Prime the inventry for FRUs which
+        // are not present/processing had some error.
+        if (!primeInventory(l_vpdFilePath))
+        {
+            logging::logMessage("Priming of inventory failed for FRU " +
+                                l_vpdFilePath);
+        }
+    }
+}
+
 void Worker::performInitialSetup()
 {
     try
@@ -102,6 +131,7 @@ void Worker::performInitialSetup()
         if (!dbusUtility::isChassisPowerOn())
         {
             setDeviceTreeAndJson();
+            primeSystemBlueprint();
         }
 
         // Enable all mux which are used for connecting to the i2c on the
@@ -803,6 +833,11 @@ bool Worker::primeInventory(const std::string& i_vpdFilePath)
             continue;
         }
 
+        if (l_Fru.contains("noprime") && l_Fru.value("noprime", false))
+        {
+            continue;
+        }
+
         // Clear data under PIM if already exists.
         vpdSpecificUtility::resetDataUnderPIM(
             std::string(l_Fru["inventoryPath"]), l_interfaces);
@@ -1451,13 +1486,15 @@ std::tuple<bool, std::string>
             logging::logMessage(ex.what());
         }
 
-        // Prime the inventry for FRUs which
-        // are not present/processing had some error.
-        if (!primeInventory(i_vpdFilePath))
-        {
-            logging::logMessage("Priming of inventory failed for FRU " +
-                                i_vpdFilePath);
-        }
+        // TODO: Figure out a way to clear data in case of any failure at
+        // runtime.
+        //  Prime the inventry for FRUs which
+        //  are not present/processing had some error.
+        /* if (!primeInventory(i_vpdFilePath))
+         {
+             logging::logMessage("Priming of inventory failed for FRU " +
+                                 i_vpdFilePath);
+         }*/
         m_semaphore.release();
         return std::make_tuple(false, i_vpdFilePath);
     }
