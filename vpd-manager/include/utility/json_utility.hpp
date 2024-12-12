@@ -363,7 +363,7 @@ inline bool processGpioPresenceTag(const nlohmann::json& i_parsedConfigJson,
 
         // ToDo -- Update Internal Rc code.
         EventLogger::createAsyncPelWithInventoryCallout(
-            types::ErrorType::GpioError, types::SeverityType::Warning,
+            types::ErrorType::GpioError, types::SeverityType::Informational,
             {{getInventoryObjPathFromJson(i_parsedConfigJson, i_vpdFilePath),
               types::CalloutPriority::High}},
             std::source_location::current().file_name(),
@@ -451,7 +451,7 @@ inline bool procesSetGpioTag(const nlohmann::json& i_parsedConfigJson,
 
         // ToDo -- Update Internal RC code
         EventLogger::createAsyncPelWithInventoryCallout(
-            types::ErrorType::GpioError, types::SeverityType::Warning,
+            types::ErrorType::GpioError, types::SeverityType::Informational,
             {{getInventoryObjPathFromJson(i_parsedConfigJson, i_vpdFilePath),
               types::CalloutPriority::High}},
             std::source_location::current().file_name(),
