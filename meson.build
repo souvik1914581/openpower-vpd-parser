@@ -77,5 +77,11 @@ systemd_system_unit_dir = dependency('systemd').get_variable(
         'systemdsystemunitdir')
 install_data(services, install_dir: systemd_system_unit_dir)
 
+scripts = ['scripts/wait-vpd-status.sh']
+
+install_data(scripts,
+    install_mode: 'rwxr-xr-x',
+    install_dir: get_option('bindir'))
+
 package_datadir = join_paths('share', 'vpd')
 install_subdir('configuration/ibm/', install_mode: 'rwxr-xr-x', install_dir: package_datadir, strip_directory: true)

@@ -3,5 +3,13 @@
 
 [Unit]
 Description=Wait for VPD Collection Services to complete
-After=system-vpd.service
+Wants=vpd-manager.service
+After=vpd-manager.service
 After=set-spi-mux.service
+
+[Service]
+ExecStart=/usr/bin/wait-vpd-status.sh
+Type=oneshot
+
+[Install]
+WantedBy=multi-user.target
