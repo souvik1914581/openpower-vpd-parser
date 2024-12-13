@@ -486,6 +486,16 @@ class Worker
      */
     void primeSystemBlueprint();
 
+    /**
+     * @brief API to set symbolic link for system config JSON.
+     *
+     * Once correct device tree is set, symbolic link to the correct sytsem
+     * config JSON is set to be used in subsequent BMC boot.
+     *
+     * @param[in] i_systemJson - system config JSON.
+     */
+    void setJsonSymbolicLink(const std::string& i_systemJson);
+
     // Parsed JSON file.
     nlohmann::json m_parsedJson{};
 

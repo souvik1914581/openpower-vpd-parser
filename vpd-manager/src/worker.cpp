@@ -423,34 +423,49 @@ static void setEnvAndReboot(const std::string& key, const std::string& value)
     bus.call_noreply(method);
 }
 
-void Worker::setDeviceTreeAndJson()
+void Worker::setJsonSymbolicLink(const std::string& i_systemJson)
 {
-    std::error_code ec;
-    ec.clear();
-    if (!std::filesystem::exists(VPD_SYMLIMK_PATH, ec))
+    std::error_code l_ec;
+    l_ec.clear();
+    if (!std::filesystem::exists(VPD_SYMLIMK_PATH, l_ec))
     {
-        if (ec)
+        if (l_ec)
         {
             throw std::runtime_error(
                 "File system call to exist failed with error = " +
-                ec.message());
+                l_ec.message());
         }
 
         // implies it is a fresh boot/factory reset.
         // Create the directory for hosting the symlink
-        if (!std::filesystem::create_directories(VPD_SYMLIMK_PATH, ec))
+        if (!std::filesystem::create_directories(VPD_SYMLIMK_PATH, l_ec))
         {
-            if (ec)
+            if (l_ec)
             {
                 throw std::runtime_error(
                     "File system call to create directory failed with error = " +
-                    ec.message());
+                    l_ec.message());
             }
         }
-
-        m_isFactoryResetDone = true;
     }
 
+    // create a new symlink based on the system
+    std::filesystem::create_symlink(i_systemJson, INVENTORY_JSON_SYM_LINK,
+                                    l_ec);
+
+    if (l_ec)
+    {
+        throw std::runtime_error(
+            "create_symlink system call failed with error: " + l_ec.message());
+    }
+
+    // If the flow is at this point implies the symlink was not present there.
+    // Considering this as factory reset.
+    m_isFactoryResetDone = true;
+}
+
+void Worker::setDeviceTreeAndJson()
+{
     // JSON is madatory for processing of this API.
     if (m_parsedJson.empty())
     {
@@ -460,14 +475,16 @@ void Worker::setDeviceTreeAndJson()
     types::VPDMapVariant parsedVpdMap;
     fillVPDMap(SYSTEM_VPD_FILE_PATH, parsedVpdMap);
 
-    // ToDo: Need to check is INVENTORY_JSON_SYM_LINK pointing to correct system
-    // JSON or not, if the sym link exists already.
+    // Implies it is default JSON.
+    std::string systemJson{JSON_ABSOLUTE_PATH_PREFIX};
+
+    // ToDo: Need to check if INVENTORY_JSON_SYM_LINK pointing to correct system
+    // This is required to support movement from rainier to Blue Ridge on the
+    // fly.
 
     // Do we have the entry for device tree in parsed JSON?
     if (m_parsedJson.find("devTree") == m_parsedJson.end())
     {
-        // Implies it is default JSON.
-        std::string systemJson{JSON_ABSOLUTE_PATH_PREFIX};
         getSystemJson(systemJson, parsedVpdMap);
 
         if (!systemJson.compare(JSON_ABSOLUTE_PATH_PREFIX))
@@ -476,51 +493,10 @@ void Worker::setDeviceTreeAndJson()
             throw DataException("Error in getting system JSON.");
         }
 
-        // create a new symlink based on the system
-        std::filesystem::create_symlink(systemJson, INVENTORY_JSON_SYM_LINK,
-                                        ec);
-        if (ec)
-        {
-            if (ec.value() == EEXIST)
-            {
-                ec.clear();
-                logging::logMessage(
-                    "Sym link already exists, file [" +
-                    std::string(INVENTORY_JSON_SYM_LINK) +
-                    "] deleting and creating sym link again, target file: " +
-                    systemJson);
-
-                if (std::filesystem::remove(INVENTORY_JSON_SYM_LINK, ec))
-                {
-                    std::filesystem::create_symlink(
-                        systemJson, INVENTORY_JSON_SYM_LINK, ec);
-                    if (ec)
-                    {
-                        throw std::runtime_error(
-                            "create_symlink system call failed when deleting existing link and recreating it again, error: " +
-                            ec.message());
-                    }
-                }
-                else
-                {
-                    logging::logMessage(
-                        "remove system call failed for file[" +
-                        std::string(INVENTORY_JSON_SYM_LINK) + "], error[" +
-                        ec.message() + "], continuing with existing sym link.");
-                }
-            }
-            else
-            {
-                throw std::runtime_error(
-                    "create_symlink system call failed with error: " +
-                    ec.message());
-            }
-        }
-
         // re-parse the JSON once appropriate JSON has been selected.
         try
         {
-            m_parsedJson = jsonUtility::getParsedJson(INVENTORY_JSON_SYM_LINK);
+            m_parsedJson = jsonUtility::getParsedJson(systemJson);
         }
         catch (const nlohmann::json::parse_error& ex)
         {
@@ -548,6 +524,12 @@ void Worker::setDeviceTreeAndJson()
         fitConfigVal.find(devTreeFromJson) != std::string::npos)
     { // Skipping setting device tree as either devtree info is missing from
       // Json or it is rightly set.
+
+        // avoid setting symlink on every reboot.
+        if (!m_isSymlinkPresent)
+        {
+            setJsonSymbolicLink(systemJson);
+        }
 
         if (isSystemVPDOnDBus() &&
             jsonUtility::isBackupAndRestoreRequired(m_parsedJson))
