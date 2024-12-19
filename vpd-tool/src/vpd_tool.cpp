@@ -394,4 +394,10 @@ bool VpdTool::isFruPresent(const std::string& i_objectPath) const noexcept
     return l_returnValue;
 }
 
+int VpdTool::dumpInventory() const noexcept
+{
+    int l_rc{constants::FAILURE};
+    return l_rc;
+}
+
 } // namespace vpd

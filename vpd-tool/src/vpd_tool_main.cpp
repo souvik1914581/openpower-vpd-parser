@@ -211,7 +211,10 @@ void updateFooter(CLI::App& i_app)
         "    vpd-tool --fixSystemVPD\n"
         "MfgClean:\n"
         "        Flag to clean and reset specific keywords on system VPD to its default value.\n"
-        "        vpd-tool --mfgClean\n");
+        "        vpd-tool --mfgClean\n"
+        "Dump Inventory:\n"
+        "    From DBus to console: "
+        "vpd-tool -i");
 }
 
 int main(int argc, char** argv)
@@ -269,6 +272,8 @@ int main(int argc, char** argv)
     auto l_fixSystemVpdFlag = l_app.add_flag(
         "--fixSystemVPD",
         "Use this option to interactively fix critical system VPD keywords");
+    auto l_dumpInventoryFlag = l_app.add_flag("--dumpInventory, -i",
+                                              "Dump all the inventory objects");
 
     auto l_mfgCleanFlag = l_app.add_flag(
         "--mfgClean", "Manufacturing clean on system VPD keyword");
@@ -314,6 +319,12 @@ int main(int argc, char** argv)
     if (!l_mfgCleanFlag->empty())
     {
         return doMfgClean(l_mfgCleanConfirmFlag);
+    }
+
+    if (!l_dumpInventoryFlag->empty())
+    {
+        vpd::VpdTool l_vpdToolObj;
+        return l_vpdToolObj.dumpInventory();
     }
 
     std::cout << l_app.help() << std::endl;
