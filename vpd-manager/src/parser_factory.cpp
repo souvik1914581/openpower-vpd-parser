@@ -110,24 +110,18 @@ std::shared_ptr<ParserInterface>
     {
         case vpdType::IPZ_VPD:
         {
-            logging::logMessage("IPZ parser selected for VPD file path " +
-                                i_vpdFilePath);
             return std::make_shared<IpzVpdParser>(i_vpdVector, i_vpdFilePath,
                                                   i_vpdStartOffset);
         }
 
         case vpdType::KEYWORD_VPD:
         {
-            logging::logMessage("KWD vpd parser selected for VPD file path " +
-                                i_vpdFilePath);
             return std::make_shared<KeywordVpdParser>(i_vpdVector);
         }
 
         case vpdType::DDR5_DDIMM_MEMORY_VPD:
         case vpdType::DDR4_DDIMM_MEMORY_VPD:
         {
-            logging::logMessage("DDIMM parser selected for VPD file path: " +
-                                i_vpdFilePath);
             return std::make_shared<DdimmVpdParser>(i_vpdVector);
         }
 
