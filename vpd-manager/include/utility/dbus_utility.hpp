@@ -389,7 +389,6 @@ inline bool isChassisPowerOn()
     {
         if ("xyz.openbmc_project.State.Chassis.PowerState.On" == *curPowerState)
         {
-            logging::logMessage("Chassis is in on state");
             return true;
         }
         return false;

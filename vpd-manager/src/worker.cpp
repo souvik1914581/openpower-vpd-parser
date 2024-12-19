@@ -130,6 +130,7 @@ void Worker::performInitialSetup()
     {
         if (!dbusUtility::isChassisPowerOn())
         {
+            logging::logMessage("Chassis is in Off state.");
             setDeviceTreeAndJson();
             primeSystemBlueprint();
         }
