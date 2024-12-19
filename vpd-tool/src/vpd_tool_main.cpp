@@ -40,7 +40,10 @@ int main(int argc, char** argv)
         "              vpd-tool -w -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> --file <File Path>\n"
         "Dump Object:\n"
         "    From DBus to console: "
-        "vpd-tool -o -O <DBus Object Path>");
+        "vpd-tool -o -O <DBus Object Path>\n"
+        "Dump Inventory:\n"
+        "    From DBus to console: "
+        "vpd-tool -i");
 
     auto l_objectOption = l_app.add_option("--object, -O", l_vpdPath,
                                            "File path");
@@ -79,6 +82,9 @@ int main(int argc, char** argv)
             .add_flag("--dumpObject, -o",
                       "Dump specific properties of an inventory object")
             ->needs(l_objectOption);
+
+    auto l_dumpInventoryFlag = l_app.add_flag("--dumpInventory, -i",
+                                              "Dump all the inventory objects");
 
     // ToDo: Take offset value from user for hardware path.
 
@@ -191,6 +197,11 @@ int main(int argc, char** argv)
     {
         vpd::VpdTool l_vpdToolObj;
         l_rc = l_vpdToolObj.dumpObject(l_vpdPath);
+    }
+    else if (!l_dumpInventoryFlag->empty())
+    {
+        vpd::VpdTool l_vpdToolObj;
+        l_rc = l_vpdToolObj.dumpInventory();
     }
     else
     {
