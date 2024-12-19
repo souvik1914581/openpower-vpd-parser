@@ -149,5 +149,20 @@ class VpdTool
      * @return On success returns 0, otherwise returns -1.
      */
     int dumpObject(const std::string& i_fruPath) const noexcept;
+
+    /**
+     * @brief Dump all the inventory objects in JSON format to console.
+     *
+     * This API dumps specific properties of all the objects in Phosphor
+     * Inventory Manager DBus tree to console in JSON format to console. For
+     * each object, the following properties are dumped to console:
+     * - Present property, Pretty Name, Location Code, Sub Model
+     * - SN, PN, CC, FN, DR keywords under VINI record.
+     * If the "Present" property of a FRU is false, the FRU is not dumped to
+     * console.
+     *
+     * @return On success returns 0, otherwise returns -1.
+     */
+    int dumpInventory() const noexcept;
 };
 } // namespace vpd
