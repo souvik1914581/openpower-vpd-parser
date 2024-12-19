@@ -7,8 +7,8 @@
 #include "tool_utils.hpp"
 
 #include <iostream>
+#include <regex>
 #include <tuple>
-
 namespace vpd
 {
 int VpdTool::readKeyword(const std::string& i_vpdPath,
@@ -451,4 +451,64 @@ void VpdTool::printFixSystemVpdOption(
             break;
     }
 }
+int VpdTool::dumpInventory(bool i_dumpTable) const noexcept
+{
+    int l_rc{constants::FAILURE};
+
+    try
+    {
+        // get all object paths under PIM
+        const auto l_objectPaths = utils::GetSubTreePaths(
+            constants::baseInventoryPath, 0,
+            std::vector<std::string>{constants::inventoryItemInf});
+
+        if (!l_objectPaths.empty())
+        {
+            nlohmann::json l_resultInJson = nlohmann::json::array({});
+
+            std::for_each(l_objectPaths.begin(), l_objectPaths.end(),
+                          [&](const auto& l_objectPath) {
+                // if object path ends in "unit([0-9][0-9]?)", skip the object
+                // path.
+                if (std::regex_search(l_objectPath,
+                                      std::regex("unit([0-9][0-9]?)")))
+                {
+                    return;
+                }
+
+                const auto l_fruJson = getFruProperties(l_objectPath);
+                if (!l_fruJson.empty())
+                {
+                    if (l_resultInJson.empty())
+                    {
+                        l_resultInJson += l_fruJson;
+                    }
+                    else
+                    {
+                        l_resultInJson.at(0).insert(l_fruJson.cbegin(),
+                                                    l_fruJson.cend());
+                    }
+                }
+            });
+
+            if (i_dumpTable)
+            {
+                // TODO: Dump inventory in table format
+            }
+            else
+            {
+                // print JSON to console
+                utils::printJson(l_resultInJson);
+            }
+        }
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << "Dump inventory failed. Error: " << l_ex.what()
+                  << std::endl;
+    }
+    return l_rc;
+}
+
 } // namespace vpd
