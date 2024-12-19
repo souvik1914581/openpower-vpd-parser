@@ -569,7 +569,60 @@ int VpdTool::dumpInventory(bool i_dumpTable) const noexcept
 
             if (i_dumpTable)
             {
-                // TODO: Dump inventory in table format
+                // create Table object
+                utils::Table l_inventoryTable{};
+
+                // columns to be populated in the Inventory table
+                const std::vector<types::TableColumnNameSizePair>
+                    l_tableColumns = {
+                        {"FRU", 100},         {"CC", 6},  {"DR", 20},
+                        {"LocationCode", 32}, {"PN", 8},  {"PrettyName", 80},
+                        {"SubModel", 10},     {"SN", 15}, {"type", 60}};
+
+                types::TableInputData l_tableData;
+
+                // First prepare the Table Columns
+                for (const auto& l_column : l_tableColumns)
+                {
+                    if (constants::FAILURE ==
+                        l_inventoryTable.AddColumn(l_column.first,
+                                                   l_column.second))
+                    {
+                        // TODO: Enable logging when verbose is enabled.
+                        std::cerr << "Failed to add column " << l_column.first
+                                  << " in Inventory Table." << std::endl;
+                    }
+                }
+
+                // iterate through the json array
+                for (const auto& l_fruEntry : l_resultInJson[0].items())
+                {
+                    std::vector<std::string> l_row;
+                    for (const auto& l_column : l_tableColumns)
+                    {
+                        const auto& l_fruJson = l_fruEntry.value();
+
+                        if (l_column.first == "FRU")
+                        {
+                            l_row.push_back(l_fruEntry.key());
+                        }
+                        else
+                        {
+                            if (l_fruJson.contains(l_column.first))
+                            {
+                                l_row.push_back(l_fruJson[l_column.first]);
+                            }
+                            else
+                            {
+                                l_row.push_back("");
+                            }
+                        }
+                    }
+
+                    l_tableData.push_back(l_row);
+                }
+
+                l_rc = l_inventoryTable.Print(l_tableData);
             }
             else
             {

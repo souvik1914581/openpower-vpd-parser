@@ -210,11 +210,12 @@ class VpdTool
     int cleanSystemVpd() const noexcept;
 
     /**
-     * @brief Dump all the inventory objects in JSON or Table format to console.
+     * @brief Dump all the inventory objects in JSON or table format to console.
      *
-     * This API dumps specific properties of all the objects in Phosphor
-     * Inventory Manager DBus tree to console in JSON or Table format to
-     * console. For each object, the following properties are dumped to console:
+     * This API dumps specific properties of all the inventory objects to
+     * console in JSON or table format to console. The inventory object paths
+     * are extracted from PIM. For each object, the following properties are
+     * dumped to console:
      * - Present property, Pretty Name, Location Code, Sub Model
      * - SN, PN, CC, FN, DR keywords under VINI record.
      * If the "Present" property of a FRU is false, the FRU is not dumped to
@@ -223,7 +224,7 @@ class VpdTool
      * console.
      *
      * @param[in] i_dumpTable - Flag which specifies if the inventory should be
-     * dumped in Table format or not.
+     * dumped in table format or not.
      *
      * @return On success returns 0, otherwise returns -1.
      */
