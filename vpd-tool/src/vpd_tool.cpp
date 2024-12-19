@@ -397,6 +397,48 @@ bool VpdTool::isFruPresent(const std::string& i_objectPath) const noexcept
 int VpdTool::dumpInventory() const noexcept
 {
     int l_rc{constants::FAILURE};
+
+    try
+    {
+        // get all object paths under PIM
+        const auto l_objectPaths = utils::GetSubTreePaths(
+            constants::baseInventoryPath, 0,
+            std::vector<std::string>{constants::inventoryItemInf});
+
+        if (!l_objectPaths.empty())
+        {
+            nlohmann::json l_resultInJson = nlohmann::json::array({});
+
+            std::for_each(l_objectPaths.begin(), l_objectPaths.end(),
+                          [&](const auto& l_objectPath) {
+                const auto l_fruJson = getFruProperties(l_objectPath);
+                if (!l_fruJson.empty())
+                {
+                    if (l_resultInJson.empty())
+                    {
+                        l_resultInJson += l_fruJson;
+                    }
+                    else
+                    {
+                        l_resultInJson.at(0).insert(l_fruJson.cbegin(),
+                                                    l_fruJson.cend());
+                    }
+                }
+            });
+
+            // TODO: Dump Inventory in Tabular format
+
+            utils::printJson(l_resultInJson);
+
+            l_rc = constants::SUCCESS;
+        }
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << "Dump inventory failed. Error: " << l_ex.what()
+                  << std::endl;
+    }
     return l_rc;
 }
 
