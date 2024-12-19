@@ -234,16 +234,44 @@ void IbmBiosHandler::saveFcoToVpd(int64_t i_fcoInBios)
         return;
     }
 
-    // convert to VPD value type
-    types::BinaryVector l_biosValInVpdFormat = {
-        0, 0, 0, static_cast<uint8_t>(i_fcoInBios)};
+    // Read required keyword from Dbus.
+    auto l_kwdValueVariant = dbusUtility::readDbusProperty(
+        constants::pimServiceName, constants::systemVpdInvPath,
+        constants::vsysInf, constants::kwdRG);
 
-    if (-1 == m_manager->updateKeyword(SYSTEM_VPD_FILE_PATH,
-                                       types::IpzData("VSYS", constants::kwdRG,
-                                                      l_biosValInVpdFormat)))
+    if (auto l_fcoInVpd = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
-        logging::logMessage("Failed to update " +
-                            std::string(constants::kwdRG) + " keyword to VPD.");
+        // default length of the keyword is 4 bytes.
+        if (l_fcoInVpd->size() != constants::VALUE_4)
+        {
+            logging::logMessage(
+                "Invalid value read for FCO from D-Bus. Skipping.");
+            return;
+        }
+
+        // convert to VPD value type
+        types::BinaryVector l_biosValInVpdFormat = {
+            0, 0, 0, static_cast<uint8_t>(i_fcoInBios)};
+
+        // Update only when the data are different.
+        if (std::memcmp(l_biosValInVpdFormat.data(), l_fcoInVpd->data(),
+                        constants::VALUE_4) != constants::SUCCESS)
+        {
+            if (constants::FAILURE ==
+                m_manager->updateKeyword(SYSTEM_VPD_FILE_PATH,
+                                         types::IpzData("VSYS",
+                                                        constants::kwdRG,
+                                                        l_biosValInVpdFormat)))
+            {
+                logging::logMessage("Failed to update " +
+                                    std::string(constants::kwdRG) +
+                                    " keyword to VPD.");
+            }
+        }
+    }
+    else
+    {
+        logging::logMessage("Invalid type read for FCO from DBus.");
     }
 }
 
@@ -287,16 +315,40 @@ void IbmBiosHandler::saveAmmToVpd(const std::string& i_memoryMirrorMode)
         return;
     }
 
-    types::BinaryVector l_valToUpdateInVpd{
-        (i_memoryMirrorMode == "Enabled" ? constants::AMM_ENABLED_IN_VPD
-                                         : constants::AMM_DISABLED_IN_VPD)};
+    // Read existing value.
+    auto l_kwdValueVariant = dbusUtility::readDbusProperty(
+        constants::pimServiceName, constants::systemVpdInvPath,
+        constants::utilInf, constants::kwdAMM);
 
-    if (-1 == m_manager->updateKeyword(SYSTEM_VPD_FILE_PATH,
-                                       types::IpzData("UTIL", constants::kwdAMM,
-                                                      l_valToUpdateInVpd)))
+    if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
-        logging::logMessage("Failed to update " +
-                            std::string(constants::kwdAMM) + " keyword to VPD");
+        auto l_ammValInVpd = *l_pVal;
+
+        types::BinaryVector l_valToUpdateInVpd{
+            (i_memoryMirrorMode == "Enabled" ? constants::AMM_ENABLED_IN_VPD
+                                             : constants::AMM_DISABLED_IN_VPD)};
+
+        // Check if value is already updated on VPD.
+        if (l_ammValInVpd.at(0) == l_valToUpdateInVpd.at(0))
+        {
+            return;
+        }
+
+        if (constants::FAILURE ==
+            m_manager->updateKeyword(
+                SYSTEM_VPD_FILE_PATH,
+                types::IpzData("UTIL", constants::kwdAMM, l_valToUpdateInVpd)))
+        {
+            logging::logMessage("Failed to update " +
+                                std::string(constants::kwdAMM) +
+                                " keyword to VPD");
+        }
+    }
+    else
+    {
+        // TODO: Add PEL
+        logging::logMessage(
+            "Invalid type read for memory mirror mode value from DBus. Skip writing to VPD");
     }
 }
 
@@ -386,8 +438,23 @@ void IbmBiosHandler::saveCreateDefaultLparToVpd(
 
     if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
+        commonUtility::toLower(
+            const_cast<std::string&>(i_createDefaultLparVal));
+
+        // Check for second bit. Bit set for enabled else disabled.
+        if (((((*l_pVal).at(0) & 0x02) == 0x02) &&
+             (i_createDefaultLparVal.compare("enabled") ==
+              constants::STR_CMP_SUCCESS)) ||
+            ((((*l_pVal).at(0) & 0x02) == 0x00) &&
+             (i_createDefaultLparVal.compare("disabled") ==
+              constants::STR_CMP_SUCCESS)))
+        {
+            // Values are same, Don;t update.
+            return;
+        }
+
         types::BinaryVector l_valToUpdateInVpd;
-        if (i_createDefaultLparVal.compare("Enabled") ==
+        if (i_createDefaultLparVal.compare("enabled") ==
             constants::STR_CMP_SUCCESS)
         {
             // 2nd Bit is used to store the value.
@@ -489,6 +556,18 @@ void IbmBiosHandler::saveClearNvramToVpd(const std::string& i_clearNvramVal)
     {
         commonUtility::toLower(const_cast<std::string&>(i_clearNvramVal));
 
+        // Check for third bit. Bit set for enabled else disabled.
+        if (((((*l_pVal).at(0) & 0x04) == 0x04) &&
+             (i_clearNvramVal.compare("enabled") ==
+              constants::STR_CMP_SUCCESS)) ||
+            ((((*l_pVal).at(0) & 0x04) == 0x00) &&
+             (i_clearNvramVal.compare("disabled") ==
+              constants::STR_CMP_SUCCESS)))
+        {
+            // Don't update, values are same.
+            return;
+        }
+
         types::BinaryVector l_valToUpdateInVpd;
         if (i_clearNvramVal.compare("enabled") == constants::STR_CMP_SUCCESS)
         {
@@ -589,6 +668,18 @@ void IbmBiosHandler::saveKeepAndClearToVpd(const std::string& i_KeepAndClearVal)
     if (auto l_pVal = std::get_if<types::BinaryVector>(&l_kwdValueVariant))
     {
         commonUtility::toLower(const_cast<std::string&>(i_KeepAndClearVal));
+
+        // Check for first bit. Bit set for enabled else disabled.
+        if (((((*l_pVal).at(0) & 0x01) == 0x01) &&
+             (i_KeepAndClearVal.compare("enabled") ==
+              constants::STR_CMP_SUCCESS)) ||
+            ((((*l_pVal).at(0) & 0x01) == 0x00) &&
+             (i_KeepAndClearVal.compare("disabled") ==
+              constants::STR_CMP_SUCCESS)))
+        {
+            // Don't update, values are same.
+            return;
+        }
 
         types::BinaryVector l_valToUpdateInVpd;
         if (i_KeepAndClearVal.compare("enabled") == constants::STR_CMP_SUCCESS)
