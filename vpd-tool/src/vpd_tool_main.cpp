@@ -213,8 +213,10 @@ void updateFooter(CLI::App& i_app)
         "        Flag to clean and reset specific keywords on system VPD to its default value.\n"
         "        vpd-tool --mfgClean\n"
         "Dump Inventory:\n"
-        "    From DBus to console: "
-        "vpd-tool -i");
+        "   From DBus to console in JSON format: "
+        "vpd-tool -i\n"
+        "   From DBus to console in Table format: "
+        "vpd-tool -i -t\n");
 }
 
 int main(int argc, char** argv)
@@ -282,6 +284,9 @@ int main(int argc, char** argv)
         "--yes", "Using this flag with --mfgClean option, assumes "
                  "yes to proceed without confirmation.");
 
+    auto l_dumpInventoryTableFlag =
+        l_app.add_flag("--table, -t", "Dump inventory in table format");
+
     CLI11_PARSE(l_app, argc, argv);
 
     if (checkOptionValuePair(l_objectOption, l_vpdPath, l_recordOption,
@@ -324,7 +329,7 @@ int main(int argc, char** argv)
     if (!l_dumpInventoryFlag->empty())
     {
         vpd::VpdTool l_vpdToolObj;
-        return l_vpdToolObj.dumpInventory();
+        return l_vpdToolObj.dumpInventory(!l_dumpInventoryTableFlag->empty());
     }
 
     std::cout << l_app.help() << std::endl;

@@ -500,5 +500,191 @@ inline std::vector<std::string> GetSubTreePaths(
     return l_objectPaths;
 }
 
+/**
+ * @brief A class to print data in tabular format
+ *
+ * This class implements methods to print data in a two dimensional tabular
+ * format. All entries in the table must be in string format.
+ *
+ */
+class Table
+{
+    // A column is a pair of Column Header string and its width
+    using ColumnNameSizePair = std::pair<std::string, std::size_t>;
+    class Column : public ColumnNameSizePair
+    {
+      public:
+        /**
+         * @brief API to get the name of the Column
+         *
+         * @return Name of the Column.
+         */
+        const std::string& Name() const
+        {
+            return this->first;
+        }
+
+        /**
+         * @brief API to get the width of the Column
+         *
+         * @return Width of the Column.
+         */
+        std::size_t Width() const
+        {
+            return this->second;
+        }
+    };
+
+    // Current width of the table
+    std::size_t m_currentWidth;
+
+    // Character to be used as fill character between entries
+    char m_fillCharacter;
+
+    // Separator character to be used between columns
+    char m_separator;
+
+    // Array of columns
+    std::vector<Column> m_columns;
+
+    /**
+     * @brief API to Print Header
+     *
+     * Header line prints the names of the Column headers separated by the
+     * specified separator character and spaced accordingly.
+     *
+     * @throw std::out_of_range, std::length_error, std::bad_alloc
+     */
+    void PrintHeader() const
+    {
+        for (const auto& l_column : m_columns)
+        {
+            PrintEntry(l_column.Name(), l_column.Width());
+        }
+        std::cout << m_separator << std::endl;
+    }
+
+    /**
+     * @brief API to Print Horizontal Line
+     *
+     * A horizontal line is a sequence of '*'s.
+     *
+     * @throw std::out_of_range, std::length_error, std::bad_alloc
+     */
+    void PrintHorizontalLine() const
+    {
+        std::cout << std::string(m_currentWidth, '*') << std::endl;
+    }
+
+    /**
+     * @brief API to print an entry in the table
+     *
+     * An entry is a separator character followed by the text to print.
+     * The text is centre-aligned.
+     *
+     * @param[in] i_text - text to print
+     * @param[in] i_columnWidth - width of the column
+     *
+     * @throw std::out_of_range, std::length_error, std::bad_alloc
+     */
+    void PrintEntry(const std::string& i_text, std::size_t i_columnWidth) const
+    {
+        const std::size_t l_textLength{i_text.length()};
+
+        constexpr std::size_t l_minFillChars{3};
+        const std::size_t l_numFillChars =
+            ((l_textLength >= i_columnWidth ? l_minFillChars
+                                            : i_columnWidth - l_textLength)) -
+            1; // -1 for the separator character
+
+        const unsigned l_oddFill = l_numFillChars % 2;
+
+        std::cout << m_separator
+                  << std::string((l_numFillChars / 2) + l_oddFill,
+                                 m_fillCharacter)
+                  << i_text << std::string(l_numFillChars / 2, m_fillCharacter);
+    }
+
+  public:
+    /**
+     * @brief Table Constructor
+     *
+     * Parameterized constructor for a Table object
+     *
+     */
+    constexpr explicit Table(const char i_fillCharacter = ' ',
+                             const char i_separator = '|') noexcept :
+        m_currentWidth{0}, m_fillCharacter{i_fillCharacter},
+        m_separator{i_separator}
+    {}
+
+    // deleted methods
+    Table(const Table&) = delete;
+    Table operator=(const Table&) = delete;
+    Table(const Table&&) = delete;
+    Table operator=(const Table&&) = delete;
+
+    ~Table() = default;
+
+    /**
+     * @brief API to add column to Table
+     *
+     * @param[in] i_name - Name of the column.
+     *
+     * @param[in] i_width - Width to allocate for the column.
+     *
+     * @return On success returns 0, otherwise returns -1.
+     */
+    int AddColumn(const std::string& i_name, std::size_t i_width)
+    {
+        if (i_width < i_name.length())
+            return constants::FAILURE;
+        m_columns.emplace_back(ColumnNameSizePair(i_name, i_width));
+        m_currentWidth += i_width;
+        return constants::SUCCESS;
+    }
+
+    /**
+     * @brief API to print the Table to console.
+     *
+     * This API prints the table data to console.
+     *
+     * @param[in] i_tableData - The data to be printed.
+     *
+     * @return On success returns 0, otherwise returns -1.
+     *
+     * @throw std::out_of_range, std::length_error, std::bad_alloc
+     */
+    int Print(const std::vector<std::vector<std::string>>& i_tableData) const
+    {
+        PrintHorizontalLine();
+        PrintHeader();
+        PrintHorizontalLine();
+
+        // print the table data
+        for (const auto& l_row : i_tableData)
+        {
+            unsigned l_columnNumber{0};
+
+            // number of columns in input data is greater than the number of
+            // columns specified in Table
+            if (l_row.size() > m_columns.size())
+            {
+                return constants::FAILURE;
+            }
+
+            for (const auto& l_entry : l_row)
+            {
+                PrintEntry(l_entry, m_columns[l_columnNumber].Width());
+
+                ++l_columnNumber;
+            }
+            std::cout << m_separator << std::endl;
+        }
+        PrintHorizontalLine();
+        return constants::SUCCESS;
+    }
+};
+
 } // namespace utils
 } // namespace vpd

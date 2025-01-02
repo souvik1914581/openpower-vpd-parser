@@ -7,8 +7,8 @@
 #include "tool_utils.hpp"
 
 #include <iostream>
+#include <regex>
 #include <tuple>
-
 namespace vpd
 {
 int VpdTool::readKeyword(const std::string& i_vpdPath,
@@ -394,7 +394,7 @@ bool VpdTool::isFruPresent(const std::string& i_objectPath) const noexcept
     return l_returnValue;
 }
 
-int VpdTool::dumpInventory() const noexcept
+int VpdTool::dumpInventory(bool i_dumpTable) const noexcept
 {
     int l_rc{constants::FAILURE};
 
@@ -411,6 +411,14 @@ int VpdTool::dumpInventory() const noexcept
 
             std::for_each(l_objectPaths.begin(), l_objectPaths.end(),
                           [&](const auto& l_objectPath) {
+                // if object path ends in "unit([0-9][0-9]?)", skip the object
+                // path.
+                if (std::regex_search(l_objectPath,
+                                      std::regex("unit([0-9][0-9]?)")))
+                {
+                    return;
+                }
+
                 const auto l_fruJson = getFruProperties(l_objectPath);
                 if (!l_fruJson.empty())
                 {
@@ -426,11 +434,68 @@ int VpdTool::dumpInventory() const noexcept
                 }
             });
 
-            // TODO: Dump Inventory in Tabular format
+            if (i_dumpTable)
+            {
+                // create Table object
+                utils::Table l_inventoryTable{};
 
-            utils::printJson(l_resultInJson);
+                // columns to be populated in the Inventory table
+                const std::vector<std::pair<std::string, unsigned>>
+                    l_tableColumns = {
+                        {"FRU", 100},         {"CC", 6},  {"DR", 20},
+                        {"LocationCode", 32}, {"PN", 8},  {"PrettyName", 80},
+                        {"SubModel", 10},     {"SN", 15}, {"type", 60}};
 
-            l_rc = constants::SUCCESS;
+                std::vector<std::vector<std::string>> l_tableData;
+
+                // First prepare the Table Columns
+                for (const auto& l_column : l_tableColumns)
+                {
+                    if (constants::FAILURE ==
+                        l_inventoryTable.AddColumn(l_column.first,
+                                                   l_column.second))
+                    {
+                        // TODO: Enable logging when verbose is enabled.
+                        std::cerr << "Failed to add column " << l_column.first
+                                  << " in Inventory Table." << std::endl;
+                    }
+                }
+
+                // iterate through the json array
+                for (const auto& l_fruEntry : l_resultInJson[0].items())
+                {
+                    std::vector<std::string> l_row;
+                    for (const auto& l_column : l_tableColumns)
+                    {
+                        const auto& l_fruJson = l_fruEntry.value();
+
+                        if (l_column.first == "FRU")
+                        {
+                            l_row.push_back(l_fruEntry.key());
+                        }
+                        else
+                        {
+                            if (l_fruJson.contains(l_column.first))
+                            {
+                                l_row.push_back(l_fruJson[l_column.first]);
+                            }
+                            else
+                            {
+                                l_row.push_back("");
+                            }
+                        }
+                    }
+
+                    l_tableData.push_back(l_row);
+                }
+
+                l_rc = l_inventoryTable.Print(l_tableData);
+            }
+            else
+            {
+                // print JSON to console
+                utils::printJson(l_resultInJson);
+            }
         }
     }
     catch (const std::exception& l_ex)
