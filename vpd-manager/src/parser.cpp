@@ -250,10 +250,12 @@ int Parser::updateVpdKeywordOnRedundantPath(
     }
     catch (const std::exception& l_exception)
     {
-        logging::logMessage(
+        EventLogger::createSyncPel(
+            types::ErrorType::InvalidVpdMessage,
+            types::SeverityType::Informational, __FILE__, __FUNCTION__, 0,
             "Error while updating keyword's value on redundant path " +
-            i_fruPath + ", error: " + std::string(l_exception.what()));
-        // TODO : Log PEL
+                i_fruPath + ", error: " + std::string(l_exception.what()),
+            std::nullopt, std::nullopt, std::nullopt, std::nullopt);
         return -1;
     }
 }
