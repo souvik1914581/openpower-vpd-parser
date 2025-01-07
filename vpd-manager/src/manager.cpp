@@ -70,6 +70,14 @@ Manager::Manager(
         });
 
         iFace->register_method(
+            "WriteKeywordOnHardware",
+            [this](const types::Path i_fruPath,
+                   const types::WriteVpdParams i_paramsToWriteData) -> int {
+            return this->updateKeywordOnHardware(i_fruPath,
+                                                 i_paramsToWriteData);
+        });
+
+        iFace->register_method(
             "ReadKeyword",
             [this](const types::Path i_fruPath,
                    const types::ReadVpdParams i_paramsToReadData)
@@ -349,6 +357,41 @@ int Manager::updateKeyword(const types::Path i_vpdPath,
         logging::logMessage("Update keyword failed for file[" + i_vpdPath +
                             "], reason: " + std::string(l_exception.what()));
         return -1;
+    }
+}
+
+int Manager::updateKeywordOnHardware(
+    const types::Path i_fruPath,
+    const types::WriteVpdParams i_paramsToWriteData) noexcept
+{
+    try
+    {
+        if (i_fruPath.empty())
+        {
+            throw std::runtime_error("Given FRU path is empty");
+        }
+
+        nlohmann::json l_sysCfgJsonObj{};
+
+        if (m_worker.get() != nullptr)
+        {
+            l_sysCfgJsonObj = m_worker->getSysCfgJsonObj();
+        }
+
+        std::shared_ptr<Parser> l_parserObj =
+            std::make_shared<Parser>(i_fruPath, l_sysCfgJsonObj);
+        return l_parserObj->updateVpdKeywordOnHardware(i_paramsToWriteData);
+    }
+    catch (const std::exception& l_exception)
+    {
+        EventLogger::createAsyncPel(
+            types::ErrorType::InvalidEeprom, types::SeverityType::Informational,
+            __FILE__, __FUNCTION__, 0,
+            "Update keyword on hardware failed for file[" + i_fruPath +
+                "], reason: " + std::string(l_exception.what()),
+            std::nullopt, std::nullopt, std::nullopt, std::nullopt);
+
+        return constants::FAILURE;
     }
 }
 
