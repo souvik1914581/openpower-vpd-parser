@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "vpd_tool.hpp"
 
 #include "tool_constants.hpp"
@@ -215,16 +217,51 @@ int VpdTool::cleanSystemVpd() const noexcept
         //     if hardware value != default value,
         //     use writeKeyword API to update default value on hardware,
         //     backup and D - Bus.
-        (void)g_systemVpdKeywordMap;
+        for (const auto& l_entry : g_systemVpdKeywordMap)
+        {
+            const auto& l_recordName = l_entry.first;
+            const auto& l_keyWordMap = l_entry.second;
+            for (const auto& l_keywordTuple : l_keyWordMap)
+            {
+                // check if MFG reset is required for this keyword
+                if (!std::get<2>(l_keywordTuple))
+                {
+                    continue;
+                }
+
+                const auto& l_keywordName = std::get<0>(l_keywordTuple);
+                const auto& l_keywordValueDefault = std::get<1>(l_keywordTuple);
+
+                // read keyword value on hardware
+                const types::DbusVariantType l_keywordValue =
+                    utils::readKeywordFromHardware(
+                        SYSTEM_VPD_FILE_PATH,
+                        std::make_tuple(l_recordName, l_keywordName));
+
+                if (const auto l_keywordValueHW =
+                        std::get_if<types::BinaryVector>(&l_keywordValue);
+                    l_keywordValueHW && !l_keywordValueHW->empty())
+                {
+                    if (*l_keywordValueHW != l_keywordValueDefault)
+                    {
+                        // do writeKeyword and update with default value.
+                        l_rc = utils::writeKeyword(
+                            SYSTEM_VPD_FILE_PATH,
+                            std::make_tuple(l_recordName, l_keywordName,
+                                            l_keywordValueDefault));
+                    }
+                }
+            }
+        }
 
         l_rc = constants::SUCCESS;
     }
     catch (const std::exception& l_ex)
     {
         // TODO: Enable logging when verbose is enabled.
-        // std::cerr << "Manufacturing clean failed for " << i_recordName << ":"
-        //           << i_keywordName << ". Error : " << l_ex.what() <<
-        //           std::endl;
+        // std::cerr << "Manufacturing clean failed. Error : " << l_ex.what()
+        //           << std::endl;
+        l_rc = constants::FAILURE;
     }
 
     return l_rc;
