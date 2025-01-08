@@ -114,4 +114,11 @@ nlohmann::json VpdTool::getFruProperties(const std::string& i_fruPath) const
     return l_resultInJson;
 }
 
+int VpdTool::fixSystemVpd() noexcept
+{
+    int l_rc = constants::FAILURE;
+    // ToDo: Implementation needs to be added
+    return l_rc;
+}
+
 } // namespace vpd

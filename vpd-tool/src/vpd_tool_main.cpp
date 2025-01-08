@@ -40,7 +40,9 @@ int main(int argc, char** argv)
         "              vpd-tool -w -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> --file <File Path>\n"
         "Dump Object:\n"
         "    From DBus to console: "
-        "vpd-tool -o -O <DBus Object Path>");
+        "vpd-tool -o -O <DBus Object Path>\n"
+        "Fix System VPD:\n"
+        "    vpd-tool --fixSystemVPD");
 
     auto l_objectOption = l_app.add_option("--object, -O", l_vpdPath,
                                            "File path");
@@ -79,6 +81,10 @@ int main(int argc, char** argv)
             .add_flag("--dumpObject, -o",
                       "Dump specific properties of an inventory object")
             ->needs(l_objectOption);
+
+    auto l_fixSystemVpdFlag = l_app.add_flag(
+        "--fixSystemVPD",
+        "Use this option to interactively fix critical system VPD keywords");
 
     // ToDo: Take offset value from user for hardware path.
 
@@ -191,6 +197,11 @@ int main(int argc, char** argv)
     {
         vpd::VpdTool l_vpdToolObj;
         l_rc = l_vpdToolObj.dumpObject(l_vpdPath);
+    }
+    else if (!l_fixSystemVpdFlag->empty())
+    {
+        vpd::VpdTool l_vpdToolObj;
+        l_rc = l_vpdToolObj.fixSystemVpd();
     }
     else
     {
