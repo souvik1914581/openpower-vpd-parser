@@ -80,6 +80,7 @@ class Worker
      * Note: Config JSON file path should be passed to worker class constructor
      * to make use of this API.
      *
+     * @throw std::runtime_error
      */
     void collectFrusFromJson();
 

@@ -1508,22 +1508,31 @@ void Worker::collectFrusFromJson()
             continue;
         }
 
-        std::thread{[vpdFilePath, this]() {
-            auto l_futureObject = std::async(&Worker::parseAndPublishVPD, this,
-                                             vpdFilePath);
+        try
+        {
+            std::thread{[vpdFilePath, this]() {
+                const auto& l_parseResult = parseAndPublishVPD(vpdFilePath);
 
-            std::tuple<bool, std::string> l_threadInfo = l_futureObject.get();
+                m_mutex.lock();
+                m_activeCollectionThreadCount--;
+                m_mutex.unlock();
 
-            // thread returned.
-            m_mutex.lock();
-            m_activeCollectionThreadCount--;
-            m_mutex.unlock();
-
-            if (!m_activeCollectionThreadCount)
-            {
-                m_isAllFruCollected = true;
-            }
-        }}.detach();
+                if (!m_activeCollectionThreadCount)
+                {
+                    m_isAllFruCollected = true;
+                }
+            }}.detach();
+        }
+        catch (const std::exception& l_ex)
+        {
+            // TODO: Should we re-try launching thread for this FRU?
+            EventLogger::createSyncPel(
+                types::ErrorType::InvalidVpdMessage, types::SeverityType::Alert,
+                __FILE__, __FUNCTION__, 0,
+                std::string("Failed to start collection thread for FRU :[" +
+                            vpdFilePath + "]. Error: " + l_ex.what()),
+                std::nullopt, std::nullopt, std::nullopt, std::nullopt);
+        }
     }
 }
 
