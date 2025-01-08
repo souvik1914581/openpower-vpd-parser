@@ -1513,12 +1513,8 @@ void Worker::collectFrusFromJson()
         }
 
         std::thread{[vpdFilePath, this]() {
-            auto l_futureObject = std::async(&Worker::parseAndPublishVPD, this,
-                                             vpdFilePath);
+            const auto& l_parseResult = parseAndPublishVPD(vpdFilePath);
 
-            std::tuple<bool, std::string> l_threadInfo = l_futureObject.get();
-
-            // thread returned.
             m_mutex.lock();
             m_activeCollectionThreadCount--;
             m_mutex.unlock();
