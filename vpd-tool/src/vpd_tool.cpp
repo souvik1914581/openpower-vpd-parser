@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "vpd_tool.hpp"
 
 #include "tool_constants.hpp"
@@ -160,5 +162,33 @@ int VpdTool::writeKeyword(std::string i_vpdPath,
                   << " is failed. Exception: " << l_ex.what() << std::endl;
     }
     return l_rc;
+}
+
+nlohmann::json VpdTool::getBackupRestoreCfgJsonObj() const noexcept
+{
+    nlohmann::json l_parsedBackupRestoreJson{};
+    try
+    {
+        nlohmann::json l_parsedSystemJson =
+            utils::getParsedJson(INVENTORY_JSON_SYM_LINK);
+
+        // check for mandatory fields at this point itself.
+        if (!l_parsedSystemJson.contains("backupRestoreConfigPath"))
+        {
+            throw std::runtime_error(
+                "backupRestoreConfigPath tag is missing from system config JSON : " +
+                std::string(INVENTORY_JSON_SYM_LINK));
+        }
+
+        l_parsedBackupRestoreJson =
+            utils::getParsedJson(l_parsedSystemJson["backupRestoreConfigPath"]);
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << l_ex.what() << std::endl;
+    }
+
+    return l_parsedBackupRestoreJson;
 }
 } // namespace vpd
