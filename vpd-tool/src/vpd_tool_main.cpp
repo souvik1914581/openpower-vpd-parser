@@ -21,7 +21,7 @@ int doMfgClean(const auto& i_mfgCleanConfirmFlag)
         constexpr auto MAX_CONFIRMATION_STR_LENGTH{3};
         std::string l_confirmation{};
         std::cout
-            << "This option resets some of the system VPD keywords to theirdefault values. Do you really wish to proceed further?[yes/no]:";
+            << "This option resets some of the system VPD keywords to their default values. Do you really wish to proceed further?[yes/no]:";
         std::cin >> std::setw(MAX_CONFIRMATION_STR_LENGTH) >> l_confirmation;
 
         if (l_confirmation != "yes")
