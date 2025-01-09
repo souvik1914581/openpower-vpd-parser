@@ -74,5 +74,19 @@ class VpdTool
      * @return On success returns 0, otherwise returns -1.
      */
     int dumpObject(const std::string& i_fruPath) const noexcept;
+
+    /**
+     * @brief API to fix system VPD keywords.
+     *
+     * The API to fix the system VPD keywords. Mainly used when there
+     * is a mismatch between the primary and backup(secondary) VPD. User can
+     * choose option to update all primary keywords value with corresponding
+     * backup keywords value or can choose primary keyword value to sync
+     * secondary VPD. Otherwise, user can also interactively choose different
+     * action for individual keyword.
+     *
+     * @return On success returns 0, otherwise returns -1.
+     */
+    int fixSystemVpd() noexcept;
 };
 } // namespace vpd
