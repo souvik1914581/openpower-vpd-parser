@@ -76,6 +76,8 @@ int main(int argc, char** argv)
             ->needs(l_recordOption)
             ->needs(l_keywordOption);
 
+    // ToDo: Take offset value from user for hardware path.
+
     auto l_dumpObjFlag =
         l_app
             .add_flag("--dumpObject, -o",
@@ -85,8 +87,6 @@ int main(int argc, char** argv)
     auto l_fixSystemVpdFlag = l_app.add_flag(
         "--fixSystemVPD",
         "Use this option to interactively fix critical system VPD keywords");
-
-    // ToDo: Take offset value from user for hardware path.
 
     CLI11_PARSE(l_app, argc, argv);
 
@@ -156,24 +156,6 @@ int main(int argc, char** argv)
             return l_rc;
         }
 
-        if (!l_fileOption->empty() &&
-            !std::filesystem::exists(l_filePath, l_ec))
-        {
-            std::cerr
-                << "File doesn't exists: " << l_filePath
-                << "\nPlease provide a valid absolute file path which has keyword value.\nUse --value/--file to give "
-                   "keyword value. Refer --help."
-                << std::endl;
-            return l_rc;
-        }
-        if (l_ec)
-        {
-            std::cerr << "filesystem call exists failed for file: "
-                      << l_filePath << ", reason: " + l_ec.message()
-                      << std::endl;
-            return l_rc;
-        }
-
         if (!l_keywordValueOption->empty() && l_keywordValue.empty())
         {
             std::cerr
@@ -191,7 +173,9 @@ int main(int argc, char** argv)
             return l_rc;
         }
 
-        // ToDo: implementation of write keyword
+        vpd::VpdTool l_vpdToolObj;
+        l_vpdToolObj.writeKeyword(l_vpdPath, l_recordName, l_keywordName,
+                                  l_keywordValue, !l_hardwareFlag->empty());
     }
     else if (!l_dumpObjFlag->empty())
     {
