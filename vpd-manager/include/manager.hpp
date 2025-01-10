@@ -64,6 +64,30 @@ class Manager
                       const types::WriteVpdParams i_paramsToWriteData);
 
     /**
+     * @brief Update keyword value on hardware.
+     *
+     * This API is used to update keyword value on hardware. Updates only on the
+     * given input hardware path, does not look for corresponding redundant or
+     * primary path against the given path. To update corresponding paths, make
+     * separate call with respective path.
+     *
+     * To update IPZ type VPD, input parameter for writing should be in the form
+     * of (Record, Keyword, Value). Eg: ("VINI", "SN", {0x01, 0x02, 0x03}).
+     *
+     * To update Keyword type VPD, input parameter for writing should be in the
+     * form of (Keyword, Value). Eg: ("PE", {0x01, 0x02, 0x03}).
+     *
+     * @param[in] i_fruPath - EEPROM path of the FRU.
+     * @param[in] i_paramsToWriteData - Input details.
+     *
+     * @return On success returns number of bytes written, on failure returns
+     * -1.
+     */
+    int updateKeywordOnHardware(
+        const types::Path i_fruPath,
+        const types::WriteVpdParams i_paramsToWriteData) noexcept;
+
+    /**
      * @brief Read keyword value.
      *
      * API can be used to read VPD keyword from the given input path.

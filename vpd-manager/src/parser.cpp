@@ -260,4 +260,83 @@ int Parser::updateVpdKeywordOnRedundantPath(
     }
 }
 
+int Parser::updateVpdKeywordOnHardware(
+    const types::WriteVpdParams& i_paramsToWriteData)
+{
+    int l_bytesUpdatedOnHardware = constants::FAILURE;
+
+    // A lambda to extract Record : Keyword string from i_paramsToWriteData
+    auto l_keyWordIdentifier =
+        [](const types::WriteVpdParams& i_paramsToWriteData) -> std::string {
+        std::string l_keywordString{};
+        if (const types::IpzData* l_ipzData =
+                std::get_if<types::IpzData>(&i_paramsToWriteData))
+        {
+            l_keywordString = std::get<0>(*l_ipzData) + ":" +
+                              std::get<1>(*l_ipzData);
+        }
+        else if (const types::KwData* l_kwData =
+                     std::get_if<types::KwData>(&i_paramsToWriteData))
+        {
+            l_keywordString = std::get<0>(*l_kwData);
+        }
+        return l_keywordString;
+    };
+
+    try
+    {
+        // Enable Reboot Guard
+        if (constants::FAILURE == dbusUtility::EnableRebootGuard())
+        {
+            EventLogger::createAsyncPel(
+                types::ErrorType::DbusFailure,
+                types::SeverityType::Informational, __FILE__, __FUNCTION__, 0,
+                std::string(
+                    "Failed to enable BMC Reboot Guard while updating " +
+                    l_keyWordIdentifier(i_paramsToWriteData)),
+                std::nullopt, std::nullopt, std::nullopt, std::nullopt);
+
+            return constants::FAILURE;
+        }
+
+        std::shared_ptr<ParserInterface> l_vpdParserInstance =
+            getVpdParserInstance();
+        l_bytesUpdatedOnHardware =
+            l_vpdParserInstance->writeKeywordOnHardware(i_paramsToWriteData);
+    }
+    catch (const std::exception& l_exception)
+    {
+        types::ErrorType l_errorType;
+
+        if (typeid(l_exception) == typeid(EccException))
+        {
+            l_errorType = types::ErrorType::EccCheckFailed;
+        }
+        else
+        {
+            l_errorType = types::ErrorType::InvalidVpdMessage;
+        }
+
+        EventLogger::createAsyncPel(
+            l_errorType, types::SeverityType::Informational, __FILE__,
+            __FUNCTION__, 0,
+            "Error while updating keyword's value on hardware path [" +
+                m_vpdFilePath + "], error: " + std::string(l_exception.what()),
+            std::nullopt, std::nullopt, std::nullopt, std::nullopt);
+    }
+
+    // Disable Reboot Guard
+    if (constants::FAILURE == dbusUtility::DisableRebootGuard())
+    {
+        EventLogger::createAsyncPel(
+            types::ErrorType::DbusFailure, types::SeverityType::Critical,
+            __FILE__, __FUNCTION__, 0,
+            std::string("Failed to disable BMC Reboot Guard while updating " +
+                        l_keyWordIdentifier(i_paramsToWriteData)),
+            std::nullopt, std::nullopt, std::nullopt, std::nullopt);
+    }
+
+    return l_bytesUpdatedOnHardware;
+}
+
 } // namespace vpd
