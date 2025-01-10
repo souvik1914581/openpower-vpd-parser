@@ -355,5 +355,60 @@ inline types::BinaryVector convertToBinary(const std::string& i_value)
     }
     return l_binaryValue;
 }
+
+/**
+ * @brief API to parse respective JSON.
+ *
+ * @param[in] i_pathToJson - Path to JSON.
+ *
+ * @return Parsed JSON, throws exception in case of error.
+ *
+ * @throw std::runtime_error
+ */
+inline nlohmann::json getParsedJson(const std::string& i_pathToJson)
+{
+    if (i_pathToJson.empty())
+    {
+        throw std::runtime_error("Path to JSON is missing");
+    }
+
+    std::error_code l_ec;
+    if (!std::filesystem::exists(i_pathToJson, l_ec))
+    {
+        std::string l_message{"file system call failed for file: " +
+                              i_pathToJson};
+
+        if (l_ec)
+        {
+            l_message += ", error: " + l_ec.message();
+        }
+        throw std::runtime_error(l_message);
+    }
+
+    if (std::filesystem::is_empty(i_pathToJson, l_ec))
+    {
+        throw std::runtime_error("Empty file: " + i_pathToJson);
+    }
+    else if (l_ec)
+    {
+        throw std::runtime_error("is_empty file system call failed for file: " +
+                                 i_pathToJson + ", error: " + l_ec.message());
+    }
+
+    std::ifstream l_jsonFile(i_pathToJson);
+    if (!l_jsonFile)
+    {
+        throw std::runtime_error("Failed to access Json path: " + i_pathToJson);
+    }
+
+    try
+    {
+        return nlohmann::json::parse(l_jsonFile);
+    }
+    catch (const nlohmann::json::parse_error& l_ex)
+    {
+        throw std::runtime_error("Failed to parse JSON file: " + i_pathToJson);
+    }
+}
 } // namespace utils
 } // namespace vpd

@@ -39,6 +39,20 @@ class VpdTool
      */
     nlohmann::json getFruProperties(const std::string& i_fruPath) const;
 
+    /**
+     * @brief An API to get backup-restore config JSON of the system.
+     *
+     * API gets this file by prasing system config JSON file and reading
+     * backupRestoreConfigPath tag.
+     *
+     * @return On success returns valid JSON object, otherwise returns empty
+     * JSON object.
+     *
+     * Note: The caller of this API should verify, is received JSON object is
+     * empty or not.
+     */
+    nlohmann::json getBackupRestoreCfgJsonObj() const noexcept;
+
   public:
     /**
      * @brief Read keyword value.
