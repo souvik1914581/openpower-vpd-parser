@@ -191,4 +191,29 @@ nlohmann::json VpdTool::getBackupRestoreCfgJsonObj() const noexcept
 
     return l_parsedBackupRestoreJson;
 }
+
+int VpdTool::cleanSystemVpd() const noexcept
+{
+    int l_rc{constants::FAILURE};
+    try
+    {
+        // TODO:
+        //     get the keyword map from backup_restore json
+        //     iterate through the keyword map get default value of
+        //     l_keywordName.
+        //     use readKeyword API to read hardware value from hardware.
+        //     if hardware value != default value,
+        //     use writeKeyword API to update default value on hardware,
+        //     backup and D - Bus.
+
+        l_rc = constants::SUCCESS;
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << l_ex.what() << std::endl;
+    }
+    return l_rc;
+}
+
 } // namespace vpd
