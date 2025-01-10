@@ -1426,9 +1426,7 @@ std::tuple<bool, std::string>
         m_semaphore.acquire();
 
         // Thread launched.
-        m_mutex.lock();
         m_activeCollectionThreadCount++;
-        m_mutex.unlock();
 
         const types::VPDMapVariant& parsedVpdMap = parseVpdFile(i_vpdFilePath);
 
@@ -1515,11 +1513,9 @@ void Worker::collectFrusFromJson()
         std::thread{[vpdFilePath, this]() {
             const auto& l_parseResult = parseAndPublishVPD(vpdFilePath);
 
-            m_mutex.lock();
             m_activeCollectionThreadCount--;
-            m_mutex.unlock();
 
-            if (!m_activeCollectionThreadCount)
+            if (!m_activeCollectionThreadCount && !m_isAllFruCollected)
             {
                 m_isAllFruCollected = true;
             }
