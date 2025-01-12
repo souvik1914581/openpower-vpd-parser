@@ -6,18 +6,184 @@
 #include <filesystem>
 #include <iostream>
 
-int main(int argc, char** argv)
+/**
+ * @brief API to perform manufacturing clean.
+ *
+ * @param[in] i_mfgCleanConfirmFlag - Confirmation flag to perform manufacturing
+ * clean.
+ *
+ * @return Status returned by cleanSystemVpd operation, success otherwise.
+ */
+int doMfgClean(const auto& i_mfgCleanConfirmFlag)
 {
-    int l_rc = vpd::constants::FAILURE;
-    CLI::App l_app{"VPD Command Line Tool"};
+    if (i_mfgCleanConfirmFlag->empty())
+    {
+        constexpr auto MAX_CONFIRMATION_STR_LENGTH{3};
+        std::string l_confirmation{};
+        std::cout
+            << "This option resets some of the system VPD keywords to theirdefault values. Do you really wish to proceed further?[yes/no]:";
+        std::cin >> std::setw(MAX_CONFIRMATION_STR_LENGTH) >> l_confirmation;
 
-    std::string l_vpdPath{};
-    std::string l_recordName{};
-    std::string l_keywordName{};
-    std::string l_filePath{};
-    std::string l_keywordValue{};
+        if (l_confirmation != "yes")
+        {
+            return vpd::constants::SUCCESS;
+        }
+    }
 
-    l_app.footer(
+    vpd::VpdTool l_vpdToolObj;
+    return l_vpdToolObj.cleanSystemVpd();
+}
+
+/**
+ * @brief API to write keyword's value.
+ *
+ * @param[in] i_hardwareFlag - Flag to perform write on hardware.
+ * @param[in] i_keywordValueOption - Option to read keyword value from command.
+ * @param[in] i_fileOption - Option to read keyword value from file.
+ * @param[in] i_vpdPath - DBus object path or EEPROM path.
+ * @param[in] i_recordName - Record to be updated.
+ * @param[in] i_keywordName - Keyword to be updated.
+ * @param[in] i_keywordValue - Value to be updated in keyword.
+ *
+ * @return Status of writeKeyword operation, failure otherwise.
+ */
+int writeKeyword(const auto& i_hardwareFlag, const auto& i_keywordValueOption,
+                 const auto& i_fileOption, std::string& i_vpdPath,
+                 const std::string& i_recordName,
+                 const std::string& i_keywordName,
+                 const std::string& i_keywordValue)
+{
+    std::error_code l_ec;
+
+    if (!i_hardwareFlag->empty() && !std::filesystem::exists(i_vpdPath, l_ec))
+    {
+        std::cerr << "Given EEPROM file path doesn't exist : " + i_vpdPath
+                  << std::endl;
+        return vpd::constants::FAILURE;
+    }
+
+    if (l_ec)
+    {
+        std::cerr << "filesystem call exists failed for file: " << i_vpdPath
+                  << ", reason: " + l_ec.message() << std::endl;
+        return vpd::constants::FAILURE;
+    }
+
+    if (!i_keywordValueOption->empty() && i_keywordValue.empty())
+    {
+        std::cerr
+            << "Please provide keyword value.\nUse --value/--file to give "
+               "keyword value. Refer --help."
+            << std::endl;
+        return vpd::constants::FAILURE;
+    }
+
+    if (i_fileOption->empty() && i_keywordValueOption->empty())
+    {
+        std::cerr
+            << "Please provide keyword value.\nUse --value/--file to give "
+               "keyword value. Refer --help."
+            << std::endl;
+        return vpd::constants::FAILURE;
+    }
+
+    vpd::VpdTool l_vpdToolObj;
+    return l_vpdToolObj.writeKeyword(i_vpdPath, i_recordName, i_keywordName,
+                                     i_keywordValue, !i_hardwareFlag->empty());
+}
+
+/**
+ * @brief API to read keyword's value.
+ *
+ * @param[in] i_hardwareFlag - Flag to perform write on hardware.
+ * @param[in] i_vpdPath - DBus object path or EEPROM path.
+ * @param[in] i_recordName - Record to be updated.
+ * @param[in] i_keywordName - Keyword to be updated.
+ * @param[in] i_filePath - File path to save keyword's read value.
+ *
+ * @return Status of readKeyword operation, failure otherwise.
+ */
+int readKeyword(const auto& i_hardwareFlag, const std::string& i_vpdPath,
+                const std::string& i_recordName,
+                const std::string& i_keywordName, const std::string& i_filePath)
+{
+    std::error_code l_ec;
+
+    if (!i_hardwareFlag->empty() && !std::filesystem::exists(i_vpdPath, l_ec))
+    {
+        std::string l_errMessage{"Given EEPROM file path doesn't exist : " +
+                                 i_vpdPath};
+
+        if (l_ec)
+        {
+            l_errMessage += ". filesystem call exists failed, reason: " +
+                            l_ec.message();
+        }
+
+        std::cerr << l_errMessage << std::endl;
+        return vpd::constants::FAILURE;
+    }
+
+    bool l_isHardwareOperation = (!i_hardwareFlag->empty() ? true : false);
+
+    vpd::VpdTool l_vpdToolObj;
+    return l_vpdToolObj.readKeyword(i_vpdPath, i_recordName, i_keywordName,
+                                    l_isHardwareOperation, i_filePath);
+}
+
+/**
+ * @brief API to check option value pair in the tool command.
+ *
+ * In VPD tool command, some of the option(s) mandate values to be passed along
+ * with the option. This API based on option, detects those mandatory value(s).
+ *
+ * @param[in] i_objectOption - Option to pass object path.
+ * @param[in] i_vpdPath - Object path, DBus or EEPROM.
+ * @param[in] i_recordOption - Option to pass record name.
+ * @param[in] i_recordName - Record name.
+ * @param[in] i_keywordOption - Option to pass keyword name.
+ * @param[in] i_keywordName - Keyword name.
+ *
+ * @return Success if corresponding value is found against option, failure
+ * otherwise.
+ */
+int checkOptionValuePair(const auto& i_objectOption, const auto& i_vpdPath,
+                         const auto& i_recordOption, const auto& i_recordName,
+                         const auto& i_keywordOption, const auto& i_keywordName)
+{
+    if (!i_objectOption->empty() && i_vpdPath.empty())
+    {
+        std::cout << "Given path is empty." << std::endl;
+        return vpd::constants::FAILURE;
+    }
+
+    if (!i_recordOption->empty() &&
+        (i_recordName.size() != vpd::constants::RECORD_SIZE))
+    {
+        std::cerr << "Record " << i_recordName << " is not supported."
+                  << std::endl;
+        return vpd::constants::FAILURE;
+    }
+
+    if (!i_keywordOption->empty() &&
+        (i_keywordName.size() != vpd::constants::KEYWORD_SIZE))
+    {
+        std::cerr << "Keyword " << i_keywordName << " is not supported."
+                  << std::endl;
+        return vpd::constants::FAILURE;
+    }
+
+    return vpd::constants::SUCCESS;
+}
+
+/**
+ * @brief API to create app footer.
+ *
+ * @param[in] i_app - CLI::App object.
+ */
+void updateFooter(CLI::App& i_app)
+{
+    i_app.footer(
         "Read:\n"
         "    IPZ Format:\n"
         "        From DBus to console: "
@@ -46,6 +212,19 @@ int main(int argc, char** argv)
         "MfgClean:\n"
         "        Flag to clean and reset specific keywords on system VPD to its default value.\n"
         "        vpd-tool --mfgClean\n");
+}
+
+int main(int argc, char** argv)
+{
+    CLI::App l_app{"VPD Command Line Tool"};
+
+    std::string l_vpdPath{};
+    std::string l_recordName{};
+    std::string l_keywordName{};
+    std::string l_filePath{};
+    std::string l_keywordValue{};
+
+    updateFooter(l_app);
 
     auto l_objectOption = l_app.add_option("--object, -O", l_vpdPath,
                                            "File path");
@@ -100,131 +279,43 @@ int main(int argc, char** argv)
 
     CLI11_PARSE(l_app, argc, argv);
 
-    if (!l_objectOption->empty() && l_vpdPath.empty())
+    if (checkOptionValuePair(l_objectOption, l_vpdPath, l_recordOption,
+                             l_recordName, l_keywordOption,
+                             l_keywordName) == vpd::constants::FAILURE)
     {
-        std::cout << "Given path is empty." << std::endl;
-        return l_rc;
-    }
-
-    if (!l_recordOption->empty() &&
-        (l_recordName.size() != vpd::constants::RECORD_SIZE))
-    {
-        std::cerr << "Record " << l_recordName << " is not supported."
-                  << std::endl;
-        return l_rc;
-    }
-
-    if (!l_keywordOption->empty() &&
-        (l_keywordName.size() != vpd::constants::KEYWORD_SIZE))
-    {
-        std::cerr << "Keyword " << l_keywordName << " is not supported."
-                  << std::endl;
-        return l_rc;
+        return vpd::constants::FAILURE;
     }
 
     if (!l_readFlag->empty())
     {
-        std::error_code l_ec;
-
-        if (!l_hardwareFlag->empty() &&
-            !std::filesystem::exists(l_vpdPath, l_ec))
-        {
-            std::string l_errMessage{"Given EEPROM file path doesn't exist : " +
-                                     l_vpdPath};
-
-            if (l_ec)
-            {
-                l_errMessage += ". filesystem call exists failed, reason: " +
-                                l_ec.message();
-            }
-
-            std::cerr << l_errMessage << std::endl;
-            return l_rc;
-        }
-
-        bool l_isHardwareOperation = (!l_hardwareFlag->empty() ? true : false);
-        vpd::VpdTool l_vpdToolObj;
-
-        l_rc = l_vpdToolObj.readKeyword(l_vpdPath, l_recordName, l_keywordName,
-                                        l_isHardwareOperation, l_filePath);
+        return readKeyword(l_hardwareFlag, l_vpdPath, l_recordName,
+                           l_keywordName, l_filePath);
     }
-    else if (!l_writeFlag->empty())
+
+    if (!l_writeFlag->empty())
     {
-        std::error_code l_ec;
-
-        if (!l_hardwareFlag->empty() &&
-            !std::filesystem::exists(l_vpdPath, l_ec))
-        {
-            std::cerr << "Given EEPROM file path doesn't exist : " + l_vpdPath
-                      << std::endl;
-            return l_rc;
-        }
-        if (l_ec)
-        {
-            std::cerr << "filesystem call exists failed for file: " << l_vpdPath
-                      << ", reason: " + l_ec.message() << std::endl;
-            return l_rc;
-        }
-
-        if (!l_keywordValueOption->empty() && l_keywordValue.empty())
-        {
-            std::cerr
-                << "Please provide keyword value.\nUse --value/--file to give "
-                   "keyword value. Refer --help."
-                << std::endl;
-            return l_rc;
-        }
-        else if (l_fileOption->empty() && l_keywordValueOption->empty())
-        {
-            std::cerr
-                << "Please provide keyword value.\nUse --value/--file to give "
-                   "keyword value. Refer --help."
-                << std::endl;
-            return l_rc;
-        }
-
-        vpd::VpdTool l_vpdToolObj;
-        l_vpdToolObj.writeKeyword(l_vpdPath, l_recordName, l_keywordName,
-                                  l_keywordValue, !l_hardwareFlag->empty());
+        return writeKeyword(l_hardwareFlag, l_keywordValueOption, l_fileOption,
+                            l_filePath, l_recordName, l_keywordName,
+                            l_keywordValue);
     }
-    else if (!l_dumpObjFlag->empty())
+
+    if (!l_dumpObjFlag->empty())
     {
         vpd::VpdTool l_vpdToolObj;
-        l_rc = l_vpdToolObj.dumpObject(l_vpdPath);
+        return l_vpdToolObj.dumpObject(l_vpdPath);
     }
-    else if (!l_fixSystemVpdFlag->empty())
+
+    if (!l_fixSystemVpdFlag->empty())
     {
         vpd::VpdTool l_vpdToolObj;
-        l_rc = l_vpdToolObj.fixSystemVpd();
+        return l_vpdToolObj.fixSystemVpd();
     }
-    else if (!l_mfgCleanFlag->empty())
-    {
-        bool l_shouldCleanSystemVpd{true};
-        if (l_mfgCleanConfirmFlag->empty())
-        {
-            constexpr auto MAX_CONFIRMATION_STR_LENGTH{3};
-            std::string l_confirmation{};
-            std::cout
-                << "This option resets some of the system VPD keywords to their default values. Do you really wish to proceed further?[yes/no]:";
-            std::cin >> std::setw(MAX_CONFIRMATION_STR_LENGTH) >>
-                l_confirmation;
 
-            if (l_confirmation != "yes")
-            {
-                l_shouldCleanSystemVpd = false;
-                l_rc = vpd::constants::SUCCESS;
-            }
-        }
-
-        if (l_shouldCleanSystemVpd)
-        {
-            vpd::VpdTool l_vpdToolObj;
-            l_rc = l_vpdToolObj.cleanSystemVpd();
-        }
-    }
-    else
+    if (!l_mfgCleanFlag->empty())
     {
-        std::cout << l_app.help() << std::endl;
+        return doMfgClean(l_mfgCleanConfirmFlag);
     }
-    return l_rc;
+
+    std::cout << l_app.help() << std::endl;
+    return vpd::constants::FAILURE;
 }
