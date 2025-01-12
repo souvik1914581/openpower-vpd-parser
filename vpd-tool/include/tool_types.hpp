@@ -55,5 +55,8 @@ using IpzData = std::tuple<std::string, std::string, BinaryVector>;
 
 //WriteVpdParams either of IPZ or keyword format
 using WriteVpdParams = std::variant<IpzData, KwData>;
+// Return type of ObjectMapper GetObject API
+using MapperGetObject = std::map<std::string,std::vector<std::string>>;
+
 } // namespace types
 } // namespace vpd
