@@ -242,15 +242,24 @@ nlohmann::json VpdTool::getInventoryPropertyJson(
     return l_resultInJson;
 }
 
-int VpdTool::fixSystemVpd() noexcept
+int VpdTool::fixSystemVpd() const noexcept
 {
     int l_rc = constants::FAILURE;
+
+    nlohmann::json l_backupRestoreCfgJsonObj = getBackupRestoreCfgJsonObj();
+    if (!fetchKeywordInfo(l_backupRestoreCfgJsonObj))
+    {
+        return l_rc;
+    }
+
+    printSystemVpd(l_backupRestoreCfgJsonObj);
 
     printFixSystemVpdOption(types::UserOption::UseBackupDataForAll);
     printFixSystemVpdOption(types::UserOption::UseSystemBackplaneDataForAll);
     printFixSystemVpdOption(types::UserOption::MoreOptions);
     printFixSystemVpdOption(types::UserOption::Exit);
 
+    l_rc = constants::SUCCESS;
     // ToDo: Implementation needs to be added
 
     return l_rc;
@@ -428,6 +437,142 @@ int VpdTool::cleanSystemVpd() const noexcept
     return constants::SUCCESS;
 }
 
+bool VpdTool::fetchKeywordInfo(nlohmann::json& io_parsedJsonObj) const noexcept
+{
+    bool l_returnValue = false;
+    try
+    {
+        if (io_parsedJsonObj.empty() || !io_parsedJsonObj.contains("source") ||
+            !io_parsedJsonObj.contains("destination") ||
+            !io_parsedJsonObj.contains("backupMap"))
+        {
+            throw std::runtime_error("Invalid JSON");
+        }
+
+        std::string l_srcVpdPath;
+        std::string l_dstVpdPath;
+
+        bool l_isSourceOnHardware = false;
+        if (l_srcVpdPath = io_parsedJsonObj["source"].value("hardwarePath", "");
+            !l_srcVpdPath.empty())
+        {
+            l_isSourceOnHardware = true;
+        }
+        else if (l_srcVpdPath =
+                     io_parsedJsonObj["source"].value("inventoryPath", "");
+                 l_srcVpdPath.empty())
+        {
+            throw std::runtime_error("Source path is empty in JSON");
+        }
+
+        bool l_isDestinationOnHardware = false;
+        if (l_dstVpdPath = io_parsedJsonObj["destination"].value("hardwarePath",
+                                                                 "");
+            !l_dstVpdPath.empty())
+        {
+            l_isDestinationOnHardware = true;
+        }
+        else if (l_dstVpdPath =
+                     io_parsedJsonObj["destination"].value("inventoryPath", "");
+                 l_dstVpdPath.empty())
+        {
+            throw std::runtime_error("Destination path is empty in JSON");
+        }
+
+        for (auto& l_aRecordKwInfo : io_parsedJsonObj["backupMap"])
+        {
+            const std::string& l_srcRecordName =
+                l_aRecordKwInfo.value("sourceRecord", "");
+            const std::string& l_srcKeywordName =
+                l_aRecordKwInfo.value("sourceKeyword", "");
+            const std::string& l_dstRecordName =
+                l_aRecordKwInfo.value("destinationRecord", "");
+            const std::string& l_dstKeywordName =
+                l_aRecordKwInfo.value("destinationKeyword", "");
+
+            if (l_srcRecordName.empty() || l_dstRecordName.empty() ||
+                l_srcKeywordName.empty() || l_dstKeywordName.empty())
+            {
+                // TODO: Enable logging when verbose is enabled.
+                std::cout << "Record or keyword not found in the JSON."
+                          << std::endl;
+                continue;
+            }
+
+            types::DbusVariantType l_srcKeywordVariant;
+            if (l_isSourceOnHardware)
+            {
+                l_srcKeywordVariant = utils::readKeywordFromHardware(
+                    l_srcVpdPath,
+                    std::make_tuple(l_srcRecordName, l_srcKeywordName));
+            }
+            else
+            {
+                l_srcKeywordVariant = utils::readDbusProperty(
+                    constants::inventoryManagerService, l_srcVpdPath,
+                    constants::ipzVpdInfPrefix + l_srcRecordName,
+                    l_srcKeywordName);
+            }
+
+            if (auto l_srcKeywordValue =
+                    std::get_if<types::BinaryVector>(&l_srcKeywordVariant);
+                l_srcKeywordValue && !l_srcKeywordValue->empty())
+            {
+                l_aRecordKwInfo["sourcekeywordValue"] = *l_srcKeywordValue;
+            }
+            else
+            {
+                // TODO: Enable logging when verbose is enabled.
+                std::cout
+                    << "Invalid data type or empty data received, for source record: "
+                    << l_srcRecordName << ", keyword: " << l_srcKeywordName
+                    << std::endl;
+                continue;
+            }
+
+            types::DbusVariantType l_dstKeywordVariant;
+            if (l_isDestinationOnHardware)
+            {
+                l_dstKeywordVariant = utils::readKeywordFromHardware(
+                    l_dstVpdPath,
+                    std::make_tuple(l_dstRecordName, l_dstKeywordName));
+            }
+            else
+            {
+                l_dstKeywordVariant = utils::readDbusProperty(
+                    constants::inventoryManagerService, l_dstVpdPath,
+                    constants::ipzVpdInfPrefix + l_dstRecordName,
+                    l_dstKeywordName);
+            }
+
+            if (auto l_dstKeywordValue =
+                    std::get_if<types::BinaryVector>(&l_dstKeywordVariant);
+                l_dstKeywordValue && !l_dstKeywordValue->empty())
+            {
+                l_aRecordKwInfo["destinationkeywordValue"] = *l_dstKeywordValue;
+            }
+            else
+            {
+                // TODO: Enable logging when verbose is enabled.
+                std::cout
+                    << "Invalid data type or empty data received, for destination record: "
+                    << l_dstRecordName << ", keyword: " << l_dstKeywordName
+                    << std::endl;
+                continue;
+            }
+        }
+
+        l_returnValue = true;
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << l_ex.what() << std::endl;
+    }
+
+    return l_returnValue;
+}
+
 nlohmann::json
     VpdTool::getFruTypeProperty(const std::string& i_objectPath) const noexcept
 {
@@ -527,6 +672,7 @@ void VpdTool::printFixSystemVpdOption(
             break;
     }
 }
+
 int VpdTool::dumpInventory(bool i_dumpTable) const noexcept
 {
     int l_rc{constants::FAILURE};
@@ -587,4 +733,68 @@ int VpdTool::dumpInventory(bool i_dumpTable) const noexcept
     return l_rc;
 }
 
+void VpdTool::printSystemVpd(
+    const nlohmann::json& i_parsedJsonObj) const noexcept
+{
+    if (i_parsedJsonObj.empty() || !i_parsedJsonObj.contains("backupMap"))
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << "Invalid JSON to print system VPD" << std::endl;
+    }
+
+    std::string l_outline(191, '=');
+    std::cout << "\nRestorable record-keyword pairs and their data on backup & "
+                 "primary.\n\n"
+              << l_outline << std::endl;
+
+    std::cout << std::left << std::setw(6) << "S.No" << std::left
+              << std::setw(8) << "Record" << std::left << std::setw(9)
+              << "Keyword" << std::left << std::setw(75) << "Data On Backup"
+              << std::left << std::setw(75) << "Data On Primary" << std::left
+              << std::setw(14) << "Data Mismatch\n"
+              << l_outline << std::endl;
+
+    uint8_t l_slNum = 0;
+
+    for (const auto& l_aRecordKwInfo : i_parsedJsonObj["backupMap"])
+    {
+        if (l_aRecordKwInfo.contains("sourceRecord") ||
+            l_aRecordKwInfo.contains("sourceKeyword") ||
+            l_aRecordKwInfo.contains("destinationkeywordValue") ||
+            l_aRecordKwInfo.contains("sourcekeywordValue"))
+        {
+            std::string l_mismatchFound{
+                (l_aRecordKwInfo["destinationkeywordValue"] !=
+                 l_aRecordKwInfo["sourcekeywordValue"])
+                    ? "YES"
+                    : "NO"};
+
+            std::string l_splitLine(191, '-');
+
+            try
+            {
+                std::cout << std::left << std::setw(6)
+                          << static_cast<int>(++l_slNum) << std::left
+                          << std::setw(8)
+                          << l_aRecordKwInfo.value("sourceRecord", "")
+                          << std::left << std::setw(9)
+                          << l_aRecordKwInfo.value("sourceKeyword", "")
+                          << std::left << std::setw(75) << std::setfill(' ')
+                          << utils::getPrintableValue(
+                                 l_aRecordKwInfo["destinationkeywordValue"])
+                          << std::left << std::setw(75) << std::setfill(' ')
+                          << utils::getPrintableValue(
+                                 l_aRecordKwInfo["sourcekeywordValue"])
+                          << std::left << std::setw(14) << l_mismatchFound
+                          << '\n'
+                          << l_splitLine << std::endl;
+            }
+            catch (const std::exception& l_ex)
+            {
+                // TODO: Enable logging when verbose is enabled.
+                std::cerr << l_ex.what() << std::endl;
+            }
+        }
+    }
+}
 } // namespace vpd

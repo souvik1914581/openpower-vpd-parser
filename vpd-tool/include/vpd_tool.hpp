@@ -114,6 +114,32 @@ class VpdTool
     void printFixSystemVpdOption(
         const types::UserOption& i_option) const noexcept;
 
+    /**
+     * @brief API to update source and destination keyword's value.
+     *
+     * API fetches source and destination keyword's value,
+     * for each keyword entries found in the input JSON object and updates the
+     * JSON object. If the path(source / destination) in JSON object is
+     * inventory object path, API sends the request to Inventory.Manager DBus
+     * service. Otherwise if its a hardware path, API sends the request to
+     * vpd-manager DBus service to get the keyword's value.
+     *
+     * @param[in,out] io_parsedJsonObj - Parsed JSON object.
+     *
+     * @return true on success, false in case of any error.
+     */
+    bool fetchKeywordInfo(nlohmann::json& io_parsedJsonObj) const noexcept;
+
+    /**
+     * @brief API to print system VPD keyword's information.
+     *
+     * The API prints source and destination keyword's information in the table
+     * format, found in the JSON object.
+     *
+     * @param[in] i_parsedJsonObj - Parsed JSON object.
+     */
+    void printSystemVpd(const nlohmann::json& i_parsedJsonObj) const noexcept;
+
   public:
     /**
      * @brief Read keyword value.
@@ -165,7 +191,7 @@ class VpdTool
      *
      * @return On success returns 0, otherwise returns -1.
      */
-    int fixSystemVpd() noexcept;
+    int fixSystemVpd() const noexcept;
 
     /**
      * @brief Write keyword's value.
