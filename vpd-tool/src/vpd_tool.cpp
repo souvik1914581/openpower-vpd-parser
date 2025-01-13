@@ -284,6 +284,11 @@ int VpdTool::writeKeyword(std::string i_vpdPath,
             i_vpdPath = constants::baseInventoryPath + i_vpdPath;
             l_rc = utils::writeKeyword(i_vpdPath, l_paramsToWrite);
         }
+
+        if (l_rc > 0)
+        {
+            std::cout << "Data updated successfully " << std::endl;
+        }
     }
     catch (const std::exception& l_ex)
     {

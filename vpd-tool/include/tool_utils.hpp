@@ -288,11 +288,6 @@ inline int writeKeyword(const std::string& i_vpdPath,
     auto l_result = l_bus.call(l_method);
 
     l_result.read(l_rc);
-
-    if (l_rc > 0)
-    {
-        std::cout << "Data updated successfully " << std::endl;
-    }
     return l_rc;
 }
 
