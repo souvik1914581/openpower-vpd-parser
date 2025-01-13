@@ -318,7 +318,7 @@ int VpdTool::writeKeyword(std::string i_vpdPath,
 
         if (i_onHardware)
         {
-            // ToDo: Update on hardware
+            l_rc = utils::writeKeywordOnHardware(i_vpdPath, l_paramsToWrite);
         }
         else
         {
