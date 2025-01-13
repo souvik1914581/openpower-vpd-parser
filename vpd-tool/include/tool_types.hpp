@@ -58,5 +58,17 @@ using WriteVpdParams = std::variant<IpzData, KwData>;
 // Return type of ObjectMapper GetObject API
 using MapperGetObject = std::map<std::string,std::vector<std::string>>;
 
+enum UserOption
+{
+    Exit,
+    UseBackupDataForAll,
+    UseSystemBackplaneDataForAll,
+    MoreOptions,
+    UseBackupDataForCurrent,
+    UseSystemBackplaneDataForCurrent,
+    NewValueOnBoth,
+    SkipCurrent
+};
+
 } // namespace types
 } // namespace vpd

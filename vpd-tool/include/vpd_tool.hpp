@@ -106,6 +106,14 @@ class VpdTool
      */
     nlohmann::json getBackupRestoreCfgJsonObj() const noexcept;
 
+    /**
+     * @brief Prints the user options for fix system VPD command.
+     *
+     * @param[in] i_option - Option to use.
+     */
+    void printFixSystemVpdOption(
+        const types::UserOption& i_option) const noexcept;
+
   public:
     /**
      * @brief Read keyword value.
