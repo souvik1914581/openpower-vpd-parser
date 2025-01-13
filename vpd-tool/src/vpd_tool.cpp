@@ -245,7 +245,14 @@ nlohmann::json VpdTool::getInventoryPropertyJson(
 int VpdTool::fixSystemVpd() noexcept
 {
     int l_rc = constants::FAILURE;
+
+    printFixSystemVpdOption(types::UserOption::UseBackupDataForAll);
+    printFixSystemVpdOption(types::UserOption::UseSystemBackplaneDataForAll);
+    printFixSystemVpdOption(types::UserOption::MoreOptions);
+    printFixSystemVpdOption(types::UserOption::Exit);
+
     // ToDo: Implementation needs to be added
+
     return l_rc;
 }
 
@@ -394,4 +401,49 @@ bool VpdTool::isFruPresent(const std::string& i_objectPath) const noexcept
     return l_returnValue;
 }
 
+void VpdTool::printFixSystemVpdOption(
+    const types::UserOption& i_option) const noexcept
+{
+    switch (i_option)
+    {
+        case types::UserOption::Exit:
+            std::cout << "Enter 0 => To exit successfully : ";
+            break;
+        case types::UserOption::UseBackupDataForAll:
+            std::cout << "Enter 1 => If you choose the data on backup for all "
+                         "mismatching record-keyword pairs"
+                      << std::endl;
+            break;
+        case types::UserOption::UseSystemBackplaneDataForAll:
+            std::cout << "Enter 2 => If you choose the data on primary for all "
+                         "mismatching record-keyword pairs"
+                      << std::endl;
+            break;
+        case types::UserOption::MoreOptions:
+            std::cout << "Enter 3 => If you wish to explore more options"
+                      << std::endl;
+            break;
+        case types::UserOption::UseBackupDataForCurrent:
+            std::cout << "Enter 4 => If you choose the data on backup as the "
+                         "right value"
+                      << std::endl;
+            break;
+        case types::UserOption::UseSystemBackplaneDataForCurrent:
+            std::cout << "Enter 5 => If you choose the data on primary as the "
+                         "right value"
+                      << std::endl;
+            break;
+        case types::UserOption::NewValueOnBoth:
+            std::cout
+                << "Enter 6 => If you wish to enter a new value to update "
+                   "both on backup and primary"
+                << std::endl;
+            break;
+        case types::UserOption::SkipCurrent:
+            std::cout << "Enter 7 => If you wish to skip the above "
+                         "record-keyword pair"
+                      << std::endl;
+            break;
+    }
+}
 } // namespace vpd
