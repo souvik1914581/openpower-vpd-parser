@@ -331,26 +331,101 @@ nlohmann::json VpdTool::getBackupRestoreCfgJsonObj() const noexcept
 
 int VpdTool::cleanSystemVpd() const noexcept
 {
-    int l_rc{constants::FAILURE};
     try
     {
-        // TODO:
-        //     get the keyword map from backup_restore json
-        //     iterate through the keyword map get default value of
-        //     l_keywordName.
-        //     use readKeyword API to read hardware value from hardware.
-        //     if hardware value != default value,
-        //     use writeKeyword API to update default value on hardware,
-        //     backup and D - Bus.
+        // get the keyword map from backup_restore json
+        // iterate through the keyword map get default value of
+        // l_keywordName.
+        // use writeKeyword API to update default value on hardware,
+        // backup and D - Bus.
+        const nlohmann::json l_parsedBackupRestoreJson =
+            getBackupRestoreCfgJsonObj();
 
-        l_rc = constants::SUCCESS;
-    }
+        // check for mandatory tags
+        if (l_parsedBackupRestoreJson.contains("source") &&
+            l_parsedBackupRestoreJson.contains("backupMap") &&
+            l_parsedBackupRestoreJson["source"].contains("hardwarePath") &&
+            l_parsedBackupRestoreJson["backupMap"].is_array())
+        {
+            // get the source hardware path
+            const auto& l_hardwarePath =
+                l_parsedBackupRestoreJson["source"]["hardwarePath"];
+
+            // iterate through the backup map
+            for (const auto& l_aRecordKwInfo :
+                 l_parsedBackupRestoreJson["backupMap"])
+            {
+                // check if Manufacturing Reset is required for this entry
+                const bool l_isMfgCleanRequired =
+                    l_aRecordKwInfo.value("isManufactureResetRequired", false);
+
+                if (l_isMfgCleanRequired)
+                {
+                    // get the Record name and Keyword name
+                    const std::string& l_srcRecordName =
+                        l_aRecordKwInfo.value("sourceRecord", "");
+                    const std::string& l_srcKeywordName =
+                        l_aRecordKwInfo.value("sourceKeyword", "");
+
+                    // validate the Record name, Keyword name and the
+                    // defaultValue
+                    if (!l_srcRecordName.empty() && !l_srcKeywordName.empty() &&
+                        l_aRecordKwInfo.contains("defaultValue") &&
+                        l_aRecordKwInfo["defaultValue"].is_array())
+                    {
+                        const types::BinaryVector l_defaultBinaryValue =
+                            l_aRecordKwInfo["defaultValue"]
+                                .get<types::BinaryVector>();
+
+                        // update the Keyword with default value, use D-Bus
+                        // method UpdateKeyword exposed by vpd-manager.
+                        // Note: writing to all paths (Primary EEPROM path,
+                        // Secondary EEPROM path, D-Bus cache and Backup path)
+                        // is the responsibility of vpd-manager's UpdateKeyword
+                        // API
+                        if (constants::FAILURE ==
+                            utils::writeKeyword(
+                                l_hardwarePath,
+                                std::make_tuple(l_srcRecordName,
+                                                l_srcKeywordName,
+                                                l_defaultBinaryValue)))
+                        {
+                            // TODO: Enable logging when verbose
+                            // is enabled.
+                            std::cerr << "Failed to update " << l_srcRecordName
+                                      << ":" << l_srcKeywordName << std::endl;
+                        }
+                    }
+                    else
+                    {
+                        std::cerr << "Unrecognized Entry Record ["
+                                  << l_srcRecordName << "] Keyword ["
+                                  << l_srcKeywordName
+                                  << "] in Backup Restore JSON backup map"
+                                  << std::endl;
+                    }
+                } // mfgClean required check
+            } // keyword list loop
+        }
+        else // backupRestoreJson is not valid
+        {
+            std::cerr << "Backup Restore JSON is not valid" << std::endl;
+        }
+
+        // success/failure message
+        std::cout << "The critical keywords from system backplane VPD has "
+                     "been reset successfully."
+                  << std::endl;
+
+    } // try block end
     catch (const std::exception& l_ex)
     {
         // TODO: Enable logging when verbose is enabled.
-        std::cerr << l_ex.what() << std::endl;
+        std::cerr
+            << "Manufacturing reset on system vpd keywords is unsuccessful. Error : "
+            << l_ex.what() << std::endl;
     }
-    return l_rc;
+    return constants::SUCCESS;
 }
 
 nlohmann::json
@@ -401,7 +476,8 @@ bool VpdTool::isFruPresent(const std::string& i_objectPath) const noexcept
     {
         // TODO: Enable logging when verbose is enabled.
         // std::cerr << "Failed to check \"Present\" property for FRU "
-        //           << i_objectPath << " Error: " << l_ex.what() << std::endl;
+        //           << i_objectPath << " Error: " << l_ex.what() <<
+        //           std::endl;
     }
     return l_returnValue;
 }
