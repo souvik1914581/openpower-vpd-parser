@@ -140,6 +140,25 @@ class VpdTool
      */
     void printSystemVpd(const nlohmann::json& i_parsedJsonObj) const noexcept;
 
+    /**
+     * @brief API to update keyword's value.
+     *
+     * API iterates the given JSON object for all record-keyword pairs, if there
+     * is any mismatch between source and destination keyword's value, API calls
+     * the utils::writeKeyword API to update keyword's value.
+     *
+     * Note: writeKeyword API, internally updates primary, backup, redundant
+     * EEPROM paths(if exists) with the given keyword's value.
+     *
+     * @param i_parsedJsonObj - Parsed JSON object.
+     * @param i_useBackupData - Specifies whether to use source or destination
+     * keyword's value to update the keyword's value.
+     *
+     * @return On success return 0, otherwise return -1.
+     */
+    int updateAllKeywords(const nlohmann::json& i_parsedJsonObj,
+                          bool i_useBackupData) const noexcept;
+
   public:
     /**
      * @brief Read keyword value.
