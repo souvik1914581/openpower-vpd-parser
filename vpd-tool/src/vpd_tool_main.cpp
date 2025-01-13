@@ -39,7 +39,6 @@ int doMfgClean(const auto& i_mfgCleanConfirmFlag)
  *
  * @param[in] i_hardwareFlag - Flag to perform write on hardware.
  * @param[in] i_keywordValueOption - Option to read keyword value from command.
- * @param[in] i_fileOption - Option to read keyword value from file.
  * @param[in] i_vpdPath - DBus object path or EEPROM path.
  * @param[in] i_recordName - Record to be updated.
  * @param[in] i_keywordName - Keyword to be updated.
@@ -48,8 +47,7 @@ int doMfgClean(const auto& i_mfgCleanConfirmFlag)
  * @return Status of writeKeyword operation, failure otherwise.
  */
 int writeKeyword(const auto& i_hardwareFlag, const auto& i_keywordValueOption,
-                 const auto& i_fileOption, std::string& i_vpdPath,
-                 const std::string& i_recordName,
+                 const std::string& i_vpdPath, const std::string& i_recordName,
                  const std::string& i_keywordName,
                  const std::string& i_keywordValue)
 {
@@ -78,7 +76,7 @@ int writeKeyword(const auto& i_hardwareFlag, const auto& i_keywordValueOption,
         return vpd::constants::FAILURE;
     }
 
-    if (i_fileOption->empty() && i_keywordValueOption->empty())
+    if (i_keywordValueOption->empty())
     {
         std::cerr
             << "Please provide keyword value.\nUse --value/--file to give "
@@ -238,8 +236,9 @@ int main(int argc, char** argv)
     auto l_keywordOption = l_app.add_option("--keyword, -K", l_keywordName,
                                             "Keyword name");
 
-    auto l_fileOption = l_app.add_option("--file", l_filePath,
-                                         "Absolute file path");
+    // Enable when file option is implemented.
+    /*auto l_fileOption = l_app.add_option("--file", l_filePath,
+                                         "Absolute file path");*/
 
     auto l_keywordValueOption =
         l_app.add_option("--value, -V", l_keywordValue,
@@ -304,9 +303,8 @@ int main(int argc, char** argv)
 
     if (!l_writeFlag->empty())
     {
-        return writeKeyword(l_hardwareFlag, l_keywordValueOption, l_fileOption,
-                            l_filePath, l_recordName, l_keywordName,
-                            l_keywordValue);
+        return writeKeyword(l_hardwareFlag, l_keywordValueOption, l_vpdPath,
+                            l_recordName, l_keywordName, l_keywordValue);
     }
 
     if (!l_dumpObjFlag->empty())
