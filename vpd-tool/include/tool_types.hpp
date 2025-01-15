@@ -58,6 +58,15 @@ using WriteVpdParams = std::variant<IpzData, KwData>;
 // Return type of ObjectMapper GetObject API
 using MapperGetObject = std::map<std::string,std::vector<std::string>>;
 
+// Table row data
+using TableRowData = std::vector<std::string>;
+
+// Type used to populate table data
+using TableInputData = std::vector<TableRowData>;
+
+// A table column name-size pair
+using TableColumnNameSizePair = std::pair<std::string, std::size_t>;
+
 enum UserOption
 {
     Exit,
