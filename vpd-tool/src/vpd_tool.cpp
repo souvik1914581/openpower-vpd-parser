@@ -254,13 +254,45 @@ int VpdTool::fixSystemVpd() const noexcept
 
     printSystemVpd(l_backupRestoreCfgJsonObj);
 
-    printFixSystemVpdOption(types::UserOption::UseBackupDataForAll);
-    printFixSystemVpdOption(types::UserOption::UseSystemBackplaneDataForAll);
-    printFixSystemVpdOption(types::UserOption::MoreOptions);
-    printFixSystemVpdOption(types::UserOption::Exit);
+    do
+    {
+        printFixSystemVpdOption(types::UserOption::UseBackupDataForAll);
+        printFixSystemVpdOption(
+            types::UserOption::UseSystemBackplaneDataForAll);
+        printFixSystemVpdOption(types::UserOption::MoreOptions);
+        printFixSystemVpdOption(types::UserOption::Exit);
 
-    l_rc = constants::SUCCESS;
-    // ToDo: Implementation needs to be added
+        int l_userSelectedOption = types::UserOption::Exit;
+        std::cin >> l_userSelectedOption;
+
+        std::cout << std::endl << std::string(191, '=') << std::endl;
+
+        if (types::UserOption::UseBackupDataForAll == l_userSelectedOption)
+        {
+            l_rc = updateAllKeywords(l_backupRestoreCfgJsonObj, true);
+            break;
+        }
+        else if (types::UserOption::UseSystemBackplaneDataForAll ==
+                 l_userSelectedOption)
+        {
+            l_rc = updateAllKeywords(l_backupRestoreCfgJsonObj, false);
+            break;
+        }
+        else if (types::UserOption::MoreOptions == l_userSelectedOption)
+        {
+            // ToDo: Implementation needs to be added
+            break;
+        }
+        else if (types::UserOption::Exit == l_userSelectedOption)
+        {
+            std::cout << "Exit successfully" << std::endl;
+            break;
+        }
+        else
+        {
+            std::cout << "Provide a valid option. Retry." << std::endl;
+        }
+    } while (true);
 
     return l_rc;
 }
@@ -849,5 +881,101 @@ void VpdTool::printSystemVpd(
             }
         }
     }
+}
+
+int VpdTool::updateAllKeywords(const nlohmann::json& i_parsedJsonObj,
+                               bool i_useBackupData) const noexcept
+{
+    int l_rc = constants::FAILURE;
+
+    if (i_parsedJsonObj.empty() || !i_parsedJsonObj.contains("source") ||
+        !i_parsedJsonObj.contains("backupMap"))
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << "Invalid JSON" << std::endl;
+        return l_rc;
+    }
+
+    std::string l_srcVpdPath;
+    if (auto l_vpdPath = i_parsedJsonObj["source"].value("hardwarePath", "");
+        !l_vpdPath.empty())
+    {
+        l_srcVpdPath = l_vpdPath;
+    }
+    else if (auto l_vpdPath = i_parsedJsonObj["source"].value("inventoryPath",
+                                                              "");
+             !l_vpdPath.empty())
+    {
+        l_srcVpdPath = l_vpdPath;
+    }
+    else
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << "source path information is missing in JSON" << std::endl;
+        return l_rc;
+    }
+
+    bool l_anyMismatchFound = false;
+    for (const auto& l_aRecordKwInfo : i_parsedJsonObj["backupMap"])
+    {
+        if (!l_aRecordKwInfo.contains("sourceRecord") ||
+            !l_aRecordKwInfo.contains("sourceKeyword") ||
+            !l_aRecordKwInfo.contains("destinationkeywordValue") ||
+            !l_aRecordKwInfo.contains("sourcekeywordValue"))
+        {
+            // TODO: Enable logging when verbose is enabled.
+            std::cerr << "Missing required information in the JSON"
+                      << std::endl;
+            continue;
+        }
+
+        if (l_aRecordKwInfo["sourcekeywordValue"] !=
+            l_aRecordKwInfo["destinationkeywordValue"])
+        {
+            l_anyMismatchFound = true;
+
+            auto l_keywordValue =
+                i_useBackupData ? l_aRecordKwInfo["destinationkeywordValue"]
+                                : l_aRecordKwInfo["sourcekeywordValue"];
+
+            auto l_paramsToWrite = std::make_tuple(
+                l_aRecordKwInfo["sourceRecord"],
+                l_aRecordKwInfo["sourceKeyword"], l_keywordValue);
+
+            try
+            {
+                l_rc = utils::writeKeyword(l_srcVpdPath, l_paramsToWrite);
+                if (l_rc > 0)
+                {
+                    l_rc = constants::SUCCESS;
+                }
+            }
+            catch (const std::exception& l_ex)
+            {
+                // TODO: Enable logging when verbose is enabled.
+                std::cerr << "write keyword failed for record: "
+                          << l_aRecordKwInfo["sourceRecord"]
+                          << ", keyword: " << l_aRecordKwInfo["sourceKeyword"]
+                          << ", error: " << l_ex.what() << std::ends;
+            }
+        }
+    }
+
+    std::string l_dataUsed = (i_useBackupData ? "data from backup"
+                                              : "data from primary VPD");
+    if (l_anyMismatchFound)
+    {
+        std::cout << "Data updated successfully for all mismatching "
+                     "record-keyword pairs by choosing their corresponding "
+                  << l_dataUsed << ". Exit successfully." << std::endl;
+    }
+    else
+    {
+        std::cout << "No mismatch found for any of the above mentioned "
+                     "record-keyword pair. Exit successfully."
+                  << std::endl;
+    }
+
+    return l_rc;
 }
 } // namespace vpd
