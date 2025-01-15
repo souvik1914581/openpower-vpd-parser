@@ -280,7 +280,7 @@ int VpdTool::fixSystemVpd() const noexcept
         }
         else if (types::UserOption::MoreOptions == l_userSelectedOption)
         {
-            // ToDo: Implementation needs to be added
+            l_rc = handleMoreOption(l_backupRestoreCfgJsonObj);
             break;
         }
         else if (types::UserOption::Exit == l_userSelectedOption)
@@ -978,4 +978,140 @@ int VpdTool::updateAllKeywords(const nlohmann::json& i_parsedJsonObj,
 
     return l_rc;
 }
+
+int VpdTool::handleMoreOption(
+    const nlohmann::json& i_parsedJsonObj) const noexcept
+{
+    int l_rc = constants::FAILURE;
+
+    try
+    {
+        if (i_parsedJsonObj.empty() || !i_parsedJsonObj.contains("backupMap"))
+        {
+            throw std::runtime_error("Invalid JSON");
+        }
+
+        while (true)
+        {
+            int l_slNum = 0;
+            bool l_exit = false;
+
+            for (const auto& l_aRecordKwInfo : i_parsedJsonObj["backupMap"])
+            {
+                if (!l_aRecordKwInfo.contains("sourceRecord") ||
+                    !l_aRecordKwInfo.contains("sourceKeyword") ||
+                    !l_aRecordKwInfo.contains("destinationkeywordValue") ||
+                    !l_aRecordKwInfo.contains("sourcekeywordValue"))
+                {
+                    // TODO: Enable logging when verbose is enabled.
+                    std::cerr
+                        << "Source or destination information is missing in the JSON."
+                        << std::endl;
+                    continue;
+                }
+
+                const std::string l_mismatchFound{
+                    (l_aRecordKwInfo["sourcekeywordValue"] !=
+                     l_aRecordKwInfo["destinationkeywordValue"])
+                        ? "YES"
+                        : "NO"};
+
+                std::cout << std::endl
+                          << std::left << std::setw(6) << "S.No" << std::left
+                          << std::setw(8) << "Record" << std::left
+                          << std::setw(9) << "Keyword" << std::left
+                          << std::setw(75) << std::setfill(' ') << "Backup Data"
+                          << std::left << std::setw(75) << std::setfill(' ')
+                          << "Primary Data" << std::left << std::setw(14)
+                          << "Data Mismatch" << std::endl;
+
+                std::cout << std::left << std::setw(6)
+                          << static_cast<int>(++l_slNum) << std::left
+                          << std::setw(8)
+                          << l_aRecordKwInfo.value("sourceRecord", "")
+                          << std::left << std::setw(9)
+                          << l_aRecordKwInfo.value("sourceKeyword", "")
+                          << std::left << std::setw(75) << std::setfill(' ')
+                          << utils::getPrintableValue(
+                                 l_aRecordKwInfo["destinationkeywordValue"])
+                          << std::left << std::setw(75) << std::setfill(' ')
+                          << utils::getPrintableValue(
+                                 l_aRecordKwInfo["sourcekeywordValue"])
+                          << std::left << std::setw(14) << l_mismatchFound
+                          << std::endl;
+
+                std::cout << std::string(191, '=') << std::endl;
+
+                if (constants::STR_CMP_SUCCESS ==
+                    l_mismatchFound.compare("YES"))
+                {
+                    printFixSystemVpdOption(
+                        types::UserOption::UseBackupDataForCurrent);
+                    printFixSystemVpdOption(
+                        types::UserOption::UseSystemBackplaneDataForCurrent);
+                    printFixSystemVpdOption(types::UserOption::NewValueOnBoth);
+                    printFixSystemVpdOption(types::UserOption::SkipCurrent);
+                    printFixSystemVpdOption(types::UserOption::Exit);
+                }
+                else
+                {
+                    printFixSystemVpdOption(types::UserOption::NewValueOnBoth);
+                    printFixSystemVpdOption(types::UserOption::SkipCurrent);
+                    printFixSystemVpdOption(types::UserOption::Exit);
+                }
+
+                int l_userSelectedOption = types::UserOption::Exit;
+                std::cin >> l_userSelectedOption;
+
+                if (types::UserOption::UseBackupDataForCurrent ==
+                    l_userSelectedOption)
+                {
+                    // ToDo: Implementation needs to be added
+                }
+                else if (types::UserOption::UseSystemBackplaneDataForCurrent ==
+                         l_userSelectedOption)
+                {
+                    // ToDo: Implementation needs to be added
+                }
+                else if (types::UserOption::NewValueOnBoth ==
+                         l_userSelectedOption)
+                {
+                    // ToDo: Implementation needs to be added
+                }
+                else if (types::UserOption::SkipCurrent == l_userSelectedOption)
+                {
+                    std::cout << std::endl
+                              << "Skipped the above record-keyword pair. "
+                                 "Continue to the next available pair."
+                              << std::endl;
+                }
+                else if (types::UserOption::Exit == l_userSelectedOption)
+                {
+                    std::cout << "Exit successfully" << std::endl;
+                    l_exit = true;
+                    break;
+                }
+                else
+                {
+                    std::cout << "Provide a valid option. Retrying for the "
+                                 "current record-keyword pair"
+                              << std::endl;
+                }
+            }
+            if (l_exit)
+            {
+                l_rc = constants::SUCCESS;
+                break;
+            }
+        }
+    }
+    catch (const std::exception& l_ex)
+    {
+        // TODO: Enable logging when verbose is enabled.
+        std::cerr << l_ex.what() << std::endl;
+    }
+
+    return l_rc;
+}
+
 } // namespace vpd

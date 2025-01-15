@@ -159,6 +159,15 @@ class VpdTool
     int updateAllKeywords(const nlohmann::json& i_parsedJsonObj,
                           bool i_useBackupData) const noexcept;
 
+    /**
+     * @brief API to handle more option for fix system VPD command.
+     *
+     * @param i_parsedJsonObj - Parsed JSON object.
+     *
+     * @return On success return 0, otherwise return -1.
+     */
+    int handleMoreOption(const nlohmann::json& i_parsedJsonObj) const noexcept;
+
   public:
     /**
      * @brief Read keyword value.
