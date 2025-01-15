@@ -312,17 +312,17 @@ inline types::BinaryVector convertToBinary(const std::string& i_value)
             "Provide a valid hexadecimal input. (Ex. 0x30313233)");
     }
 
-    if (i_value.length() % 2 != 0)
-    {
-        throw std::runtime_error(
-            "Write option accepts 2 digit hex numbers. (Ex. 0x1 "
-            "should be given as 0x01).");
-    }
-
     std::vector<uint8_t> l_binaryValue{};
 
     if (i_value.substr(0, 2).compare("0x") == constants::STR_CMP_SUCCESS)
     {
+        if (i_value.length() % 2 != 0)
+        {
+            throw std::runtime_error(
+                "Write option accepts 2 digit hex numbers. (Ex. 0x1 "
+                "should be given as 0x01).");
+        }
+
         auto l_value = i_value.substr(2);
 
         if (l_value.empty())
