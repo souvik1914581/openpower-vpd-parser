@@ -991,7 +991,53 @@ int VpdTool::handleMoreOption(
             throw std::runtime_error("Invalid JSON");
         }
 
-        while (true)
+        std::string l_srcVpdPath;
+
+        if (auto l_vpdPath = i_parsedJsonObj["source"].value("hardwarePath",
+                                                             "");
+            !l_vpdPath.empty())
+        {
+            l_srcVpdPath = l_vpdPath;
+        }
+        else if (auto l_vpdPath =
+                     i_parsedJsonObj["source"].value("inventoryPath", "");
+                 !l_vpdPath.empty())
+        {
+            l_srcVpdPath = l_vpdPath;
+        }
+        else
+        {
+            throw std::runtime_error(
+                "source path information is missing in JSON");
+        }
+
+        auto updateKeywordValue =
+            [](std::string io_vpdPath, const std::string& i_recordName,
+               const std::string& i_keywordName,
+               const types::BinaryVector& i_keywordValue) -> int {
+            int l_rc = constants::FAILURE;
+
+            try
+            {
+                auto l_paramsToWrite = std::make_tuple(
+                    i_recordName, i_keywordName, i_keywordValue);
+                l_rc = utils::writeKeyword(io_vpdPath, l_paramsToWrite);
+
+                if (l_rc > 0)
+                {
+                    std::cout << std::endl
+                              << "Data updated successfully." << std::endl;
+                }
+            }
+            catch (const std::exception& l_ex)
+            {
+                // TODO: Enable log when verbose is enabled.
+                std::cerr << l_ex.what() << std::endl;
+            }
+            return l_rc;
+        };
+
+        do
         {
             int l_slNum = 0;
             bool l_exit = false;
@@ -1066,17 +1112,44 @@ int VpdTool::handleMoreOption(
                 if (types::UserOption::UseBackupDataForCurrent ==
                     l_userSelectedOption)
                 {
-                    // ToDo: Implementation needs to be added
+                    l_rc = updateKeywordValue(
+                        l_srcVpdPath, l_aRecordKwInfo["sourceRecord"],
+                        l_aRecordKwInfo["sourceKeyword"],
+                        l_aRecordKwInfo["destinationkeywordValue"]);
                 }
                 else if (types::UserOption::UseSystemBackplaneDataForCurrent ==
                          l_userSelectedOption)
                 {
-                    // ToDo: Implementation needs to be added
+                    l_rc = updateKeywordValue(
+                        l_srcVpdPath, l_aRecordKwInfo["sourceRecord"],
+                        l_aRecordKwInfo["sourceKeyword"],
+                        l_aRecordKwInfo["sourcekeywordValue"]);
                 }
                 else if (types::UserOption::NewValueOnBoth ==
                          l_userSelectedOption)
                 {
-                    // ToDo: Implementation needs to be added
+                    std::string l_newValue;
+                    std::cout
+                        << std::endl
+                        << "Enter the new value to update on both "
+                           "primary & backup. Value should be in ASCII or "
+                           "in HEX(prefixed with 0x) : ";
+                    std::cin >> l_newValue;
+                    std::cout << std::endl
+                              << std::string(191, '=') << std::endl;
+
+                    try
+                    {
+                        l_rc = updateKeywordValue(
+                            l_srcVpdPath, l_aRecordKwInfo["sourceRecord"],
+                            l_aRecordKwInfo["sourceKeyword"],
+                            utils::convertToBinary(l_newValue));
+                    }
+                    catch (const std::exception& l_ex)
+                    {
+                        // TODO: Enable logging when verbose is enabled.
+                        std::cerr << l_ex.what() << std::endl;
+                    }
                 }
                 else if (types::UserOption::SkipCurrent == l_userSelectedOption)
                 {
@@ -1103,7 +1176,7 @@ int VpdTool::handleMoreOption(
                 l_rc = constants::SUCCESS;
                 break;
             }
-        }
+        } while (true);
     }
     catch (const std::exception& l_ex)
     {
