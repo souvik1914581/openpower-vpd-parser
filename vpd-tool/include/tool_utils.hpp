@@ -292,6 +292,50 @@ inline int writeKeyword(const std::string& i_vpdPath,
 }
 
 /**
+ * @brief API to write keyword's value on hardware.
+ *
+ * This API writes keyword's value by requesting DBus service(vpd-manager) who
+ * hosts the 'WriteKeywordOnHardware' method to update keyword's value.
+ *
+ * Note: This API updates keyword's value only on the given hardware path, any
+ * backup or redundant EEPROM (if exists) paths won't get updated.
+ *
+ * @param[in] i_eepromPath - EEPROM where keyword is present.
+ * @param[in] i_paramsToWriteData - Data required to update keyword's value.
+ *
+ * @return - Number of bytes written on success, -1 on failure.
+ *
+ * @throw - std::runtime_error, sdbusplus::exception::SdBusError
+ */
+inline int
+    writeKeywordOnHardware(const std::string& i_eepromPath,
+                           const types::WriteVpdParams& i_paramsToWriteData)
+{
+    if (i_eepromPath.empty())
+    {
+        throw std::runtime_error("Empty path");
+    }
+
+    int l_rc = constants::FAILURE;
+    auto l_bus = sdbusplus::bus::new_default();
+
+    auto l_method = l_bus.new_method_call(
+        constants::vpdManagerService, constants::vpdManagerObjectPath,
+        constants::vpdManagerInfName, "WriteKeywordOnHardware");
+
+    l_method.append(i_eepromPath, i_paramsToWriteData);
+    auto l_result = l_bus.call(l_method);
+
+    l_result.read(l_rc);
+
+    if (l_rc > 0)
+    {
+        std::cout << "Data updated successfully " << std::endl;
+    }
+    return l_rc;
+}
+
+/**
  * @brief API to get data in binary format.
  *
  * This API converts given string value into array of binary data.
