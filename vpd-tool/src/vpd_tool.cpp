@@ -89,11 +89,14 @@ int VpdTool::readKeyword(const std::string& i_vpdPath,
     return l_rc;
 }
 
-int VpdTool::dumpObject(const std::string& i_fruPath) const noexcept
+int VpdTool::dumpObject(std::string i_fruPath) const noexcept
 {
     int l_rc{constants::FAILURE};
     try
     {
+        // ToDo: For PFuture system take only full path from the user.
+        i_fruPath = constants::baseInventoryPath + i_fruPath;
+
         nlohmann::json l_resultJsonArray = nlohmann::json::array({});
         const nlohmann::json l_fruJson = getFruProperties(i_fruPath);
         if (!l_fruJson.empty())
@@ -104,16 +107,16 @@ int VpdTool::dumpObject(const std::string& i_fruPath) const noexcept
         }
         else
         {
-            std::cout << "FRU " << i_fruPath << " is not present in the system"
-                      << std::endl;
+            std::cout << "FRU [" << i_fruPath
+                      << "] is not present in the system" << std::endl;
         }
         l_rc = constants::SUCCESS;
     }
     catch (std::exception& l_ex)
     {
         // TODO: Enable logging when verbose is enabled.
-        // std::cerr << "Dump Object failed for FRU: " << i_fruPath
-        //           << " Error: " << l_ex.what() << std::endl;
+        // std::cerr << "Dump Object failed for FRU [" << i_fruPath
+        //           << "], Error: " << l_ex.what() << std::endl;
     }
     return l_rc;
 }

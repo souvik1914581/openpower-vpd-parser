@@ -205,7 +205,7 @@ class VpdTool
      *
      * @return On success returns 0, otherwise returns -1.
      */
-    int dumpObject(const std::string& i_fruPath) const noexcept;
+    int dumpObject(std::string i_fruPath) const noexcept;
 
     /**
      * @brief API to fix system VPD keywords.
