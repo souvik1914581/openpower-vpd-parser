@@ -1102,6 +1102,7 @@ int VpdTool::handleMoreOption(
                 }
                 else
                 {
+                    std::cout << "No mismatch found." << std::endl << std::endl;
                     printFixSystemVpdOption(types::UserOption::NewValueOnBoth);
                     printFixSystemVpdOption(types::UserOption::SkipCurrent);
                     printFixSystemVpdOption(types::UserOption::Exit);
