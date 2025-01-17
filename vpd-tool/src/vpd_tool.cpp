@@ -722,14 +722,6 @@ int VpdTool::dumpInventory(bool i_dumpTable) const noexcept
 
             std::for_each(l_objectPaths.begin(), l_objectPaths.end(),
                           [&](const auto& l_objectPath) {
-                // if object path ends in "unit([0-9][0-9]?)", skip the object
-                // path.
-                if (std::regex_search(l_objectPath,
-                                      std::regex("unit([0-9][0-9]?)")))
-                {
-                    return;
-                }
-
                 const auto l_fruJson = getFruProperties(l_objectPath);
                 if (!l_fruJson.empty())
                 {
@@ -775,6 +767,14 @@ int VpdTool::dumpInventory(bool i_dumpTable) const noexcept
                 // iterate through the json array
                 for (const auto& l_fruEntry : l_resultInJson[0].items())
                 {
+                    // if object path ends in "unit([0-9][0-9]?)", skip adding
+                    // the object path in the table
+                    if (std::regex_search(l_fruEntry.key(),
+                                          std::regex("unit([0-9][0-9]?)")))
+                    {
+                        continue;
+                    }
+
                     std::vector<std::string> l_row;
                     for (const auto& l_column : l_tableColumns)
                     {
@@ -806,6 +806,7 @@ int VpdTool::dumpInventory(bool i_dumpTable) const noexcept
             {
                 // print JSON to console
                 utils::printJson(l_resultInJson);
+                l_rc = constants::SUCCESS;
             }
         }
     }
@@ -1101,6 +1102,7 @@ int VpdTool::handleMoreOption(
                 }
                 else
                 {
+                    std::cout << "No mismatch found." << std::endl << std::endl;
                     printFixSystemVpdOption(types::UserOption::NewValueOnBoth);
                     printFixSystemVpdOption(types::UserOption::SkipCurrent);
                     printFixSystemVpdOption(types::UserOption::Exit);

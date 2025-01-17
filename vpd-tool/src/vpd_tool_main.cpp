@@ -195,13 +195,13 @@ void updateFooter(CLI::App& i_app)
         "Write:\n"
         "    IPZ Format:\n"
         "        On DBus: "
-        "vpd-tool -w -O <DBus Object Path> -R <Record Name> -K <Keyword Name> -V <Keyword Value>\n"
+        "vpd-tool -w/-u -O <DBus Object Path> -R <Record Name> -K <Keyword Name> -V <Keyword Value>\n"
         "        On DBus, take keyword value from file:\n"
-        "              vpd-tool -w -O <DBus Object Path> -R <Record Name> -K <Keyword Name> --file <File Path>\n"
+        "              vpd-tool -w/-u -O <DBus Object Path> -R <Record Name> -K <Keyword Name> --file <File Path>\n"
         "        On hardware: "
-        "vpd-tool -w -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> -V <Keyword Value>\n"
+        "vpd-tool -w/-u -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> -V <Keyword Value>\n"
         "        On hardware, take keyword value from file:\n"
-        "              vpd-tool -w -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> --file <File Path>\n"
+        "              vpd-tool -w/-u -H -O <EEPROM Path> -R <Record Name> -K <Keyword Name> --file <File Path>\n"
         "Dump Object:\n"
         "    From DBus to console: "
         "vpd-tool -o -O <DBus Object Path>\n"
@@ -256,7 +256,7 @@ int main(int argc, char** argv)
     auto l_writeFlag =
         l_app
             .add_flag(
-                "--writeKeyword, -w",
+                "--writeKeyword, -w,--updateKeyword, -u",
                 "Write keyword, Note: Irrespective of DBus or hardware path provided, primary and backup, redundant EEPROM(if any) paths will get updated with given key value")
             ->needs(l_objectOption)
             ->needs(l_recordOption)
