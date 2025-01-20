@@ -332,6 +332,7 @@ int VpdTool::writeKeyword(std::string i_vpdPath,
         if (l_rc > 0)
         {
             std::cout << "Data updated successfully " << std::endl;
+            l_rc = constants::SUCCESS;
         }
     }
     catch (const std::exception& l_ex)
