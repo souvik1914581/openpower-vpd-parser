@@ -1550,8 +1550,6 @@ void Worker::performBackupAndRestore(types::VPDMapVariant& io_srcVpdMap)
             auto [l_srcVpdVariant,
                   l_dstVpdVariant] = l_backupAndRestoreObj.backupAndRestore();
 
-            throw std::runtime_error("Test error");
-
             // ToDo: Revisit is this check is required or not.
             if (auto l_srcVpdMap =
                     std::get_if<types::IPZVpdMap>(&l_srcVpdVariant);
