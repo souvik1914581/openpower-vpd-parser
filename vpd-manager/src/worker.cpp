@@ -1517,7 +1517,8 @@ void Worker::collectFrusFromJson()
                 m_activeCollectionThreadCount--;
                 m_mutex.unlock();
 
-                if (!m_activeCollectionThreadCount)
+                if (!m_activeCollectionThreadCount &&
+                    m_failedEepromPaths.empty())
                 {
                     m_isAllFruCollected = true;
                 }
@@ -1525,13 +1526,17 @@ void Worker::collectFrusFromJson()
         }
         catch (const std::exception& l_ex)
         {
-            // TODO: Should we re-try launching thread for this FRU?
-            EventLogger::createSyncPel(
-                types::ErrorType::InvalidVpdMessage, types::SeverityType::Alert,
-                __FILE__, __FUNCTION__, 0,
-                std::string("Failed to start collection thread for FRU :[" +
-                            vpdFilePath + "]. Error: " + l_ex.what()),
-                std::nullopt, std::nullopt, std::nullopt, std::nullopt);
+            try
+            {
+                // add vpdFilePath(EEPROM path) to failed list
+                m_failedEepromPaths.push_front(vpdFilePath);
+            }
+            catch (const std::exception& l_ex)
+            {
+                logging::logMessage(
+                    "Failed to add [" + vpdFilePath +
+                    "] to failed EEPROM list. Error: " + l_ex.what());
+            }
         }
     }
 }

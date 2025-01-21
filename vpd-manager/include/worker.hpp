@@ -80,7 +80,6 @@ class Worker
      * Note: Config JSON file path should be passed to worker class constructor
      * to make use of this API.
      *
-     * @throw std::runtime_error
      */
     void collectFrusFromJson();
 
@@ -145,6 +144,22 @@ class Worker
     size_t getActiveThreadCount() const
     {
         return m_activeCollectionThreadCount;
+    }
+
+    /**
+     * @brief API to get the list of EEPROMs for which VPD collection thread
+     * creation has failed.
+     *
+     * This API returns the list of EEPROMs for which VPD collection thread
+     * creation has failed by reference. Manager needs to process this list of
+     * EEPROMs and take appropriate action.
+     *
+     * @return reference to list of EEPROM paths for which VPD collection thread
+     * creation has failed
+     */
+    std::forward_list<std::string>& getListOfEepromPathsThreadFailed() noexcept
+    {
+        return m_failedEepromPaths;
     }
 
   private:
@@ -534,5 +549,8 @@ class Worker
     // Counting semaphore to limit the number of threads.
     std::counting_semaphore<constants::MAX_THREADS> m_semaphore{
         constants::MAX_THREADS};
+
+    // List of EEPROM paths for which VPD collection thread creation has failed.
+    std::forward_list<std::string> m_failedEepromPaths;
 };
 } // namespace vpd
