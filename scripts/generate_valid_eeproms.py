@@ -5,10 +5,9 @@ import shutil
 import copy
 
 SYSTEM_CONFIG_JSON_PATH = "/usr/share/vpd/50001000_v2.json"
-NEW_SYSTEM_CONFIG_JSON_PATH = "/tmp/vpd_inventory.json"
+NEW_SYSTEM_CONFIG_JSON_PATH = "/usr/share/vpd/new_vpd_inventory.json"
 SYM_LINK = "/var/lib/vpd/vpd_inventory.json"
-#SYM_LINK="/tmp/vpd_inventory_link.json"
-EEPROM_BASE_PATH = "/tmp/valid_eeproms"
+EEPROM_BASE_PATH = "/tmp/eeproms"
 BASE_INVENTORY_PATH = "/xyz/openbmc_project/inventory/system/chassis/motherboard"
 VALID_EEPROM = "/sys/bus/i2c/drivers/at24/0-0051/eeprom"
 VALID_FILE_COUNT = 10
@@ -25,7 +24,6 @@ INV_DATA = {
         }
     }
 }
-FRU_DATA = {"/sys/bus/i2c/drivers/at24/200-0055/eeprom": INV_DATA}
 
 def add_frus_to_json(fru_details, file_path):
     with open(SYSTEM_CONFIG_JSON_PATH, "r") as file:

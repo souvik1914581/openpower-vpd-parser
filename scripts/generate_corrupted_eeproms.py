@@ -5,18 +5,18 @@ import os
 import copy
 from generate_valid_eeproms import *
 
-EEPROM_BASE_PATH = "/tmp/invalid_eeproms"
+EEPROM_BASE_PATH = "/tmp/eeproms"
 ipzSrcFilePath = "/sys/bus/i2c/drivers/at24/7-0051/eeprom"
 dimmSrcFilePath = "/sys/bus/i2c/drivers/at24/110-0050/eeprom"
 BASE_INVENTORY_PATH = "/xyz/openbmc_project/inventory/system/chassis/motherboard"
 
-corrupt_format = [("missingVtoc", 61, b'\x49\x56'),
-                        ("missingHeader", 17, b'\x49\x56'),
-                        ("invalidRecordOffset", 74, b'\x49\x56'),
-                        ("invalidDdrType", 2, b'\x49'),
-                        ("invalidDensityPerDie", 4, b'\x49\x56'),
-                        ("invalidVpdType", 2, b'\x49\x56'),
-                        ("ZeroDdimmSize", 235, b'\x00')]
+corrupt_format = [("missingVtoc", 61, b'\x49\x56', "ERROR"),
+                        ("missingHeader", 17, b'\x49\x56', "ERROR"),
+                        ("invalidRecordOffset", 74, b'\x49\x56', "ERROR"),
+                        ("invalidDdrType", 2, b'\x49', "ERROR"),
+                        ("invalidDensityPerDie", 4, b'\x49\x56', "ERROR"),
+                        ("invalidVpdType", 2, b'\x49\x56', "ERROR"),
+                        ("ZeroDdimmSize", 235, b'\x00', "ERROR")]
 
 
 
@@ -64,18 +64,18 @@ def createInvalidEeproms():
     truncateFile(ipzSrcFilePath, "truncated", 100)
     fru = get_fru_config("truncated")
     invalid_frus.update(fru)
-    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ECC_ERROR"))
+    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ERROR"))
 
     emptyFile("emptyFile")
     fru = get_fru_config("emptyFile")
     invalid_frus.update(fru)
-    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ECC_ERROR"))
+    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ERROR"))
 
-    for file_name, offset, bytes in corrupt_format:
+    for file_name, offset, bytes, error_type in corrupt_format:
         createCorruptedFiles(ipzSrcFilePath, file_name, offset, bytes)
         fru = get_fru_config(file_name)
         invalid_frus.update(fru)
-        invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ECC_ERROR"))
+        invalid_eeprom_info.append(get_verify_info(next(iter(fru)), error_type))
 
     #print(json.dumps(invalid_frus))
     print(json.dumps(invalid_eeprom_info))
