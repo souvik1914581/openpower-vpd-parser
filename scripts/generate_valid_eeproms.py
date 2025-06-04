@@ -5,15 +5,11 @@ import json
 import os
 import shutil
 
-SYSTEM_CONFIG_JSON_PATH = "/usr/share/vpd/50001000_v2.json"
-NEW_SYSTEM_CONFIG_JSON_PATH = "/usr/share/vpd/new_vpd_inventory.json"
-SYM_LINK = "/var/lib/vpd/vpd_inventory.json"
 EEPROM_BASE_PATH = "/tmp/eeproms"
 BASE_INVENTORY_PATH = (
     "/xyz/openbmc_project/inventory/system/chassis/motherboard"
 )
 VALID_EEPROM = "/sys/bus/i2c/drivers/at24/0-0051/eeprom"
-VALID_FILE_COUNT = 10
 
 INV_DATA = {
     "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/test_fru1",
@@ -23,26 +19,6 @@ INV_DATA = {
         "xyz.openbmc_project.Inventory.Item": {"PrettyName": "Test FRU 1"},
     },
 }
-
-
-def add_frus_to_json(fru_details, file_path):
-    with open(SYSTEM_CONFIG_JSON_PATH, "r") as file:
-        file_data = json.load(file)
-
-        file_data["frus"].update(fru_details)
-
-        file.seek(0)
-        with open(file_path, "w") as f:
-            json.dump(file_data, f, indent=4)
-
-
-def create_sym_link(src, dest):
-    try:
-        os.symlink(src, dest)
-    except FileExistsError:
-        print(f"link {dest} already exists, deleting and creating again !")
-        os.remove(dest)
-        os.symlink(src, dest)
 
 
 def get_fru_config(device_id):
@@ -60,11 +36,11 @@ def get_verify_info(eeprom, field_to_check):
     return (eeprom, "valid_eeprom", field_to_check, "verify_not_started")
 
 
-def create_valid_eeproms():
+def create_valid_eeproms(valid_eeprom_count):
     valid_frus = {}
     valid_eeprom_info = []
 
-    for i in range(0, VALID_FILE_COUNT):
+    for i in range(0, valid_eeprom_count):
         eeprom_path = f"{EEPROM_BASE_PATH}/200-{i:04x}/eeprom"
         os.makedirs(os.path.dirname(eeprom_path), exist_ok=True)
         shutil.copy(VALID_EEPROM, eeprom_path)
@@ -80,8 +56,12 @@ def create_valid_eeproms():
 
 
 def main():
-    create_sym_link(NEW_SYSTEM_CONFIG_JSON_PATH, SYM_LINK)
-    create_valid_eeproms()
+    valid_eeprom_count = 10
+
+    if len(sys.argv) > 1:
+        valid_eeprom_count = int(sys.argv[1])
+
+    create_valid_eeproms(valid_eeprom_count)
 
 
 if __name__ == "__main__":
