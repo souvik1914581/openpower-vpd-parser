@@ -1,14 +1,16 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
+import copy
 import json
 import os
 import shutil
-import copy
 
 SYSTEM_CONFIG_JSON_PATH = "/usr/share/vpd/50001000_v2.json"
 NEW_SYSTEM_CONFIG_JSON_PATH = "/usr/share/vpd/new_vpd_inventory.json"
 SYM_LINK = "/var/lib/vpd/vpd_inventory.json"
 EEPROM_BASE_PATH = "/tmp/eeproms"
-BASE_INVENTORY_PATH = "/xyz/openbmc_project/inventory/system/chassis/motherboard"
+BASE_INVENTORY_PATH = (
+    "/xyz/openbmc_project/inventory/system/chassis/motherboard"
+)
 VALID_EEPROM = "/sys/bus/i2c/drivers/at24/0-0051/eeprom"
 VALID_FILE_COUNT = 10
 
@@ -16,14 +18,11 @@ INV_DATA = {
     "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/test_fru1",
     "serviceName": "xyz.openbmc_project.Inventory.Manager",
     "extraInterfaces": {
-        "com.ibm.ipzvpd.Location": {
-            "LocationCode": "Ufcs-P0-C5"
-        },
-        "xyz.openbmc_project.Inventory.Item": {
-            "PrettyName": "Test FRU 1"
-        }
-    }
+        "com.ibm.ipzvpd.Location": {"LocationCode": "Ufcs-P0-C5"},
+        "xyz.openbmc_project.Inventory.Item": {"PrettyName": "Test FRU 1"},
+    },
 }
+
 
 def add_frus_to_json(fru_details, file_path):
     with open(SYSTEM_CONFIG_JSON_PATH, "r") as file:
@@ -74,9 +73,11 @@ def create_valid_eeproms():
 
     return (valid_frus, valid_eeprom_info)
 
+
 def main():
     create_sym_link(NEW_SYSTEM_CONFIG_JSON_PATH, SYM_LINK)
     create_valid_eeproms()
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()

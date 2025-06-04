@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import shutil
 import os
 import copy
 from generate_valid_eeproms import *
@@ -25,7 +24,7 @@ def createCorruptedFiles(src_file_path, dest_name, offset, new_bytes):
     os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
     shutil.copy(src_file_path, dest_file_path)
 
-    fs= open(dest_file_path, "rb+")
+    fs = open(dest_file_path, "rb+")
     fs.seek(offset)
     fs.write(new_bytes)
 
