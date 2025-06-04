@@ -29,8 +29,14 @@ PREACTION_DATA = {
 
 #(error_name, eeprom_file, offset, bytes_to_update, pel_type)
 corrupt_format = [("missingVtoc", ipzSrcFilePath, 61, b'\x49\x56', "ERROR"),
-                        ("missingHeader", ipzSrcFilePath, 17, b'\x49\x56', "ERROR"),
-                        ("invalidRecordOffset", ipzSrcFilePath, 74, b'\x49\x56', "ERROR"),
+                        ("missingVhdr", ipzSrcFilePath, 17, b'\x49\x56', "ERROR"),
+                        ("invalidVtocEcc", ipzSrcFilePath, 74, b'\x49\x56', "ERROR"),
+                        ("invalidVhdrEcc", ipzSrcFilePath, 10, b'\x55', "ERROR"),
+                        ("invalidRecordOffset", ipzSrcFilePath, 88, b'\x00\x00', "EEPROM"),
+                        ("invalidRecordEccLength", ipzSrcFilePath, 94, b'\x00\x00', "EEPROM"),
+                        ("invalidRecordLength", ipzSrcFilePath, 90, b'\x00\x00', "EEPROM"),
+                        ("recordEccCheckFail", ipzSrcFilePath, 407, b'\x10\x11\x12', "EEPROM"),
+                        ("ecc1BitCorruption", ipzSrcFilePath, 127, b'\x4d', "EEPROM"),
                         ("invalidDdrType", dimmSrcFilePath, 2, b'\x49', "ERROR"),
                         ("invalidDensityPerDie", dimmSrcFilePath, 4, b'\x49\x56', "ERROR"),
                         ("invalidVpdType", dimmSrcFilePath, 2, b'\x49\x56', "ERROR"),
