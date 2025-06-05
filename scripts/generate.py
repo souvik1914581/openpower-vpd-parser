@@ -3,13 +3,10 @@
 import random
 import shutil
 import sys
+import json
 
 from generate_corrupted_eeproms import *
 from generate_valid_eeproms import *
-
-SYSTEM_CONFIG_JSON_PATH_BASE = "/usr/share/vpd"
-VERIFY_FILE_PATH = "/tmp/verify_report.json"
-
 
 def update_verify_info(verify_data):
     with open(VERIFY_FILE_PATH, "w") as f:
@@ -43,8 +40,11 @@ def main():
 
     print("System Config JSON path: ", system_config_json_path)
 
-    shutil.copy(system_config_json_path, system_config_json_path + "_bkp")
-    # create_sym_link(SYSTEM_CONFIG_JSON_PATH, SYM_LINK)
+    # Take a backup of config file
+    if os.path.exists(system_config_json_path + "_bkp"):
+        shutil.copy(system_config_json_path+ "_bkp", system_config_json_path)
+    else:
+        shutil.copy(system_config_json_path, system_config_json_path + "_bkp")
 
     valid_frus_map, valid_verify_data = create_valid_eeproms(
         random.randrange(50)
