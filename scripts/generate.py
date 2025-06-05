@@ -7,8 +7,8 @@ import sys
 from generate_corrupted_eeproms import *
 from generate_valid_eeproms import *
 
-VERIFY_FILE_PATH = "/tmp/verify_report.txt"
 SYSTEM_CONFIG_JSON_PATH_BASE = "/usr/share/vpd"
+VERIFY_FILE_PATH = "/tmp/verify_report.json"
 
 
 def update_verify_info(verify_data):

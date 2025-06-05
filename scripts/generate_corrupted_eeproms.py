@@ -9,20 +9,16 @@ from generate_valid_eeproms import *
 EEPROM_BASE_PATH = "/tmp/eeproms"
 ipzSrcFilePath = "/sys/bus/i2c/drivers/at24/7-0051/eeprom"
 dimmSrcFilePath = "/sys/bus/i2c/drivers/at24/110-0050/eeprom"
-BASE_INVENTORY_PATH = (
-    "/xyz/openbmc_project/inventory/system/chassis/motherboard"
-)
+BASE_INVENTORY_PATH = "/xyz/openbmc_project/inventory/system/chassis/motherboard"
 
-corrupt_format = [
-    ("missingVtoc", 61, b"\x49\x56", "ERROR"),
-    ("missingHeader", 17, b"\x49\x56", "ERROR"),
-    ("invalidRecordOffset", 74, b"\x49\x56", "ERROR"),
-    ("invalidDdrType", 2, b"\x49", "ERROR"),
-    ("invalidDensityPerDie", 4, b"\x49\x56", "ERROR"),
-    ("invalidVpdType", 2, b"\x49\x56", "ERROR"),
-    ("ZeroDdimmSize", 235, b"\x00", "ERROR"),
-]
-
+#(error_name, eeprom_file, offset, bytes_to_update, pel_type)
+corrupt_format = [("missingVtoc", ipzSrcFilePath, 61, b'\x49\x56', "ERROR"),
+                        ("missingHeader", ipzSrcFilePath, 17, b'\x49\x56', "ERROR"),
+                        ("invalidRecordOffset", ipzSrcFilePath, 74, b'\x49\x56', "ERROR"),
+                        ("invalidDdrType", dimmSrcFilePath, 2, b'\x49', "ERROR"),
+                        ("invalidDensityPerDie", dimmSrcFilePath, 4, b'\x49\x56', "ERROR"),
+                        ("invalidVpdType", dimmSrcFilePath, 2, b'\x49\x56', "ERROR"),
+                        ("ZeroDdimmSize", dimmSrcFilePath, 235, b'\x00', "ERROR")]
 
 def createCorruptedFiles(src_file_path, dest_name, offset, new_bytes):
     dest_file_path = os.path.join(EEPROM_BASE_PATH, dest_name, "eeprom")
@@ -72,7 +68,7 @@ def createInvalidEeproms():
     invalid_frus = {}
     invalid_eeprom_info = []
 
-    truncateFile(ipzSrcFilePath, "truncated", 100)
+    truncateFile(ipzSrcFilePath, "truncated", 40)
     fru = get_fru_config("truncated")
     invalid_frus.update(fru)
     invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ERROR"))
@@ -82,8 +78,8 @@ def createInvalidEeproms():
     invalid_frus.update(fru)
     invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ERROR"))
 
-    for file_name, offset, bytes, error_type in corrupt_format:
-        createCorruptedFiles(ipzSrcFilePath, file_name, offset, bytes)
+    for file_name, eeprom_path, offset, bytes, error_type in corrupt_format:
+        createCorruptedFiles(eeprom_path, file_name, offset, bytes)
         fru = get_fru_config(file_name)
         invalid_frus.update(fru)
         invalid_eeprom_info.append(
