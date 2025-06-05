@@ -4,25 +4,10 @@ import copy
 import json
 import os
 import shutil
-
-EEPROM_BASE_PATH = "/tmp/eeproms"
-BASE_INVENTORY_PATH = (
-    "/xyz/openbmc_project/inventory/system/chassis/motherboard"
-)
-VALID_EEPROM = "/sys/bus/i2c/drivers/at24/0-0051/eeprom"
-
-INV_DATA = {
-    "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/test_fru1",
-    "serviceName": "xyz.openbmc_project.Inventory.Manager",
-    "extraInterfaces": {
-        "com.ibm.ipzvpd.Location": {"LocationCode": "Ufcs-P0-C5"},
-        "xyz.openbmc_project.Inventory.Item": {"PrettyName": "Test FRU 1"},
-    },
-}
-
+from constants import *
 
 def get_fru_config(device_id):
-    sub_fru = copy.deepcopy(INV_DATA)
+    sub_fru = copy.deepcopy(FRU_INVENTORY_DATA)
     eeprom_path = f"{EEPROM_BASE_PATH}/200-{device_id:04x}/eeprom"
     sub_fru["inventoryPath"] = f"{BASE_INVENTORY_PATH}/valid_fru_{device_id}"
     sub_fru["extraInterfaces"]["xyz.openbmc_project.Inventory.Item"][
@@ -47,7 +32,7 @@ def create_valid_eeproms(valid_eeprom_count):
 
         fru = get_fru_config(i)
         valid_frus.update(fru)
-        valid_eeprom_info.append(get_verify_info(next(iter(fru)), "completed"))
+        valid_eeprom_info.append(get_verify_info(next(iter(fru)), "CollectionStatus"))
 
     # print(json.dumps(valid_frus))
     print(json.dumps(valid_eeprom_info))
