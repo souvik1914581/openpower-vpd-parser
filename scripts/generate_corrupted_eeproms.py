@@ -12,7 +12,7 @@ def createWrongGpioFru(src_file_path):
     dest_file_path = os.path.join(EEPROM_BASE_PATH, "gpioPinNotFound", "eeprom")
     fru = get_fru_config("gpioPinNotFound")
     fru[dest_file_path][0].update(copy.deepcopy(PREACTION_DATA))
-    verify_info = get_verify_info(dest_file_path, "GPIO_ERROR")
+    verify_info = get_verify_info(dest_file_path, "verify_not_started")
 
     return (fru, verify_info)
 
@@ -56,9 +56,8 @@ def get_fru_config(name):
     return {eeprom_path: [sub_fru]}
 
 
-def get_verify_info(eeprom, field_to_check):
-    return (eeprom, "invalid_eeprom", field_to_check, "verify_not_started")
-
+def get_verify_info(eeprom, status):
+    return {"file_path": eeprom, "type": "invalid_eeprom", "status": status}
 
 def createInvalidEeproms():
     invalid_frus = {}
@@ -67,12 +66,12 @@ def createInvalidEeproms():
     truncateFile(ipzSrcFilePath, "truncated", 40)
     fru = get_fru_config("truncated")
     invalid_frus.update(fru)
-    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ERROR"))
+    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "verify_not_started"))
 
     emptyFile("emptyFile")
     fru = get_fru_config("emptyFile")
     invalid_frus.update(fru)
-    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "ERROR"))
+    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "verify_not_started"))
 
     gpio_fru, gpio_verify_info = createWrongGpioFru(ipzSrcFilePath)
     invalid_frus.update(gpio_fru)
@@ -83,7 +82,7 @@ def createInvalidEeproms():
         fru = get_fru_config(file_name)
         invalid_frus.update(fru)
         invalid_eeprom_info.append(
-            get_verify_info(next(iter(fru)), error_type)
+            get_verify_info(next(iter(fru)), "verify_not_started")
         )
 
     print(json.dumps(invalid_eeprom_info))

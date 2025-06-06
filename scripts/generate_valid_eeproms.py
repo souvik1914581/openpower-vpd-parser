@@ -17,8 +17,8 @@ def get_fru_config(device_id):
     return {eeprom_path: [sub_fru]}
 
 
-def get_verify_info(eeprom, field_to_check):
-    return (eeprom, "valid_eeprom", field_to_check, "verify_not_started")
+def get_verify_info(eeprom, status):
+    return {"file_path": eeprom, "type": "valid_eeprom", "status": status}
 
 
 def create_valid_eeproms(valid_eeprom_count):
@@ -32,7 +32,7 @@ def create_valid_eeproms(valid_eeprom_count):
 
         fru = get_fru_config(i)
         valid_frus.update(fru)
-        valid_eeprom_info.append(get_verify_info(next(iter(fru)), "CollectionStatus"))
+        valid_eeprom_info.append(get_verify_info(next(iter(fru)), "verify_not_started"))
 
     print(json.dumps(valid_eeprom_info))
 
