@@ -34,7 +34,6 @@ def create_valid_eeproms(valid_eeprom_count):
         valid_frus.update(fru)
         valid_eeprom_info.append(get_verify_info(next(iter(fru)), "CollectionStatus"))
 
-    # print(json.dumps(valid_frus))
     print(json.dumps(valid_eeprom_info))
 
     return (valid_frus, valid_eeprom_info)

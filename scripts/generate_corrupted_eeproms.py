@@ -10,8 +10,6 @@ import json
 
 def createWrongGpioFru(src_file_path):
     dest_file_path = os.path.join(EEPROM_BASE_PATH, "gpioPinNotFound", "eeprom")
-    #os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
-    #shutil.copy(src_file_path, dest_file_path)
     fru = get_fru_config("gpioPinNotFound")
     fru[dest_file_path][0].update(copy.deepcopy(PREACTION_DATA))
     verify_info = get_verify_info(dest_file_path, "GPIO_ERROR")
@@ -88,7 +86,6 @@ def createInvalidEeproms():
             get_verify_info(next(iter(fru)), error_type)
         )
 
-    # print(json.dumps(invalid_frus))
     print(json.dumps(invalid_eeprom_info))
 
     return (invalid_frus, invalid_eeprom_info)
