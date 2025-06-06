@@ -40,6 +40,9 @@ def main():
 
     print("System Config JSON path: ", system_config_json_path)
 
+    # remove old eeprom files
+    shutil.rmtree(EEPROM_BASE_PATH, ignore_errors=True)
+
     # Take a backup of config file
     if os.path.exists(system_config_json_path + "_bkp"):
         shutil.copy(system_config_json_path+ "_bkp", system_config_json_path)
