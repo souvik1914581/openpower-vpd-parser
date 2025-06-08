@@ -14,16 +14,15 @@ def get_fru_config(device_id):
         "PrettyName"
     ] = f"Test FRU {device_id}"
 
-    return {eeprom_path: [sub_fru]}
+    return sub_fru
+    #return {eeprom_path: [sub_fru]}
 
-
-def get_verify_info(eeprom, status):
-    return {"file_path": eeprom, "type": "valid_eeprom", "status": status}
-
+def get_verify_info(eeprom, inv_path):
+    return {"eeprom_path": eeprom, "inventory_path": inv_path,  "type": "valid_eeprom", "status": "verify_not_started"}
 
 def create_valid_eeproms(valid_eeprom_count):
-    valid_frus = {}
-    valid_eeprom_info = []
+    frus_cfg = {}
+    verify_info = []
 
     for i in range(0, valid_eeprom_count):
         eeprom_path = f"{EEPROM_BASE_PATH}/200-{i:04x}/eeprom"
@@ -31,12 +30,13 @@ def create_valid_eeproms(valid_eeprom_count):
         shutil.copy(VALID_EEPROM, eeprom_path)
 
         fru = get_fru_config(i)
-        valid_frus.update(fru)
-        valid_eeprom_info.append(get_verify_info(next(iter(fru)), "verify_not_started"))
+        frus_cfg.update({eeprom_path: [fru]})
+        #verify_info.append(get_verify_info(next(iter(fru)), fru[0]["inventoryPath"]))
+        verify_info.append(get_verify_info(eeprom_path, fru["inventoryPath"]))
 
-    print(json.dumps(valid_eeprom_info))
+    print(json.dumps(verify_info))
 
-    return (valid_frus, valid_eeprom_info)
+    return (frus_cfg, verify_info)
 
 
 def main():

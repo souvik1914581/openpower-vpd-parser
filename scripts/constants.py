@@ -6,6 +6,7 @@ VERIFY_FILE_PATH = "/tmp/verify_report.json"
 VALID_EEPROM = "/sys/bus/i2c/drivers/at24/0-0051/eeprom"
 ipzSrcFilePath = "/sys/bus/i2c/drivers/at24/7-0051/eeprom"
 dimmSrcFilePath = "/sys/bus/i2c/drivers/at24/110-0050/eeprom"
+PEL_DUMP_PATH = "/tmp/pel_output.json"
 
 FRU_INVENTORY_DATA = {
     "inventoryPath": "/xyz/openbmc_project/inventory/system/chassis/motherboard/test_fru1",
