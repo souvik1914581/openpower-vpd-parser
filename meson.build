@@ -70,7 +70,6 @@ if get_option('ibm_system').allowed()
         'scripts/generate_valid_eeproms.py',
         'scripts/generate_corrupted_eeproms.py',
         'scripts/verify.py',
-        'scripts/verify_report.py',
         'scripts/constants.py',
     ]
 
