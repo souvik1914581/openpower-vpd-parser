@@ -4,7 +4,9 @@ import copy
 import json
 import os
 import shutil
+
 from constants import *
+
 
 def get_fru_config(device_id):
     sub_fru = copy.deepcopy(FRU_INVENTORY_DATA)
@@ -15,10 +17,17 @@ def get_fru_config(device_id):
     ] = f"Test FRU {device_id}"
 
     return sub_fru
-    #return {eeprom_path: [sub_fru]}
+    # return {eeprom_path: [sub_fru]}
+
 
 def get_verify_info(eeprom, inv_path):
-    return {"eeprom_path": eeprom, "inventory_path": inv_path,  "type": "valid_eeprom", "status": "verify_not_started"}
+    return {
+        "eeprom_path": eeprom,
+        "inventory_path": inv_path,
+        "type": "valid_eeprom",
+        "status": "verify_not_started",
+    }
+
 
 def create_valid_eeproms(valid_eeprom_count):
     frus_cfg = {}
@@ -31,7 +40,7 @@ def create_valid_eeproms(valid_eeprom_count):
 
         fru = get_fru_config(i)
         frus_cfg.update({eeprom_path: [fru]})
-        #verify_info.append(get_verify_info(next(iter(fru)), fru[0]["inventoryPath"]))
+        # verify_info.append(get_verify_info(next(iter(fru)), fru[0]["inventoryPath"]))
         verify_info.append(get_verify_info(eeprom_path, fru["inventoryPath"]))
 
     print(json.dumps(verify_info))
