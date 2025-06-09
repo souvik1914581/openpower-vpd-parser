@@ -140,14 +140,14 @@ def update_eeprom_status():
     with open(VERIFY_FILE_PATH, "w") as file:
         json.dump(verify_report, file, indent=4)
 
-    print("Updated JSON:", verify_report)
-
 
 def get_pel_dump():
     os.system("peltool -afh > " + PEL_DUMP_PATH)
 
     with open(PEL_DUMP_PATH) as fs:
         pel_data = json.load(fs)
+
+    os.system("rm -rf " + PEL_DUMP_PATH)
 
     return pel_data
 

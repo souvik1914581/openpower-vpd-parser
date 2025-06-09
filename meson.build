@@ -92,6 +92,13 @@ if get_option('ibm_system').allowed()
         install_dir: package_datadir,
         strip_directory: true,
     )
+
+    install_subdir(
+        'test/vpd_files/ddr5_ddimm.dat',
+        install_mode: 'rwxr-xr-x',
+        install_dir: package_datadir,
+        strip_directory: true,
+    )
 endif
 
 libgpiodcxx = dependency('libgpiodcxx', default_options: ['bindings=cxx'])
