@@ -12,11 +12,11 @@ def createWrongGpioFru(src_file_path):
     dest_file_path = os.path.join(EEPROM_BASE_PATH, "gpioPinNotFound", "eeprom")
     fru = get_fru_config("gpioPinNotFound")
     fru[dest_file_path][0].update(copy.deepcopy(PREACTION_DATA))
-    verify_info = get_verify_info(dest_file_path, "verify_not_started")
+    verify_info = get_verify_info(dest_file_path, fru[dest_file_path][0]["inventoryPath"])
 
     return (fru, verify_info)
 
-def createCorruptedFiles(src_file_path, dest_name, offset, new_bytes):
+def createCorruptedFile(src_file_path, dest_name, offset, new_bytes):
     dest_file_path = os.path.join(EEPROM_BASE_PATH, dest_name, "eeprom")
     os.makedirs(os.path.dirname(dest_file_path), exist_ok=True)
     shutil.copy(src_file_path, dest_file_path)
@@ -26,6 +26,7 @@ def createCorruptedFiles(src_file_path, dest_name, offset, new_bytes):
     fs.write(new_bytes)
 
     fs.close()
+    return dest_file_path
 
 
 def truncateFile(src_file_path, dest_name, offset):
@@ -36,6 +37,8 @@ def truncateFile(src_file_path, dest_name, offset):
     with open(dest_file_path, "rb+") as fs:
         fs.truncate(offset)
 
+    return dest_file_path
+
 
 def emptyFile(dest_name):
     dest_file_path = os.path.join(EEPROM_BASE_PATH, dest_name, "eeprom")
@@ -43,6 +46,8 @@ def emptyFile(dest_name):
 
     with open(dest_file_path, "wb+") as fs:
         pass
+
+    return dest_file_path
 
 
 def get_fru_config(name):
@@ -56,38 +61,38 @@ def get_fru_config(name):
     return {eeprom_path: [sub_fru]}
 
 
-def get_verify_info(eeprom, status):
-    return {"file_path": eeprom, "type": "invalid_eeprom", "status": status}
+def get_verify_info(eeprom, inv_path):
+    return {"eeprom_path": eeprom, "inventory_path": inv_path, "type": "invalid_eeprom", "status": "verify_not_started"}
 
 def createInvalidEeproms():
-    invalid_frus = {}
-    invalid_eeprom_info = []
+    frus_cfg = {}
+    verify_info = []
 
-    truncateFile(ipzSrcFilePath, "truncated", 40)
+    eeprom_path = truncateFile(ipzSrcFilePath, "truncated", 40)
     fru = get_fru_config("truncated")
-    invalid_frus.update(fru)
-    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "verify_not_started"))
+    frus_cfg.update(fru)
+    verify_info.append(get_verify_info(eeprom_path, fru[eeprom_path][0]["inventoryPath"]))
 
-    emptyFile("emptyFile")
+    eeprom_path = emptyFile("emptyFile")
     fru = get_fru_config("emptyFile")
-    invalid_frus.update(fru)
-    invalid_eeprom_info.append(get_verify_info(next(iter(fru)), "verify_not_started"))
+    frus_cfg.update(fru)
+    verify_info.append(get_verify_info(eeprom_path, fru[eeprom_path][0]["inventoryPath"]))
 
     gpio_fru, gpio_verify_info = createWrongGpioFru(ipzSrcFilePath)
-    invalid_frus.update(gpio_fru)
-    invalid_eeprom_info.append(gpio_verify_info)
+    frus_cfg.update(gpio_fru)
+    verify_info.append(gpio_verify_info)
 
     for file_name, eeprom_path, offset, bytes, error_type in corrupt_format:
-        createCorruptedFiles(eeprom_path, file_name, offset, bytes)
+        dst_eeprom_path = createCorruptedFile(eeprom_path, file_name, offset, bytes)
         fru = get_fru_config(file_name)
-        invalid_frus.update(fru)
-        invalid_eeprom_info.append(
-            get_verify_info(next(iter(fru)), "verify_not_started")
+        frus_cfg.update(fru)
+        verify_info.append(
+            get_verify_info(dst_eeprom_path, fru[dst_eeprom_path][0]["inventoryPath"])
         )
 
-    print(json.dumps(invalid_eeprom_info))
+    print(json.dumps(verify_info))
 
-    return (invalid_frus, invalid_eeprom_info)
+    return (frus_cfg, verify_info)
 
 
 if __name__ == "__main__":

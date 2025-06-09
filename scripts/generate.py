@@ -40,8 +40,12 @@ def main():
 
     print("System Config JSON path: ", system_config_json_path)
 
-    # remove old eeprom files
+    # cleanup: remove old traces
     shutil.rmtree(EEPROM_BASE_PATH, ignore_errors=True)
+    try:
+        os.remove(PEL_DUMP_PATH)
+    except OSError:
+        pass
 
     # Take a backup of config file
     if os.path.exists(system_config_json_path + "_bkp"):
