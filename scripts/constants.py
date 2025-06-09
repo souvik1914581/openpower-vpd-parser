@@ -1,5 +1,7 @@
 EEPROM_BASE_PATH = "/tmp/eeproms"
-BASE_INVENTORY_PATH = "/xyz/openbmc_project/inventory/system/chassis/motherboard"
+BASE_INVENTORY_PATH = (
+    "/xyz/openbmc_project/inventory/system/chassis/motherboard"
+)
 SYSTEM_CONFIG_JSON_PATH_BASE = "/usr/share/vpd"
 VERIFY_FILE_PATH = "/tmp/verify_report.json"
 
@@ -17,28 +19,27 @@ FRU_INVENTORY_DATA = {
     },
 }
 
-PREACTION_DATA = {                
-        "preAction": {
-            "collection": {
-                "gpioPresence": {
-                    "pin": "PRESENT_PIN_NOT_EXISTS_N",
-                    "value": 0
-                    }
-                }
-            }
+PREACTION_DATA = {
+    "preAction": {
+        "collection": {
+            "gpioPresence": {"pin": "PRESENT_PIN_NOT_EXISTS_N", "value": 0}
         }
+    }
+}
 
-#(error_name, eeprom_file, offset, bytes_to_update, pel_type)
-corrupt_format = [("missingVtoc", ipzSrcFilePath, 61, b'\x49\x56', "ERROR"),
-                        ("missingVhdr", ipzSrcFilePath, 17, b'\x49\x56', "ERROR"),
-                        ("invalidVtocEcc", ipzSrcFilePath, 74, b'\x49\x56', "ERROR"),
-                        ("invalidVhdrEcc", ipzSrcFilePath, 10, b'\x55', "ERROR"),
-                        ("invalidRecordOffset", ipzSrcFilePath, 88, b'\x00\x00', "EEPROM"),
-                        ("invalidRecordEccLength", ipzSrcFilePath, 94, b'\x00\x00', "EEPROM"),
-                        ("invalidRecordLength", ipzSrcFilePath, 90, b'\x00\x00', "EEPROM"),
-                        ("recordEccCheckFail", ipzSrcFilePath, 407, b'\x10\x11\x12', "EEPROM"),
-                        ("ecc1BitCorruption", ipzSrcFilePath, 127, b'\x4d', "EEPROM"),
-                        ("invalidDdrType", dimmSrcFilePath, 2, b'\x49', "ERROR"),
-                        ("invalidDensityPerDie", dimmSrcFilePath, 4, b'\x49\x56', "ERROR"),
-                        ("invalidVpdType", dimmSrcFilePath, 2, b'\x49\x56', "ERROR"),
-                        ("ZeroDdimmSize", dimmSrcFilePath, 235, b'\x00', "ERROR")]
+# (error_name, eeprom_file, offset, bytes_to_update, pel_type)
+corrupt_format = [
+    ("missingVtoc", ipzSrcFilePath, 61, b"\x49\x56", "ERROR"),
+    ("missingVhdr", ipzSrcFilePath, 17, b"\x49\x56", "ERROR"),
+    ("invalidVtocEcc", ipzSrcFilePath, 74, b"\x49\x56", "ERROR"),
+    ("invalidVhdrEcc", ipzSrcFilePath, 10, b"\x55", "ERROR"),
+    ("invalidRecordOffset", ipzSrcFilePath, 88, b"\x00\x00", "EEPROM"),
+    ("invalidRecordEccLength", ipzSrcFilePath, 94, b"\x00\x00", "EEPROM"),
+    ("invalidRecordLength", ipzSrcFilePath, 90, b"\x00\x00", "EEPROM"),
+    ("recordEccCheckFail", ipzSrcFilePath, 407, b"\x10\x11\x12", "EEPROM"),
+    ("ecc1BitCorruption", ipzSrcFilePath, 127, b"\x4d", "EEPROM"),
+    ("invalidDdrType", dimmSrcFilePath, 2, b"\x49", "ERROR"),
+    ("invalidDensityPerDie", dimmSrcFilePath, 4, b"\x49\x56", "ERROR"),
+    ("invalidVpdType", dimmSrcFilePath, 2, b"\x49\x56", "ERROR"),
+    ("ZeroDdimmSize", dimmSrcFilePath, 235, b"\x00", "ERROR"),
+]
