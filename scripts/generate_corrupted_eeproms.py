@@ -111,8 +111,6 @@ def createInvalidEeproms():
             )
         )
 
-    print(json.dumps(verify_info))
-
     return (frus_cfg, verify_info)
 
 

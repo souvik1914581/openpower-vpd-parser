@@ -43,8 +43,6 @@ def create_valid_eeproms(valid_eeprom_count):
         # verify_info.append(get_verify_info(next(iter(fru)), fru[0]["inventoryPath"]))
         verify_info.append(get_verify_info(eeprom_path, fru["inventoryPath"]))
 
-    print(json.dumps(verify_info))
-
     return (frus_cfg, verify_info)
 
 
