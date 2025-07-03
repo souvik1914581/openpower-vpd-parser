@@ -145,6 +145,22 @@ class IbmHandler
      */
     void enableMuxChips();
 
+    /**
+     * @brief API to register "Present" property change callback
+     *
+     * This API registers "Present" property change callback for FRUs for
+     * which "monitorPresence" is true in system config JSON.
+     */
+    void registerPresenceChangeCallback() noexcept;
+
+    /**
+     * @brief Callback API to be triggered on "Present" property change.
+     *
+     * @param[in] i_msg - Callback message.
+     */
+    void presentPropertyChangeCallback(
+        sdbusplus::message_t& i_msg) const noexcept;
+
     // Parsed system config json object.
     nlohmann::json m_sysCfgJsonObj{};
 
