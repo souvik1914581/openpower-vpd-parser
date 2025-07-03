@@ -2,6 +2,7 @@
 
 #include "backup_restore.hpp"
 #include "gpio_monitor.hpp"
+#include "types.hpp"
 #include "worker.hpp"
 
 #include <sdbusplus/asio/object_server.hpp>
@@ -181,5 +182,8 @@ class IbmHandler
 
     // Shared pointer to bus connection.
     const std::shared_ptr<sdbusplus::asio::connection>& m_asioConnection;
+
+    // Map of inventory path to Present property match object
+    types::FruPresenceMatchObjectMap m_fruPresenceMatchObjectMap;
 };
 } // namespace vpd
