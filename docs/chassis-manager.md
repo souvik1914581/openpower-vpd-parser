@@ -204,9 +204,8 @@ private:
      * @param[in] i_configJsonPath - Path to system config JSON
      * @throw JsonException on parsing errors
      */
-    explicit ChassisManager(const std::string& i_configJsonPath)
+    explicit ChassisManager(const nlohmann::json& i_systemConfigJson) : m_systemConfigJson{i_systemConfigJson}
     {
-      m_systemConfigJson = jsonUtility::getParsedJson(i_configJsonPath);
       buildchassisToFruMap();
     }
 
@@ -216,7 +215,8 @@ private:
         /* TODO:
           1. Iterate through "frus" under system config JSON
             1.i. For each FRU, iterate through the sub FRUS
-              1.i.i For each sub FRU, use the object path to get the chassis ID, and add the sub JSON to the ChassisToFRU Map.
+                  1.i.i. For each FRU, extract Chassis ID using Object path at index 0, and build EEPROM to Chassis Map.
+                  1.i.ii. For each sub FRU, use the object path to get the chassis ID, and add the sub JSON to the ChassisToFRU Map.
 
         */
 
@@ -249,6 +249,9 @@ private:
     // Chassis ID to chassis info map - O(1) lookup
     std::unordered_map<std::string, ChassisInfo> m_chassisInfoMap;
 
+    // EEPROM path to chassis ID - O(1) lookup
+    std::unordered_map<std::string, std::string> m_eepromToChassisIdMap;
+
     // Flag indicating multi-chassis system
     bool m_isMultiChassis{false};
 };
@@ -256,7 +259,7 @@ private:
 } // namespace vpd
 ```
 
-### Chassis config example:
+### m_chassisInfoMap entry example:
 
 ```json
 "chassis0":{
