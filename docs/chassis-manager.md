@@ -377,16 +377,6 @@ ChassisConfigManager:
 - **Initialization**: O(n) - one-time cost to build maps
 - **Scalability**: Excellent - constant time regardless of chassis count
 
-### Performance Comparison
-
-| Operation              | Current | Proposed | Improvement        |
-| ---------------------- | ------- | -------- | ------------------ |
-| Get chassis for EEPROM | N/A     | O(1)     | New capability     |
-| Get FRU path           | O(n)    | O(1)     | n-fold improvement |
-| Get inventory path     | O(n)    | O(1)     | n-fold improvement |
-| Get VPD offset         | O(n)    | O(1)     | n-fold improvement |
-| Memory usage           | 1x      | ~1.1x    | Minimal overhead   |
-
 ---
 
 ---
