@@ -1,4 +1,4 @@
-# Chassis Manager : Design Proposal for handling multi-chassis system
+# Chassis Config Manager : Design Proposal for handling multi-chassis system
 
 ## Summary
 
@@ -126,7 +126,7 @@ Key APIs that need chassis context:
 
 ```mermaid
 graph TB
-    A[ibm_handler] --> B[ChassisManager]
+    A[ibm_handler] --> B[ChassisConfigManager]
     B --> C[json_utility APIs]
 
     D[worker] --> B
@@ -136,10 +136,10 @@ graph TB
 
 ```
 
-### ChassisManager - New Abstraction Layer
+### ChassisConfigManager - New Abstraction Layer
 
 Create a new singleton class
-[`ChassisManager`](vpd-manager/include/chassis_manager.hpp:1) that sits as a
+[`ChassisConfigManager`](vpd-manager/include/chassis_manager.hpp:1) that sits as a
 layer between vpd-manager (`ibm_handler`, `worker` and `manager`) and
 json_utility APIs. json_utility APIs should not be affected.
 
@@ -167,18 +167,18 @@ struct ChassisInfo
 
 
 // Main chassis manager class
-class ChassisManager
+class ChassisConfigManager
 {
 public:
 
     /**
      * @brief Method to get instance of Chassis Manager class.
      */
-    static std::shared_ptr<ChassisManager> getChassisManagerInstance()
+    static std::shared_ptr<ChassisConfigManager> getChassisConfigManagerInstance()
     {
         if (!m_chassisManagerInstance)
         {
-            m_chassisManagerInstance = std::shared_ptr<ChassisManager>(new ChassisManager());
+            m_chassisManagerInstance = std::shared_ptr<ChassisConfigManager>(new ChassisConfigManager());
         }
         return m_chassisManagerInstance;
     }
@@ -190,10 +190,14 @@ public:
     bool isMultiChassis() const noexcept;
 
     /**
-     * @brief Get full system config JSON (for backward compatibility)
+     * @brief Get config JSON (for backward compatibility)
+*        - If input parameter is std::nullopt, then return main system config JSON
+*        - If input parameter is EEPROM path, return Chassis specific JSON
+*        - If input parameter is Object path, return Chassis specific JSON
      * @return Complete system config JSON
      */
-    const nlohmann::json& getSystemConfig() const noexcept;
+    const nlohmann::json& getSystemConfig(const std::optional<std::string> i_vpdPath = std::nullopt) const noexcept;
+
 
 private:
 
@@ -204,7 +208,7 @@ private:
      * @param[in] i_configJsonPath - Path to system config JSON
      * @throw JsonException on parsing errors
      */
-    explicit ChassisManager(const nlohmann::json& i_systemConfigJson) : m_systemConfigJson{i_systemConfigJson}
+    explicit ChassisConfigManager(const nlohmann::json& i_systemConfigJson) : m_systemConfigJson{i_systemConfigJson}
     {
       buildchassisToFruMap();
     }
@@ -241,7 +245,7 @@ private:
                                     uint16_t& o_errCode) const noexcept;
 
     // Instance to the chassis manager
-    static std::shared_ptr<ChassisManager> m_chassisManagerInstance;
+    static std::shared_ptr<ChassisConfigManager> m_chassisManagerInstance;
 
     // System config JSON
     nlohmann::json m_systemConfigJson;
@@ -328,6 +332,12 @@ private:
 
 ```
 
+### m_eepromToChassis map example
+```json
+    "/sys/bus/i2c/drivers/at24/8-0051/eeprom" : "chassis0"
+
+```
+
 ---
 
 ## API Integration Strategy
@@ -335,7 +345,7 @@ private:
 ### Integration with Worker Class
 
 Modify [`Worker`](vpd-manager/include/worker.hpp:28) class to use
-ChassisManager:
+ChassisConfigManager:
 
 ---
 
@@ -385,7 +395,7 @@ ChassisManager:
 
 ### Phase 1: Core Infrastructure
 
-- Create [`ChassisManager`](vpd-manager/include/utility/chassis_manager.hpp:1)
+- Create [`ChassisConfigManager`](vpd-manager/include/utility/chassis_manager.hpp:1)
   class
 - Implement JSON parsing for both single and multi-chassis
 - Build EEPROM-to-chassis mapping with O(1) lookup
@@ -395,10 +405,10 @@ ChassisManager:
 
 - Add chassis-aware wrapper APIs in
   [`json_utility`](vpd-manager/include/utility/json_utility.hpp:1)
-- Integrate ChassisManager with [`Worker`](vpd-manager/include/worker.hpp:28)
+- Integrate ChassisConfigManager with [`Worker`](vpd-manager/include/worker.hpp:28)
   class
 - Update [`Manager`](vpd-manager/include/manager.hpp:22) class to use
-  ChassisManager
+  ChassisConfigManager
 - Maintain backward compatibility
 
 ### Phase 3: Testing & Validation
@@ -421,7 +431,7 @@ ChassisManager:
 
 ### Unit Tests
 
-1. **ChassisManager Tests**
+1. **ChassisConfigManager Tests**
    - Single-chassis JSON parsing
    - Multi-chassis JSON parsing
    - O(1) lookup validation
@@ -455,3 +465,54 @@ ChassisManager:
    - Validate acceptable memory footprint
 
 ---
+
+
+### Code change analysis
+
+
+1. GpioMonitor -> to collect FRUs polling required -> can use main JSON
+
+2. BackupAndRestore -> can use main JSON
+
+3. PrimeInventory -> can use main JSON (got JSON by parsing sym link)
+
+4. Manager -> can decide Main JSON or chassisJson based on the input.
+
+5. IbmHandler ->
+where we can pass Main JSON :
+initBackupAndRestore
+6. isBackupOnCache -> for “backupRestoreConfigPath” tag
+performBackupAndRestore
+
+7. SetTimerToDetectVpdCollectionStatus        -> to find “correlatedPropertiesConfigPath” tag
+enableMuxChips -> for ”muxes” tag
+
+8. setDeviceTreeAndJson -> To parse system VPD, and get new JSON, setCollectionStatusProperty, for “devTree”,
+to getInventoryObjPathFromJson for system VPD path, to check isBackupAndRestoreRequired()
+performInitialSetup -> for setCollectionStatusProperty
+
+9.where Chassis JSON required :
+checkAndUpdateBmcPosition -> to get jsonUtility::getFruPathFromJson for system vpd inv path
+
+
+10. Worker ->
+where we can pass Main JSON :
+Constructor
+processInheritFlag -> to get "commonInterfaces" tag
+populateDbus -> for given EEPROM path inv details is fetched
+isActionRequired -> fetching details for given eeprom path
+processPreAction -> currently input is EEPROM path, used for executeBaseAction, to find inv path
+processPostAction ->
+
+11. parseVpdFile -> safe currently as input is considered as EEPEOM path
+parseAndPublishVPD -> to set setCollectionStatusProperty
+skipPathForCollection ->
+collectFrusFromJson
+setPresentProperty
+performVpdRecollection
+checkAndExecutePostFailAction
+
+12. where Chassis JSON required :
+resetObjTreeVpd() -> if input is eeprom(main JSON), if input is inv path(chassis JSON)
+deleteFruVpd
+collectSingleFruVpd
