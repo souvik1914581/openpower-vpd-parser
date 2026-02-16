@@ -159,10 +159,34 @@ graph TB
 
 ### ChassisConfigManager - New Abstraction Layer
 
-Create a new singleton class
+Create a new class
 [`ChassisConfigManager`](vpd-manager/include/chassis_manager.hpp:1) that sits as a
 layer between vpd-manager (`ibm_handler`, `worker` and `manager`) and
 json_utility APIs. json_utility APIs should not be affected.
+
+**Important Design Constraint**: The ChassisConfigManager class can **only be
+instantiated by the Worker class**. This is enforced through the **Passkey Idiom**
+(also known as Attorney-Client pattern):
+- Public constructor that requires a `ConstructorKey` parameter
+- `ConstructorKey` is a private nested class with private constructor
+- Only Worker class is friend of `ConstructorKey` (not ChassisConfigManager)
+- **No static instance** - Worker holds the instance privately
+- **No public getter** - only Worker has access to ChassisConfigManager
+
+**Advantages of Passkey Idiom over Friend Class**:
+- Worker cannot access private members of ChassisConfigManager
+- More fine-grained access control - only construction is allowed
+- Better encapsulation and maintainability
+- Clear intent in the API
+
+**Access Pattern**:
+- Worker creates and owns the ChassisConfigManager instance
+- Other components access chassis configuration through Worker's public APIs
+- Worker delegates to ChassisConfigManager internally
+- Direct access to ChassisConfigManager is not possible outside Worker
+
+This design ensures proper initialization order, prevents unauthorized
+instantiation, and maintains strong encapsulation with clear ownership.
 
 #### Key Responsibilities
 
@@ -191,17 +215,37 @@ struct ChassisInfo
 class ChassisConfigManager
 {
 public:
+    /**
+     * @brief Passkey class to restrict instantiation to Worker class only
+     *
+     * This is a private nested class that can only be constructed by Worker.
+     * It acts as a "key" that must be passed to ChassisConfigManager's
+     * constructor, ensuring only Worker can create instances.
+     */
+    class ConstructorKey
+    {
+      private:
+        // Only Worker can construct this key
+        ConstructorKey() = default;
+        friend class Worker;
+    };
 
     /**
-     * @brief Method to get instance of Chassis Manager class.
+     * @brief Constructor with passkey - can only be called by Worker
+     *
+     * This constructor is public but requires a ConstructorKey that only
+     * Worker can create, effectively restricting instantiation to Worker.
+     *
+     * @param[in] key - Constructor key (only Worker can create this)
+     * @param[in] i_systemConfigJson - System config JSON object
+     * @throw JsonException on parsing errors
      */
-    static std::shared_ptr<ChassisConfigManager> getChassisConfigManagerInstance()
+    explicit ChassisConfigManager(ConstructorKey key,
+                                   const nlohmann::json& i_systemConfigJson) :
+        m_systemConfigJson{i_systemConfigJson}
     {
-        if (!m_chassisManagerInstance)
-        {
-            m_chassisManagerInstance = std::shared_ptr<ChassisConfigManager>(new ChassisConfigManager());
-        }
-        return m_chassisManagerInstance;
+        (void)key; // Suppress unused parameter warning
+        buildChassisToFruMap();
     }
 
     /**
@@ -219,23 +263,40 @@ public:
      */
     const nlohmann::json& getJsonObj(const std::optional<std::string> i_vpdPath = std::nullopt) const noexcept;
 
+    /**
+     * @brief Deleted copy constructor
+     */
+    ChassisConfigManager(const ChassisConfigManager&) = delete;
+
+    /**
+     * @brief Deleted copy assignment operator
+     */
+    ChassisConfigManager& operator=(const ChassisConfigManager&) = delete;
+
+    /**
+     * @brief Deleted move constructor
+     */
+    ChassisConfigManager(ChassisConfigManager&&) = delete;
+
+    /**
+     * @brief Deleted move assignment operator
+     */
+    ChassisConfigManager& operator=(ChassisConfigManager&&) = delete;
+
+    /**
+     * @brief Destructor
+     */
+    ~ChassisConfigManager() = default;
 
 private:
 
-     /**
-     * @brief Constructor - loads and parses system config JSON
+    /**
+     * @brief Build EEPROM to chassis mapping - O(n) at initialization
      *
-     * Constructor is kept private as class is singleton
-     * @param[in] i_configJsonPath - Path to system config JSON
-     * @throw JsonException on parsing errors
+     * This method iterates through the system config JSON and builds
+     * the necessary maps for O(1) lookup during runtime.
      */
-    explicit ChassisConfigManager(const nlohmann::json& i_systemConfigJson) : m_systemConfigJson{i_systemConfigJson}
-    {
-      buildchassisToFruMap();
-    }
-
-    // Build EEPROM to chassis mapping - O(n) at initialization
-    void buildchassisToFruMap()
+    void buildChassisToFruMap()
     {
         /* TODO:
           1. Iterate through "frus" under system config JSON
@@ -264,9 +325,6 @@ private:
      */
     nlohmann::json getChassisConfig(const std::string& i_chassisId,
                                     uint16_t& o_errCode) const noexcept;
-
-    // Instance to the chassis manager
-    static std::shared_ptr<ChassisConfigManager> m_chassisManagerInstance;
 
     // System config JSON
     nlohmann::json m_systemConfigJson;
@@ -531,15 +589,145 @@ collectSingleFruVpd
 
 ### ChassisConfigManager initialization
 
-1.For IBM systems
+**Instantiation Restriction**: ChassisConfigManager can **only** be instantiated by
+the Worker class. This is enforced through the **Passkey Idiom**:
+- Public constructor that requires a `ConstructorKey` parameter
+- `ConstructorKey` is a private nested class with private constructor
+- Only Worker is friend of `ConstructorKey` (not of ChassisConfigManager itself)
+- Static instance management that throws exception if accessed before Worker creates it
+
+**Why Passkey Idiom?**
+- Worker cannot access ChassisConfigManager's private members
+- More secure than friend class approach
+- Clear API - constructor signature shows restriction
+- Better encapsulation
+
+#### Initialization Flow
+
+##### For IBM Systems
+
+```mermaid
+sequenceDiagram
+    participant M as Manager
+    participant IH as IbmHandler
+    participant W as Worker
+    participant CCM as ChassisConfigManager
+    participant CK as ConstructorKey
+
+    M->>IH: Create IbmHandler
+    IH->>IH: Read IM keyword from system VPD
+    IH->>IH: Select system-specific JSON path
+    IH->>W: Create Worker(jsonPath)
+    activate W
+    W->>W: Parse JSON file
+    Note over W: m_parsedJson = parseJsonFile(jsonPath)
+    W->>CK: Create ConstructorKey{}
+    Note over W,CK: Only Worker can create key<br/>(friend of ConstructorKey)
+    W->>CCM: new ChassisConfigManager(key, m_parsedJson)
+    activate CCM
+    CCM->>CCM: buildChassisToFruMap()
+    Note over CCM: Build O(1) lookup maps:<br/>- m_chassisInfoMap<br/>- m_eepromToChassisIdMap
+    CCM-->>W: ChassisConfigManager instance
+    deactivate CCM
+    W->>W: Store instance privately
+    Note over W: m_chassisConfigManager = instance
+    W-->>IH: Worker instance
+    deactivate W
+    
+    Note over IH,W: Later, when IbmHandler needs chassis config...
+    IH->>W: getSysCfgJsonObj(vpdPath)
+    W->>CCM: getJsonObj(vpdPath)
+    CCM-->>W: Chassis-specific JSON
+    W-->>IH: JSON object
+```
+
+##### For Non-IBM Systems
+
+```mermaid
+sequenceDiagram
+    participant M as Manager
+    participant W as Worker
+    participant CCM as ChassisConfigManager
+    participant CK as ConstructorKey
+
+    M->>W: Create Worker(defaultJsonPath)
+    activate W
+    W->>W: Parse JSON file
+    Note over W: m_parsedJson = parseJsonFile(defaultJsonPath)
+    W->>CK: Create ConstructorKey{}
+    Note over W,CK: Only Worker can create key<br/>(friend of ConstructorKey)
+    W->>CCM: new ChassisConfigManager(key, m_parsedJson)
+    activate CCM
+    CCM->>CCM: buildChassisToFruMap()
+    Note over CCM: Build O(1) lookup maps:<br/>- m_chassisInfoMap<br/>- m_eepromToChassisIdMap
+    CCM-->>W: ChassisConfigManager instance
+    deactivate CCM
+    W->>W: Store instance privately
+    Note over W: m_chassisConfigManager = instance
+    W-->>M: Worker instance
+    deactivate W
+    
+    Note over M,W: Later, when Manager needs chassis config...
+    M->>W: getSysCfgJsonObj(vpdPath)
+    W->>CCM: getJsonObj(vpdPath)
+    CCM-->>W: Chassis-specific JSON
+    W-->>M: JSON object
+```
+
+**Key Points from Sequence Diagrams:**
+
+1. **Passkey Pattern Enforcement**: Only Worker can create `ConstructorKey` instances, ensuring exclusive instantiation rights
+2. **Initialization Order**: ChassisConfigManager is created during Worker construction, ensuring it's available before any VPD operations
+3. **O(1) Lookup Setup**: The `buildChassisToFruMap()` method runs once during initialization to build efficient lookup maps
+4. **Worker-Only Access**: ChassisConfigManager instance is stored privately in Worker - no public getter exists
+5. **Access Pattern**: Other components must call `Worker::getSysCfgJsonObj()` which internally delegates to ChassisConfigManager
+6. **Strong Encapsulation**:
+   - Worker cannot access ChassisConfigManager's private members
+   - Other components cannot access ChassisConfigManager directly
+   - All chassis configuration access goes through Worker's public API
+
+##### Text-based Initialization Flow
+
+1. **For IBM systems**
    - IbmHandler handles initialization including selection of system specific JSON using IM keyword
    - After selecting system specific JSON path, it passes the parameter to `Worker` constructor, and `Worker` parses the JSON file
-   - Need to introduce a `ChassisConfigManager` instance in `Worker` class
-   - `Worker` can initialize `ChassisConfigManager` in constructor using system config JSON and expose a public getter method to return `ChassisConfigManager` instance
-   - `IbmHandler` can get `ChassisConfigManager` instance using `Worker`
-   - `Worker::getSysCfgJsonObj()` API implementation can call `ChassisConfigManager::getSysJson()`
-2. For non-IBM systems
--  `Manager` constructor initializes `Worker` instance with default system configuration JSON path
--  `Worker` can initialize `ChassisConfigManager` in constructor using passed system config JSON path
--  - `Worker::getSysCfgJsonObj()` API implementation can call `ChassisConfigManager::getSysJson()`
+   - `Worker` constructor creates the `ChassisConfigManager` instance using the passkey constructor and stores it privately
+   - `Worker::getSysCfgJsonObj()` API implementation delegates to `ChassisConfigManager::getJsonObj()`
+   - IbmHandler accesses chassis configuration only through Worker's public APIs
+
+2. **For non-IBM systems**
+   - `Manager` constructor initializes `Worker` instance with default system configuration JSON path
+   - `Worker` constructor creates the `ChassisConfigManager` instance using the passkey constructor and stores it privately
+   - `Worker::getSysCfgJsonObj()` API implementation delegates to `ChassisConfigManager::getJsonObj()`
+   - Manager accesses chassis configuration only through Worker's public APIs
+
+#### Example Worker Constructor Pattern
+
+```cpp
+Worker::Worker(std::string pathToConfigJson, ...)
+{
+    // Parse JSON
+    m_parsedJson = parseJsonFile(pathToConfigJson);
+    
+    // Create ChassisConfigManager instance using passkey
+    // Only Worker can create ConstructorKey, so only Worker can call this constructor
+    // Store instance privately in Worker
+    m_chassisConfigManager = std::make_shared<ChassisConfigManager>(
+        ChassisConfigManager::ConstructorKey{}, m_parsedJson);
+}
+
+// Worker's public API for accessing chassis configuration
+nlohmann::json Worker::getSysCfgJsonObj(const std::optional<std::string>& vpdPath) const
+{
+    return m_chassisConfigManager->getJsonObj(vpdPath);
+}
+```
+
+**Important Notes**:
+- Only Worker class can create `ConstructorKey` instances (it's friend of the key, not the manager)
+- Other classes attempting to instantiate ChassisConfigManager will get compilation errors because they cannot create the `ConstructorKey`
+- Worker cannot access private members of ChassisConfigManager - only construction is allowed
+- ChassisConfigManager instance is stored privately in Worker - no public access
+- All chassis configuration access must go through Worker's public APIs
+- This ensures Worker is the single point of control for chassis configuration management
    
