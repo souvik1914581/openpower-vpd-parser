@@ -123,16 +123,27 @@ Key APIs that need chassis context:
 ## Architecture Design
 
 ### Component Overview
+##IBM system
 
 ```mermaid
 graph TB
-    A[ibm_handler] --> B[ChassisConfigManager]
-    B --> C[json_utility APIs]
+    A[Manager] --> B[IbmHandler]
+    %%B --> C[Worker (initializes ChassisConfigManager and Worker::getSysCfgJsonObj exposes Chassis specific JSON)]
+    B --> C["<b>Worker</b><hr/><small><i>Note: Constructor initializes ChassisConfigManager,exposes Chassis specific JSON<br/></i></small>"]
+    C --> D[ChassisConfigManager]
 
-    D[worker] --> B
-    E[manager] --> D
+    style D fill:#6495ED
 
-    style B fill:#90EE90
+```
+
+##Non-IBM system
+
+```mermaid
+graph TB
+    A[Manager] --> B["<b>Worker</b><hr/><small><i>Note: Constructor initializes ChassisConfigManager,exposes Chassis specific JSON<br/></i></small>"]
+    B --> C[ChassisConfigManager]
+   
+    style C fill:#6495ED
 
 ```
 
@@ -196,7 +207,7 @@ public:
 *        - If input parameter is Object path, return Chassis specific JSON
      * @return Complete system config JSON
      */
-    const nlohmann::json& getSystemConfig(const std::optional<std::string> i_vpdPath = std::nullopt) const noexcept;
+    const nlohmann::json& getJsonObj(const std::optional<std::string> i_vpdPath = std::nullopt) const noexcept;
 
 
 private:
@@ -506,3 +517,19 @@ checkAndExecutePostFailAction
 resetObjTreeVpd() -> if input is eeprom(main JSON), if input is inv path(chassis JSON)
 deleteFruVpd
 collectSingleFruVpd
+
+
+### ChassisConfigManager initialization
+
+1.For IBM systems
+   - IbmHandler handles initialization including selection of system specific JSON using IM keyword
+   - After selecting system specific JSON path, it passes the parameter to `Worker` constructor, and `Worker` parses the JSON file
+   - Need to introduce a `ChassisConfigManager` instance in `Worker` class
+   - `Worker` can initialize `ChassisConfigManager` in constructor using system config JSON and expose a public getter method to return `ChassisConfigManager` instance
+   - `IbmHandler` can get `ChassisConfigManager` instance using `Worker`
+   - `Worker::getSysCfgJsonObj()` API implementation can call `ChassisConfigManager::getSysJson()`
+2. For non-IBM systems
+-  `Manager` constructor initializes `Worker` instance with default system configuration JSON path
+-  `Worker` can initialize `ChassisConfigManager` in constructor using passed system config JSON path
+-  - `Worker::getSysCfgJsonObj()` API implementation can call `ChassisConfigManager::getSysJson()`
+   
