@@ -123,28 +123,38 @@ Key APIs that need chassis context:
 ## Architecture Design
 
 ### Component Overview
-##IBM system
+## IBM system
 
 ```mermaid
 graph TB
     A[Manager] --> B[IbmHandler]
-    %%B --> C[Worker (initializes ChassisConfigManager and Worker::getSysCfgJsonObj exposes Chassis specific JSON)]
-    B --> C["<b>Worker</b><hr/><small><i>Note: Constructor initializes ChassisConfigManager,exposes Chassis specific JSON<br/></i></small>"]
+    
+    C["<b>Worker</b><hr/><small><i>Note: Constructor initializes ChassisConfigManager, exposes Chassis JSON<br/></i></small>"]
+    
+    B --> C
     C --> D[ChassisConfigManager]
 
-    style D fill:#6495ED
+    %% Apply the padding class to Node C
+    class C paddedNode
+    
+    %% Define the class
+    classDef paddedNode padding:100px
+    
 
 ```
 
-##Non-IBM system
+## Non-IBM system
 
 ```mermaid
 graph TB
-    A[Manager] --> B["<b>Worker</b><hr/><small><i>Note: Constructor initializes ChassisConfigManager,exposes Chassis specific JSON<br/></i></small>"]
+    A[Manager] --> B["<b>Worker</b><hr/><small><i>Note: Constructor initializes ChassisConfigManager, exposes Chassis JSON<br/></i></small>"]
     B --> C[ChassisConfigManager]
-   
-    style C fill:#6495ED
 
+    %% Apply the padding class to Node C
+    class B paddedNode
+    
+    %% Define the class
+    classDef paddedNode padding:100px
 ```
 
 ### ChassisConfigManager - New Abstraction Layer
