@@ -309,12 +309,12 @@ private:
     }
 
     /**
-     * @brief Get chassis ID for a given object path - O(1)
+     * @brief Get chassis ID for a given object path or EEPROM path - O(1)
      * @param[in] i_inventoryPath - Inventory path
      * @param[out] o_errCode - Error code if lookup fails
      * @return Chassis ID string, empty on failure
      */
-    std::string getChassisIdForObjectPath(const std::string& i_inventoryPath,
+    std::string getChassisIdForObjectPathOrEEPROMPath(const std::string& i_inventoryPath,
                                       uint16_t& o_errCode) const noexcept;
 
     /**
