@@ -77,8 +77,8 @@ class FieldValidator:
     @staticmethod
     def validate_json_structure(data: Dict[str, Any]) -> None:
         """Validate the complete JSON structure"""
-        required_fields = ['devTree', 'biosHandlerJsonPath', 'backupRestoreConfigPath', 
-                          'commonInterfaces', 'muxes', 'frus']
+        required_fields = ['devTree', 'biosHandlerJsonPath', 'backupRestoreConfigPath',
+                          'commonInterfaces', 'frus']
         
         for field in required_fields:
             if field not in data:
@@ -88,8 +88,8 @@ class FieldValidator:
         if 'xyz.openbmc_project.Inventory.Decorator.Asset' not in data['commonInterfaces']:
             raise ValidationError("commonInterfaces must contain 'xyz.openbmc_project.Inventory.Decorator.Asset'")
         
-        # Validate muxes is a list
-        if not isinstance(data['muxes'], list):
+        # Validate muxes is a list (if present)
+        if 'muxes' in data and not isinstance(data['muxes'], list):
             raise ValidationError("'muxes' must be a list")
         
         # Validate frus is a dict
@@ -592,38 +592,178 @@ class VPDConfigGUI:
         """Show dialog to add a new FRU"""
         dialog = tk.Toplevel(self.root)
         dialog.title("Add FRU")
-        dialog.geometry("500x400")
+        dialog.geometry("600x700")
         dialog.transient(self.root)
         dialog.grab_set()
         
-        frame = ttk.Frame(dialog, padding="20")
-        frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        # Create scrollable frame
+        canvas = tk.Canvas(dialog)
+        scrollbar = ttk.Scrollbar(dialog, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+        
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        frame = ttk.Frame(scrollable_frame, padding="20")
+        frame.grid(row=0, column=0, sticky=(tk.W, tk.E))
         frame.columnconfigure(1, weight=1)
         
-        ttk.Label(frame, text="EEPROM Path:").grid(row=0, column=0, sticky=tk.W, pady=5)
+        row = 0
+        
+        # Basic fields
+        ttk.Label(frame, text="EEPROM Path:").grid(row=row, column=0, sticky=tk.W, pady=5)
         eeprom_var = tk.StringVar()
-        ttk.Entry(frame, textvariable=eeprom_var, width=40).grid(row=0, column=1, pady=5, sticky=(tk.W, tk.E))
-        ttk.Label(frame, text="e.g., /sys/bus/i2c/drivers/at24/8-0050/eeprom", 
-                 font=('Helvetica', 9), foreground='gray').grid(row=1, column=1, sticky=tk.W)
+        ttk.Entry(frame, textvariable=eeprom_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
+        ttk.Label(frame, text="e.g., /sys/bus/i2c/drivers/at24/8-0050/eeprom",
+                 font=('Helvetica', 9), foreground='gray').grid(row=row, column=1, sticky=tk.W)
+        row += 1
         
-        ttk.Label(frame, text="Inventory Path:").grid(row=2, column=0, sticky=tk.W, pady=5)
+        ttk.Label(frame, text="Inventory Path:").grid(row=row, column=0, sticky=tk.W, pady=5)
         inv_var = tk.StringVar()
-        ttk.Entry(frame, textvariable=inv_var, width=40).grid(row=2, column=1, pady=5, sticky=(tk.W, tk.E))
+        ttk.Entry(frame, textvariable=inv_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
         
-        ttk.Label(frame, text="Service Name:").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(frame, text="Service Name:").grid(row=row, column=0, sticky=tk.W, pady=5)
         service_var = tk.StringVar(value="xyz.openbmc_project.Inventory.Manager")
-        ttk.Entry(frame, textvariable=service_var, width=40).grid(row=3, column=1, pady=5, sticky=(tk.W, tk.E))
+        ttk.Entry(frame, textvariable=service_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
         
-        ttk.Label(frame, text="Pretty Name:").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(frame, text="Pretty Name:").grid(row=row, column=0, sticky=tk.W, pady=5)
         pretty_var = tk.StringVar()
-        ttk.Entry(frame, textvariable=pretty_var, width=40).grid(row=4, column=1, pady=5, sticky=(tk.W, tk.E))
+        ttk.Entry(frame, textvariable=pretty_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
         
-        # Checkboxes
+        # Separator
+        ttk.Separator(frame, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        row += 1
+        
+        ttk.Label(frame, text="Optional Fields", font=('Helvetica', 11, 'bold')).grid(row=row, column=0, columnspan=2, pady=5)
+        row += 1
+        
+        # Boolean checkboxes
         system_vpd_var = tk.BooleanVar()
-        ttk.Checkbutton(frame, text="Is System VPD", variable=system_vpd_var).grid(row=5, column=1, sticky=tk.W, pady=5)
+        ttk.Checkbutton(frame, text="isSystemVpd", variable=system_vpd_var).grid(row=row, column=1, sticky=tk.W, pady=2)
+        row += 1
         
         inherit_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(frame, text="Inherit", variable=inherit_var).grid(row=6, column=1, sticky=tk.W, pady=5)
+        ttk.Checkbutton(frame, text="inherit (default: true)", variable=inherit_var).grid(row=row, column=1, sticky=tk.W, pady=2)
+        row += 1
+        
+        replaceable_runtime_var = tk.BooleanVar()
+        ttk.Checkbutton(frame, text="replaceableAtRuntime", variable=replaceable_runtime_var).grid(row=row, column=1, sticky=tk.W, pady=2)
+        row += 1
+        
+        replaceable_standby_var = tk.BooleanVar()
+        ttk.Checkbutton(frame, text="replaceableAtStandby", variable=replaceable_standby_var).grid(row=row, column=1, sticky=tk.W, pady=2)
+        row += 1
+        
+        essential_fru_var = tk.BooleanVar()
+        ttk.Checkbutton(frame, text="essentialFru", variable=essential_fru_var).grid(row=row, column=1, sticky=tk.W, pady=2)
+        row += 1
+        
+        power_off_only_var = tk.BooleanVar()
+        ttk.Checkbutton(frame, text="powerOffOnly", variable=power_off_only_var).grid(row=row, column=1, sticky=tk.W, pady=2)
+        row += 1
+        
+        concurrent_maintainable_var = tk.BooleanVar()
+        ttk.Checkbutton(frame, text="concurrentlyMaintainable", variable=concurrent_maintainable_var).grid(row=row, column=1, sticky=tk.W, pady=2)
+        row += 1
+        
+        embedded_var = tk.BooleanVar()
+        ttk.Checkbutton(frame, text="embedded", variable=embedded_var).grid(row=row, column=1, sticky=tk.W, pady=2)
+        row += 1
+        
+        # Text fields for actions with examples
+        ttk.Separator(frame, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        row += 1
+        
+        ttk.Label(frame, text="Action Fields (JSON format)", font=('Helvetica', 10, 'bold')).grid(row=row, column=0, columnspan=2, pady=5)
+        row += 1
+        
+        # preAction
+        ttk.Label(frame, text="preAction:").grid(row=row, column=0, sticky=tk.W, pady=5)
+        pre_action_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=pre_action_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
+        ttk.Label(frame, text='Example: {"collection": {"gpioPresence": {"pin": "GPIO_PIN", "value": 0}}}',
+                 font=('Helvetica', 8), foreground='gray').grid(row=row, column=1, sticky=tk.W)
+        row += 1
+        
+        # postAction
+        ttk.Label(frame, text="postAction:").grid(row=row, column=0, sticky=tk.W, pady=5)
+        post_action_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=post_action_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
+        ttk.Label(frame, text='Example: {"deletion": {"systemCmd": {"cmd": "echo unbind"}}}',
+                 font=('Helvetica', 8), foreground='gray').grid(row=row, column=1, sticky=tk.W)
+        row += 1
+        
+        # postFailAction
+        ttk.Label(frame, text="postFailAction:").grid(row=row, column=0, sticky=tk.W, pady=5)
+        post_fail_action_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=post_fail_action_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
+        ttk.Label(frame, text='Example: {"collection": {"setGpio": {"pin": "GPIO_PIN", "value": 1}}}',
+                 font=('Helvetica', 8), foreground='gray').grid(row=row, column=1, sticky=tk.W)
+        row += 1
+        
+        # pollingRequired
+        ttk.Label(frame, text="pollingRequired:").grid(row=row, column=0, sticky=tk.W, pady=5)
+        polling_required_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=polling_required_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
+        ttk.Label(frame, text='Example: {"hotPlugging": {"gpioPresence": {"pin": "GPIO_PIN", "value": 0}}}',
+                 font=('Helvetica', 8), foreground='gray').grid(row=row, column=1, sticky=tk.W)
+        row += 1
+        
+        # Add help button for action fields
+        def show_action_help():
+            help_text = """Action Field Structure:
+
+preAction/postAction/postFailAction can contain:
+  • collection: Actions during VPD collection
+  • deletion: Actions during VPD deletion
+
+Each can have:
+  • gpioPresence: {"pin": "GPIO_NAME", "value": 0/1}
+  • setGpio: {"pin": "GPIO_NAME", "value": 0/1}
+  • systemCmd: {"cmd": "shell command"}
+
+pollingRequired structure:
+  • hotPlugging: {"gpioPresence": {"pin": "GPIO_NAME", "value": 0/1}}
+
+Examples:
+1. GPIO presence check:
+   {"collection": {"gpioPresence": {"pin": "CARD_PRESENT_N", "value": 0}}}
+
+2. Multiple actions:
+   {"collection": {"gpioPresence": {"pin": "PIN1", "value": 0}, "setGpio": {"pin": "PIN2", "value": 1}}}
+
+3. System command:
+   {"deletion": {"systemCmd": {"cmd": "echo 7-0051 > /sys/bus/i2c/drivers/at24/unbind"}}}
+"""
+            messagebox.showinfo("Action Fields Help", help_text, parent=dialog)
+        
+        ttk.Button(frame, text="Action Fields Help", command=show_action_help).grid(row=row, column=1, sticky=tk.W, pady=5)
+        row += 1
+        
+        # Additional interface field
+        ttk.Separator(frame, orient='horizontal').grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        row += 1
+        
+        ttk.Label(frame, text="Additional Interface:").grid(row=row, column=0, sticky=tk.W, pady=5)
+        additional_interface_var = tk.StringVar()
+        ttk.Entry(frame, textvariable=additional_interface_var, width=40).grid(row=row, column=1, pady=5, sticky=(tk.W, tk.E))
+        row += 1
+        ttk.Label(frame, text='e.g., xyz.openbmc_project.Inventory.Decorator.Slot',
+                 font=('Helvetica', 9), foreground='gray').grid(row=row, column=1, sticky=tk.W)
+        row += 1
         
         def save_fru():
             try:
@@ -639,11 +779,59 @@ class VPDConfigGUI:
                     }
                 }
                 
+                # Add optional boolean fields
                 if system_vpd_var.get():
                     fru_config["isSystemVpd"] = True
                 
                 if not inherit_var.get():
                     fru_config["inherit"] = False
+                
+                if replaceable_runtime_var.get():
+                    fru_config["replaceableAtRuntime"] = True
+                
+                if replaceable_standby_var.get():
+                    fru_config["replaceableAtStandby"] = True
+                
+                if essential_fru_var.get():
+                    fru_config["essentialFru"] = True
+                
+                if power_off_only_var.get():
+                    fru_config["powerOffOnly"] = True
+                
+                if concurrent_maintainable_var.get():
+                    fru_config["concurrentlyMaintainable"] = True
+                
+                if embedded_var.get():
+                    fru_config["embedded"] = True
+                
+                # Add action fields (parse JSON)
+                if pre_action_var.get().strip():
+                    try:
+                        fru_config["preAction"] = json.loads(pre_action_var.get())
+                    except json.JSONDecodeError:
+                        raise ValidationError("preAction must be valid JSON")
+                
+                if post_action_var.get().strip():
+                    try:
+                        fru_config["postAction"] = json.loads(post_action_var.get())
+                    except json.JSONDecodeError:
+                        raise ValidationError("postAction must be valid JSON")
+                
+                if post_fail_action_var.get().strip():
+                    try:
+                        fru_config["postFailAction"] = json.loads(post_fail_action_var.get())
+                    except json.JSONDecodeError:
+                        raise ValidationError("postFailAction must be valid JSON")
+                
+                if polling_required_var.get().strip():
+                    try:
+                        fru_config["pollingRequired"] = json.loads(polling_required_var.get())
+                    except json.JSONDecodeError:
+                        raise ValidationError("pollingRequired must be valid JSON")
+                
+                # Add additional interface
+                if additional_interface_var.get().strip():
+                    fru_config["extraInterfaces"][additional_interface_var.get()] = None
                 
                 self.generator.add_fru(eeprom_path, fru_config)
                 
@@ -666,9 +854,13 @@ class VPDConfigGUI:
                 messagebox.showerror("Validation Error", str(e), parent=dialog)
         
         button_frame = ttk.Frame(frame)
-        button_frame.grid(row=7, column=0, columnspan=2, pady=20)
+        button_frame.grid(row=row, column=0, columnspan=2, pady=20)
         ttk.Button(button_frame, text="Add", command=save_fru).grid(row=0, column=0, padx=5)
         ttk.Button(button_frame, text="Cancel", command=dialog.destroy).grid(row=0, column=1, padx=5)
+        
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
     
     def show_fru_details(self, eeprom_path: str):
         """Show FRU configuration details"""

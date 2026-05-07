@@ -58,8 +58,8 @@ class FieldValidator:
     @staticmethod
     def validate_json_structure(data: Dict[str, Any]) -> None:
         """Validate the complete JSON structure"""
-        required_fields = ['devTree', 'biosHandlerJsonPath', 'backupRestoreConfigPath', 
-                          'commonInterfaces', 'muxes', 'frus']
+        required_fields = ['devTree', 'biosHandlerJsonPath', 'backupRestoreConfigPath',
+                          'commonInterfaces', 'frus']
         
         for field in required_fields:
             if field not in data:
@@ -69,8 +69,8 @@ class FieldValidator:
         if 'xyz.openbmc_project.Inventory.Decorator.Asset' not in data['commonInterfaces']:
             raise ValidationError("commonInterfaces must contain 'xyz.openbmc_project.Inventory.Decorator.Asset'")
         
-        # Validate muxes is a list
-        if not isinstance(data['muxes'], list):
+        # Validate muxes is a list (if present)
+        if 'muxes' in data and not isinstance(data['muxes'], list):
             raise ValidationError("'muxes' must be a list")
         
         # Validate frus is a dict
@@ -395,23 +395,68 @@ class VPDWebHandler(BaseHTTPRequestHandler):
                 <div id="frus-list"></div>
                 <hr style="margin: 20px 0;">
                 <h3>Add New FRU</h3>
-                <div class="form-group">
-                    <label>EEPROM Path:</label>
-                    <input type="text" id="fru-eeprom" placeholder="/sys/bus/i2c/drivers/at24/8-0050/eeprom">
+                <div style="max-height: 400px; overflow-y: auto; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    <div class="form-group">
+                        <label>EEPROM Path:</label>
+                        <input type="text" id="fru-eeprom" placeholder="/sys/bus/i2c/drivers/at24/8-0050/eeprom">
+                    </div>
+                    <div class="form-group">
+                        <label>Inventory Path:</label>
+                        <input type="text" id="fru-inventory" placeholder="/xyz/openbmc_project/inventory/system">
+                    </div>
+                    <div class="form-group">
+                        <label>Service Name:</label>
+                        <input type="text" id="fru-service" value="xyz.openbmc_project.Inventory.Manager">
+                    </div>
+                    <div class="form-group">
+                        <label>Pretty Name:</label>
+                        <input type="text" id="fru-pretty" placeholder="System backplane">
+                    </div>
+                    
+                    <hr style="margin: 15px 0;">
+                    <h4>Optional Boolean Fields</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <label><input type="checkbox" id="fru-system-vpd"> isSystemVpd</label>
+                        <label><input type="checkbox" id="fru-inherit" checked> inherit</label>
+                        <label><input type="checkbox" id="fru-replaceable-runtime"> replaceableAtRuntime</label>
+                        <label><input type="checkbox" id="fru-replaceable-standby"> replaceableAtStandby</label>
+                        <label><input type="checkbox" id="fru-essential"> essentialFru</label>
+                        <label><input type="checkbox" id="fru-power-off"> powerOffOnly</label>
+                        <label><input type="checkbox" id="fru-concurrent"> concurrentlyMaintainable</label>
+                        <label><input type="checkbox" id="fru-embedded"> embedded</label>
+                    </div>
+                    
+                    <hr style="margin: 15px 0;">
+                    <h4>Action Fields (JSON) <button class="btn btn-secondary" onclick="showActionHelp()" style="padding: 5px 10px; font-size: 12px;">Help</button></h4>
+                    <div class="form-group">
+                        <label>preAction:</label>
+                        <input type="text" id="fru-pre-action" placeholder='{"collection": {"gpioPresence": {"pin": "GPIO_PIN", "value": 0}}}'>
+                        <div class="hint">Actions to perform before VPD collection</div>
+                    </div>
+                    <div class="form-group">
+                        <label>postAction:</label>
+                        <input type="text" id="fru-post-action" placeholder='{"deletion": {"systemCmd": {"cmd": "echo unbind"}}}'>
+                        <div class="hint">Actions to perform after successful VPD collection</div>
+                    </div>
+                    <div class="form-group">
+                        <label>postFailAction:</label>
+                        <input type="text" id="fru-post-fail-action" placeholder='{"collection": {"setGpio": {"pin": "GPIO_PIN", "value": 1}}}'>
+                        <div class="hint">Actions to perform if VPD collection fails</div>
+                    </div>
+                    <div class="form-group">
+                        <label>pollingRequired:</label>
+                        <input type="text" id="fru-polling" placeholder='{"hotPlugging": {"gpioPresence": {"pin": "GPIO_PIN", "value": 0}}}'>
+                        <div class="hint">Configuration for hot-plug polling</div>
+                    </div>
+                    
+                    <hr style="margin: 15px 0;">
+                    <h4>Additional Interface</h4>
+                    <div class="form-group">
+                        <label>Additional D-Bus Interface:</label>
+                        <input type="text" id="fru-additional-interface" placeholder="xyz.openbmc_project.Inventory.Decorator.Slot">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Inventory Path:</label>
-                    <input type="text" id="fru-inventory" placeholder="/xyz/openbmc_project/inventory/system">
-                </div>
-                <div class="form-group">
-                    <label>Service Name:</label>
-                    <input type="text" id="fru-service" value="xyz.openbmc_project.Inventory.Manager">
-                </div>
-                <div class="form-group">
-                    <label>Pretty Name:</label>
-                    <input type="text" id="fru-pretty" placeholder="System backplane">
-                </div>
-                <button class="btn btn-primary" onclick="addFRU()">Add FRU</button>
+                <button class="btn btn-primary" onclick="addFRU()" style="margin-top: 15px;">Add FRU</button>
             </div>
             
             <!-- JSON View Tab -->
@@ -532,7 +577,23 @@ class VPDWebHandler(BaseHTTPRequestHandler):
                 eeprom: document.getElementById('fru-eeprom').value,
                 inventory: document.getElementById('fru-inventory').value,
                 service: document.getElementById('fru-service').value,
-                pretty: document.getElementById('fru-pretty').value
+                pretty: document.getElementById('fru-pretty').value,
+                // Boolean fields
+                isSystemVpd: document.getElementById('fru-system-vpd').checked,
+                inherit: document.getElementById('fru-inherit').checked,
+                replaceableAtRuntime: document.getElementById('fru-replaceable-runtime').checked,
+                replaceableAtStandby: document.getElementById('fru-replaceable-standby').checked,
+                essentialFru: document.getElementById('fru-essential').checked,
+                powerOffOnly: document.getElementById('fru-power-off').checked,
+                concurrentlyMaintainable: document.getElementById('fru-concurrent').checked,
+                embedded: document.getElementById('fru-embedded').checked,
+                // Action fields
+                preAction: document.getElementById('fru-pre-action').value,
+                postAction: document.getElementById('fru-post-action').value,
+                postFailAction: document.getElementById('fru-post-fail-action').value,
+                pollingRequired: document.getElementById('fru-polling').value,
+                // Additional interface
+                additionalInterface: document.getElementById('fru-additional-interface').value
             };
             
             const response = await fetch('/api/save', {
@@ -543,9 +604,23 @@ class VPDWebHandler(BaseHTTPRequestHandler):
             const result = await response.json();
             if (result.success) {
                 showAlert('FRU added successfully!', 'success');
+                // Clear form
                 document.getElementById('fru-eeprom').value = '';
                 document.getElementById('fru-inventory').value = '';
                 document.getElementById('fru-pretty').value = '';
+                document.getElementById('fru-system-vpd').checked = false;
+                document.getElementById('fru-inherit').checked = true;
+                document.getElementById('fru-replaceable-runtime').checked = false;
+                document.getElementById('fru-replaceable-standby').checked = false;
+                document.getElementById('fru-essential').checked = false;
+                document.getElementById('fru-power-off').checked = false;
+                document.getElementById('fru-concurrent').checked = false;
+                document.getElementById('fru-embedded').checked = false;
+                document.getElementById('fru-pre-action').value = '';
+                document.getElementById('fru-post-action').value = '';
+                document.getElementById('fru-post-fail-action').value = '';
+                document.getElementById('fru-polling').value = '';
+                document.getElementById('fru-additional-interface').value = '';
                 await loadConfig();
                 refreshFRUsList();
             } else {
@@ -657,6 +732,38 @@ class VPDWebHandler(BaseHTTPRequestHandler):
                 showAlert('Failed to load template: ' + result.error, 'error');
             }
         }
+        
+        function showActionHelp() {
+            const helpMessage = `Action Field Structure:
+
+preAction/postAction/postFailAction can contain:
+  • collection: Actions during VPD collection
+  • deletion: Actions during VPD deletion
+
+Each can have:
+  • gpioPresence: {"pin": "GPIO_NAME", "value": 0/1}
+  • setGpio: {"pin": "GPIO_NAME", "value": 0/1}
+  • systemCmd: {"cmd": "shell command"}
+
+pollingRequired structure:
+  • hotPlugging: {"gpioPresence": {"pin": "GPIO_NAME", "value": 0/1}}
+
+Examples:
+
+1. GPIO presence check:
+{"collection": {"gpioPresence": {"pin": "CARD_PRESENT_N", "value": 0}}}
+
+2. Multiple actions:
+{"collection": {"gpioPresence": {"pin": "PIN1", "value": 0}, "setGpio": {"pin": "PIN2", "value": 1}}}
+
+3. System command:
+{"deletion": {"systemCmd": {"cmd": "echo 7-0051 > /sys/bus/i2c/drivers/at24/unbind"}}}
+
+4. Complex preAction:
+{"collection": {"gpioPresence": {"pin": "OPPANEL_PRESENT_N", "value": 0}, "setGpio": {"pin": "FW_I2C_ENABLE_N", "value": 0}, "systemCmd": {"cmd": "echo 7-0051 > /sys/bus/i2c/drivers/at24/bind"}}}`;
+            
+            alert(helpMessage);
+        }
     </script>
 </body>
 </html>
@@ -717,6 +824,46 @@ class VPDWebHandler(BaseHTTPRequestHandler):
                         }
                     }
                 }
+                
+                # Add optional boolean fields
+                if data.get('isSystemVpd'):
+                    fru_config['isSystemVpd'] = True
+                
+                if not data.get('inherit', True):
+                    fru_config['inherit'] = False
+                
+                if data.get('replaceableAtRuntime'):
+                    fru_config['replaceableAtRuntime'] = True
+                
+                if data.get('replaceableAtStandby'):
+                    fru_config['replaceableAtStandby'] = True
+                
+                if data.get('essentialFru'):
+                    fru_config['essentialFru'] = True
+                
+                if data.get('powerOffOnly'):
+                    fru_config['powerOffOnly'] = True
+                
+                if data.get('concurrentlyMaintainable'):
+                    fru_config['concurrentlyMaintainable'] = True
+                
+                if data.get('embedded'):
+                    fru_config['embedded'] = True
+                
+                # Add action fields (parse JSON)
+                for action_field in ['preAction', 'postAction', 'postFailAction', 'pollingRequired']:
+                    action_value = data.get(action_field, '').strip()
+                    if action_value:
+                        try:
+                            fru_config[action_field] = json.loads(action_value)
+                        except json.JSONDecodeError:
+                            raise ValidationError(f"{action_field} must be valid JSON")
+                
+                # Add additional interface
+                additional_interface = data.get('additionalInterface', '').strip()
+                if additional_interface:
+                    fru_config['extraInterfaces'][additional_interface] = None
+                
                 self.generator.add_fru(data['eeprom'], fru_config)
                 result = {'success': True}
             

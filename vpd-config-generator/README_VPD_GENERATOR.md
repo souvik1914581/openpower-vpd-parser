@@ -133,11 +133,13 @@ The tool generates JSON files with the following structure:
   - `biosHandlerJsonPath`
   - `backupRestoreConfigPath`
   - `commonInterfaces`
-  - `muxes`
   - `frus`
 
+- Optional top-level fields:
+  - `muxes` (array of I2C multiplexer configurations)
+
 - `commonInterfaces` must contain `xyz.openbmc_project.Inventory.Decorator.Asset`
-- `muxes` must be an array
+- `muxes` (if present) must be an array
 - `frus` must be an object/dictionary
 
 ## Menu Structure
@@ -161,6 +163,29 @@ The tool generates JSON files with the following structure:
 ### Help Menu
 - **About**: Application information
 - **Documentation**: Built-in help documentation
+
+## FRU Optional Fields
+
+The tool now supports all optional FRU fields found in IBM OpenBMC VPD configurations:
+
+### Boolean Fields
+- `isSystemVpd`: Marks this FRU as system VPD
+- `inherit`: Whether to inherit common interfaces (default: true)
+- `replaceableAtRuntime`: FRU can be replaced while system is running
+- `replaceableAtStandby`: FRU can be replaced in standby mode
+- `essentialFru`: Marks FRU as essential for system operation
+- `powerOffOnly`: FRU requires power off for replacement
+- `concurrentlyMaintainable`: FRU supports concurrent maintenance
+- `embedded`: Marks FRU as embedded component
+
+### Action Fields (JSON Objects)
+- `preAction`: Actions to perform before VPD collection
+- `postAction`: Actions to perform after successful VPD collection
+- `postFailAction`: Actions to perform if VPD collection fails
+- `pollingRequired`: Configuration for hot-plug polling
+
+### Additional Fields
+- Additional D-Bus interfaces can be specified (e.g., `xyz.openbmc_project.Inventory.Decorator.Slot`)
 
 ## Examples
 
@@ -254,7 +279,16 @@ For issues or questions:
 
 ## Version History
 
-### Version 1.0 (Current)
+### Version 2.0 (Current)
+- Made `muxes` field optional
+- Added support for all optional FRU fields:
+  - Boolean fields: isSystemVpd, inherit, replaceableAtRuntime, replaceableAtStandby, essentialFru, powerOffOnly, concurrentlyMaintainable, embedded
+  - Action fields: preAction, postAction, postFailAction, pollingRequired
+  - Additional interface support
+- Enhanced FRU dialog with scrollable interface
+- Improved validation for optional fields
+
+### Version 1.0
 - Initial release
 - Basic configuration support
 - Mux and FRU management
